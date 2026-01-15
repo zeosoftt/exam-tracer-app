@@ -55,21 +55,6 @@ async function getStatsHandler(req: NextRequest): Promise<NextResponse> {
       },
     });
 
-    // Get progress stats
-    const progressStats = await prisma.userProgress.groupBy({
-      by: ['status'],
-      where: {
-        userId,
-        deletedAt: null,
-      },
-      _count: true,
-    });
-
-    const completedTopics = progressStats.find((s) => s.status === 'COMPLETED')?._count || 0;
-    const inProgressTopics = progressStats.find((s) => s.status === 'IN_PROGRESS')?._count || 0;
-    const notStartedTopics = progressStats.find((s) => s.status === 'NOT_STARTED')?._count || 0;
-    const reviewedTopics = progressStats.find((s) => s.status === 'REVIEWED')?._count || 0;
-
     // Get active exam assigned to user
     const activeExamAssignment = await prisma.examAssignment.findFirst({
       where: {
@@ -94,14 +79,27 @@ async function getStatsHandler(req: NextRequest): Promise<NextResponse> {
       },
     });
 
-    // Get total topics count for active exam
+    // Get total topics and subjects count for active exam
+    // Count all topics under all sections of the active exam
+    // Hierarchy: Exam -> Section -> Subject -> Topic
+    // For KPSS: Exam (KPSS) -> Sections (Genel Yetenek, Genel Kültür) -> Subjects -> Topics
     let totalTopics = 0;
+    let totalSubjects = 0;
+    let completedTopics = 0;
+    let inProgressTopics = 0;
+    let notStartedTopics = 0;
+    let reviewedTopics = 0;
+
     if (activeExamAssignment?.exam?.id) {
+      const examId = activeExamAssignment.exam.id;
+      
+      // Count all topics across all sections of this exam
+      // This query counts topics from ALL sections of the exam (e.g., Genel Yetenek + Genel Kültür for KPSS)
       const topicsCount = await prisma.topic.count({
         where: {
           subject: {
             section: {
-              examId: activeExamAssignment.exam.id,
+              examId: examId,
               deletedAt: null,
             },
             deletedAt: null,
@@ -110,7 +108,78 @@ async function getStatsHandler(req: NextRequest): Promise<NextResponse> {
         },
       });
       totalTopics = topicsCount;
+
+      // Count all subjects across all sections of this exam
+      const subjectsCount = await prisma.subject.count({
+        where: {
+          section: {
+            examId: examId,
+            deletedAt: null,
+          },
+          deletedAt: null,
+        },
+      });
+      totalSubjects = subjectsCount;
+
+      // Get all topic IDs for this exam
+      const examTopics = await prisma.topic.findMany({
+        where: {
+          subject: {
+            section: {
+              examId: examId,
+              deletedAt: null,
+            },
+            deletedAt: null,
+          },
+          deletedAt: null,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      const examTopicIds = examTopics.map((t) => t.id);
+
+      // Get progress stats only for topics in this active exam
+      const progressStats = await prisma.userProgress.groupBy({
+        by: ['status'],
+        where: {
+          userId,
+          topicId: {
+            in: examTopicIds,
+          },
+          deletedAt: null,
+        },
+        _count: true,
+      });
+
+      completedTopics = progressStats.find((s) => s.status === 'COMPLETED')?._count || 0;
+      inProgressTopics = progressStats.find((s) => s.status === 'IN_PROGRESS')?._count || 0;
+      reviewedTopics = progressStats.find((s) => s.status === 'REVIEWED')?._count || 0;
+      // Not started = total topics - (completed + in progress + reviewed)
+      // A topic without a progress record is also considered "not started"
+      notStartedTopics = totalTopics - (completedTopics + inProgressTopics + reviewedTopics);
     }
+
+    // Get total study hours from completed pomodoro sessions (only work sessions, not breaks)
+    const studyHoursStats = await prisma.pomodoroSession.aggregate({
+      where: {
+        userId,
+        deletedAt: null,
+        completed: true,
+        isBreak: false,
+      },
+      _sum: {
+        duration: true,
+      },
+      _count: true,
+    });
+
+    const totalStudyHours = studyHoursStats._sum.duration 
+      ? Math.round((studyHoursStats._sum.duration / 60) * 10) / 10 // Convert minutes to hours, round to 1 decimal
+      : 0;
+    
+    const totalPomodoroSessions = studyHoursStats._count || 0;
 
     const stats = {
       totalExams,
@@ -120,6 +189,9 @@ async function getStatsHandler(req: NextRequest): Promise<NextResponse> {
       notStartedTopics,
       reviewedTopics,
       totalTopics,
+      totalSubjects,
+      totalStudyHours,
+      totalPomodoroSessions,
       activeExam: activeExamAssignment?.exam || null,
       user: {
         targetScore: user?.targetScore || null,

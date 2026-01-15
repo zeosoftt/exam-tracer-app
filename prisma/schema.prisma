@@ -53,6 +53,7 @@ model User {
   userProgress  UserProgress[]
   sessions      Session[]
   examAssignments ExamAssignment[]
+  pomodoroSessions PomodoroSession[]
 
   @@index([email])
   @@index([institutionId])
@@ -224,4 +225,25 @@ model Session {
   @@index([token])
   @@index([expiresAt])
   @@map("sessions")
+}
+
+model PomodoroSession {
+  id          String   @id @default(cuid())
+  userId      String
+  duration    Int      // Dakika cinsinden (25 veya 5)
+  isBreak     Boolean  @default(false) // Mola mı yoksa çalışma mı
+  completed   Boolean  @default(false) // Tamamlandı mı
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime? // Soft delete
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([startedAt])
+  @@index([completed])
+  @@map("pomodoro_sessions")
 }

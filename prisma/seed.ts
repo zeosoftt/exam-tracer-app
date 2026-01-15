@@ -82,27 +82,82 @@ async function main() {
 
   // KPSS Genel Yetenek - Türkçe Dersi Konuları
   await prisma.topic.upsert({
-    where: { subjectId_code: { subjectId: kpssGYTurkce.id, code: 'PARAGRAF' } },
+    where: { subjectId_code: { subjectId: kpssGYTurkce.id, code: 'SOZCUKTE_ANLAM' } },
     update: {},
     create: {
       subjectId: kpssGYTurkce.id,
-      code: 'PARAGRAF',
-      name: 'Paragraf',
+      code: 'SOZCUKTE_ANLAM',
+      name: 'Sözcükte Anlam',
       order: 1,
     },
   });
-
+  
   await prisma.topic.upsert({
-    where: { subjectId_code: { subjectId: kpssGYTurkce.id, code: 'DIL_BILGISI' } },
+    where: { subjectId_code: { subjectId: kpssGYTurkce.id, code: 'CUMLEDE_ANLAM' } },
     update: {},
     create: {
       subjectId: kpssGYTurkce.id,
-      code: 'DIL_BILGISI',
-      name: 'Dil Bilgisi',
+      code: 'CUMLEDE_ANLAM',
+      name: 'Cümlede Anlam',
       order: 2,
     },
   });
-
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYTurkce.id, code: 'SOZCUK_TURLERI' } },
+    update: {},
+    create: {
+      subjectId: kpssGYTurkce.id,
+      code: 'SOZCUK_TURLERI',
+      name: 'Sözcük Türleri',
+      order: 3,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYTurkce.id, code: 'SOZCUKTE_YAPI' } },
+    update: {},
+    create: {
+      subjectId: kpssGYTurkce.id,
+      code: 'SOZCUKTE_YAPI',
+      name: 'Sözcükte Yapı',
+      order: 4,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYTurkce.id, code: 'CUMLENIN_OGELERI' } },
+    update: {},
+    create: {
+      subjectId: kpssGYTurkce.id,
+      code: 'CUMLENIN_OGELERI',
+      name: 'Cümlenin Ögeleri',
+      order: 5,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYTurkce.id, code: 'CUMLE_TURLERI' } },
+    update: {},
+    create: {
+      subjectId: kpssGYTurkce.id,
+      code: 'CUMLE_TURLERI',
+      name: 'Cümle Türleri',
+      order: 6,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYTurkce.id, code: 'SES_OLAYLARI' } },
+    update: {},
+    create: {
+      subjectId: kpssGYTurkce.id,
+      code: 'SES_OLAYLARI',
+      name: 'Dil Bilgisi Ses Olayları',
+      order: 7,
+    },
+  });
+  
   await prisma.topic.upsert({
     where: { subjectId_code: { subjectId: kpssGYTurkce.id, code: 'YAZIM_KURALLARI' } },
     update: {},
@@ -110,11 +165,166 @@ async function main() {
       subjectId: kpssGYTurkce.id,
       code: 'YAZIM_KURALLARI',
       name: 'Yazım Kuralları',
+      order: 8,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYTurkce.id, code: 'NOKTALAMA_ISARETLERI' } },
+    update: {},
+    create: {
+      subjectId: kpssGYTurkce.id,
+      code: 'NOKTALAMA_ISARETLERI',
+      name: 'Noktalama İşaretleri',
+      order: 9,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYTurkce.id, code: 'ANLATIM_BOZUKLUKLARI' } },
+    update: {},
+    create: {
+      subjectId: kpssGYTurkce.id,
+      code: 'ANLATIM_BOZUKLUKLARI',
+      name: 'Anlatım Bozuklukları',
+      order: 10,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYTurkce.id, code: 'PARAGRAFTA_ANLAM' } },
+    update: {},
+    create: {
+      subjectId: kpssGYTurkce.id,
+      code: 'PARAGRAFTA_ANLAM',
+      name: 'Paragrafta Anlam',
+      order: 11,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYTurkce.id, code: 'PARAGRAFTA_ANLATIM_BICIMLERI' } },
+    update: {},
+    create: {
+      subjectId: kpssGYTurkce.id,
+      code: 'PARAGRAFTA_ANLATIM_BICIMLERI',
+      name: 'Paragrafta Anlatım Biçim',
+      order: 12,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYTurkce.id, code: 'SOZEL_MANTIK' } },
+    update: {},
+    create: {
+      subjectId: kpssGYTurkce.id,
+      code: 'SOZEL_MANTIK',
+      name: 'Sözel Mantık',
+      order: 13,
+    },
+  });
+  
+
+  // KPSS Genel Yetenek - Matematik Dersi Konuları
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYMatematik.id, code: 'TEMEL_KAVRAMLAR' } },
+    update: {},
+    create: {
+      subjectId: kpssGYMatematik.id,
+      code: 'TEMEL_KAVRAMLAR',
+      name: 'Temel Kavramlar',
+      order: 1,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYMatematik.id, code: 'RASYONEL_VE_ONDALIKLI_SAYILAR' } },
+    update: {},
+    create: {
+      subjectId: kpssGYMatematik.id,
+      code: 'RASYONEL_VE_ONDALIKLI_SAYILAR',
+      name: 'Rasyonel Sayılar- Ondalıklı Sayılar',
+      order: 2,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYMatematik.id, code: 'BASIT_ESITSIZLIKLER' } },
+    update: {},
+    create: {
+      subjectId: kpssGYMatematik.id,
+      code: 'BASIT_ESITSIZLIKLER',
+      name: 'Basit Eşitsizlikler',
       order: 3,
     },
   });
-
-  // KPSS Genel Yetenek - Matematik Dersi Konuları
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYMatematik.id, code: 'MUTLAK_DEGER' } },
+    update: {},
+    create: {
+      subjectId: kpssGYMatematik.id,
+      code: 'MUTLAK_DEGER',
+      name: 'Mutlak Değer',
+      order: 4,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYMatematik.id, code: 'USLU_SAYILAR' } },
+    update: {},
+    create: {
+      subjectId: kpssGYMatematik.id,
+      code: 'USLU_SAYILAR',
+      name: 'Üslü Sayılar',
+      order: 5,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYMatematik.id, code: 'KOKLU_SAYILAR' } },
+    update: {},
+    create: {
+      subjectId: kpssGYMatematik.id,
+      code: 'KOKLU_SAYILAR',
+      name: 'Köklü Sayılar',
+      order: 6,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYMatematik.id, code: 'CARPANLARA_AYIRMA' } },
+    update: {},
+    create: {
+      subjectId: kpssGYMatematik.id,
+      code: 'CARPANLARA_AYIRMA',
+      name: 'Çarpanlara Ayırma',
+      order: 7,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYMatematik.id, code: 'ORAN_ORANTI' } },
+    update: {},
+    create: {
+      subjectId: kpssGYMatematik.id,
+      code: 'ORAN_ORANTI',
+      name: 'Oran- Orantı',
+      order: 8,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYMatematik.id, code: 'DENKLEM_COZME' } },
+    update: {},
+    create: {
+      subjectId: kpssGYMatematik.id,
+      code: 'DENKLEM_COZME',
+      name: 'Denklem Çözme',
+      order: 9,
+    },
+  });
+  
   await prisma.topic.upsert({
     where: { subjectId_code: { subjectId: kpssGYMatematik.id, code: 'PROBLEMLER' } },
     update: {},
@@ -122,10 +332,65 @@ async function main() {
       subjectId: kpssGYMatematik.id,
       code: 'PROBLEMLER',
       name: 'Problemler',
-      order: 1,
+      order: 10,
     },
   });
-
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYMatematik.id, code: 'KUMELER' } },
+    update: {},
+    create: {
+      subjectId: kpssGYMatematik.id,
+      code: 'KUMELER',
+      name: 'Kümeler',
+      order: 11,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYMatematik.id, code: 'FONKSIYONLAR' } },
+    update: {},
+    create: {
+      subjectId: kpssGYMatematik.id,
+      code: 'FONKSIYONLAR',
+      name: 'Fonksiyonlar',
+      order: 12,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYMatematik.id, code: 'ISLEM' } },
+    update: {},
+    create: {
+      subjectId: kpssGYMatematik.id,
+      code: 'ISLEM',
+      name: 'İşlem',
+      order: 13,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYMatematik.id, code: 'PERMUTASYON_KOMBINASYON' } },
+    update: {},
+    create: {
+      subjectId: kpssGYMatematik.id,
+      code: 'PERMUTASYON_KOMBINASYON',
+      name: 'Permütasyon / Konbinasyon',
+      order: 14,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYMatematik.id, code: 'OLASILIK' } },
+    update: {},
+    create: {
+      subjectId: kpssGYMatematik.id,
+      code: 'OLASILIK',
+      name: 'Olasılık',
+      order: 15,
+    },
+  });
+  
   await prisma.topic.upsert({
     where: { subjectId_code: { subjectId: kpssGYMatematik.id, code: 'SAYISAL_MANTIK' } },
     update: {},
@@ -133,21 +398,67 @@ async function main() {
       subjectId: kpssGYMatematik.id,
       code: 'SAYISAL_MANTIK',
       name: 'Sayısal Mantık',
-      order: 2,
+      order: 16,
     },
   });
+  
 
   // KPSS Genel Yetenek - Geometri Dersi Konuları
   await prisma.topic.upsert({
-    where: { subjectId_code: { subjectId: kpssGYGeometri.id, code: 'TEMEL_GEOMETRI' } },
+    where: { subjectId_code: { subjectId: kpssGYGeometri.id, code: 'GEOMETRIK_KAVRAMLAR_VE_ACILAR' } },
     update: {},
     create: {
       subjectId: kpssGYGeometri.id,
-      code: 'TEMEL_GEOMETRI',
-      name: 'Temel Geometri',
+      code: 'GEOMETRIK_KAVRAMLAR_VE_ACILAR',
+      name: 'Geometrik Kavramlar ve Açılar',
       order: 1,
     },
   });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYGeometri.id, code: 'COKGENLER_VE_DORTGENLER' } },
+    update: {},
+    create: {
+      subjectId: kpssGYGeometri.id,
+      code: 'COKGENLER_VE_DORTGENLER',
+      name: 'Çokgenler ve Dörtgenler',
+      order: 2,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYGeometri.id, code: 'CEMBER_VE_DAIRE' } },
+    update: {},
+    create: {
+      subjectId: kpssGYGeometri.id,
+      code: 'CEMBER_VE_DAIRE',
+      name: 'Çember ve Daire',
+      order: 3,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYGeometri.id, code: 'ANALITIK_GEOMETRI' } },
+    update: {},
+    create: {
+      subjectId: kpssGYGeometri.id,
+      code: 'ANALITIK_GEOMETRI',
+      name: 'Analitik Geometri',
+      order: 4,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGYGeometri.id, code: 'KATI_CISIMLER' } },
+    update: {},
+    create: {
+      subjectId: kpssGYGeometri.id,
+      code: 'KATI_CISIMLER',
+      name: 'Katı Cisimler',
+      order: 5,
+    },
+  });
+  
 
   // KPSS Genel Kültür Bölümü - Dersleri
   const kpssGKTarih = await prisma.subject.upsert({
@@ -185,61 +496,361 @@ async function main() {
 
   // KPSS Genel Kültür - Tarih Dersi Konuları
   await prisma.topic.upsert({
-    where: { subjectId_code: { subjectId: kpssGKTarih.id, code: 'ATATURK_ILKE_INKILAP' } },
+    where: { subjectId_code: { subjectId: kpssGKTarih.id, code: 'ISLAMIYET_ONCESI_TURK_TARIHI' } },
     update: {},
     create: {
       subjectId: kpssGKTarih.id,
-      code: 'ATATURK_ILKE_INKILAP',
-      name: 'Atatürk İlkeleri ve İnkılap Tarihi',
+      code: 'ISLAMIYET_ONCESI_TURK_TARIHI',
+      name: 'İslamiyet Öncesi Türk Tarihi-İlk ve Orta Çağda Türk Dünyası',
       order: 1,
     },
   });
-
+  
   await prisma.topic.upsert({
-    where: { subjectId_code: { subjectId: kpssGKTarih.id, code: 'TURKIYE_TARIHI' } },
+    where: { subjectId_code: { subjectId: kpssGKTarih.id, code: 'ISLAMIYET_ONCESI_KULTUR_UYGARLIK' } },
     update: {},
     create: {
       subjectId: kpssGKTarih.id,
-      code: 'TURKIYE_TARIHI',
-      name: 'Türkiye Tarihi',
+      code: 'ISLAMIYET_ONCESI_KULTUR_UYGARLIK',
+      name: 'İslamiyet Öncesi Türk Devletlerinde Kültür ve Uygarlık',
       order: 2,
     },
   });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKTarih.id, code: 'ILK_TURK_ISLAM_DEVLETLERI' } },
+    update: {},
+    create: {
+      subjectId: kpssGKTarih.id,
+      code: 'ILK_TURK_ISLAM_DEVLETLERI',
+      name: 'İlk Türk İslam Devletleri -Türklerin İslamiyeti Kabulü',
+      order: 3,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKTarih.id, code: 'ILK_TURK_ISLAM_KULTUR_UYGARLIK' } },
+    update: {},
+    create: {
+      subjectId: kpssGKTarih.id,
+      code: 'ILK_TURK_ISLAM_KULTUR_UYGARLIK',
+      name: 'İlk Türk İslam Devletlerinde Kültür ve Uygarlık',
+      order: 4,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKTarih.id, code: 'OSMANLI_SIYASI_TARIH' } },
+    update: {},
+    create: {
+      subjectId: kpssGKTarih.id,
+      code: 'OSMANLI_SIYASI_TARIH',
+      name: 'Osmanlı Devleti Siyaseti',
+      order: 5,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKTarih.id, code: 'OSMANLI_KULTUR_UYGARLIK' } },
+    update: {},
+    create: {
+      subjectId: kpssGKTarih.id,
+      code: 'OSMANLI_KULTUR_UYGARLIK',
+      name: 'Osmanlı Devleti Kültür ve Uygarlık',
+      order: 6,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKTarih.id, code: 'YIRMINCI_YUZYIL_OSMANLI' } },
+    update: {},
+    create: {
+      subjectId: kpssGKTarih.id,
+      code: 'YIRMINCI_YUZYIL_OSMANLI',
+      name: '20. Yüzyıl Osmanlı Devleti',
+      order: 7,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKTarih.id, code: 'KURTULUS_SAVASI' } },
+    update: {},
+    create: {
+      subjectId: kpssGKTarih.id,
+      code: 'KURTULUS_SAVASI',
+      name: 'Kurtuluş Savaşı',
+      order: 8,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKTarih.id, code: 'INKILAP_TARIHI' } },
+    update: {},
+    create: {
+      subjectId: kpssGKTarih.id,
+      code: 'INKILAP_TARIHI',
+      name: 'İnkılap Tarihi',
+      order: 9,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKTarih.id, code: 'ATATURK_DONEMI_POLITIKALAR' } },
+    update: {},
+    create: {
+      subjectId: kpssGKTarih.id,
+      code: 'ATATURK_DONEMI_POLITIKALAR',
+      name: 'Atatürk Dönemi İç ve Dış Politikalar',
+      order: 10,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKTarih.id, code: 'ATATURK_ILKE_INKILAPLARI' } },
+    update: {},
+    create: {
+      subjectId: kpssGKTarih.id,
+      code: 'ATATURK_ILKE_INKILAPLARI',
+      name: 'Atatürk’ün İlke ve İnkılapları',
+      order: 11,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKTarih.id, code: 'CAGDAS_TURK_DUNYA_TARIHI' } },
+    update: {},
+    create: {
+      subjectId: kpssGKTarih.id,
+      code: 'CAGDAS_TURK_DUNYA_TARIHI',
+      name: 'Çağdaş Türk ve Dünya Edebiyatı',
+      order: 12,
+    },
+  });
+  
 
   // KPSS Genel Kültür - Coğrafya Dersi Konuları
   await prisma.topic.upsert({
-    where: { subjectId_code: { subjectId: kpssGKCografya.id, code: 'TURKIYE_COGRAFYASI' } },
+    where: { subjectId_code: { subjectId: kpssGKCografya.id, code: 'TURKIYENIN_COGRAFI_KONUMU' } },
     update: {},
     create: {
       subjectId: kpssGKCografya.id,
-      code: 'TURKIYE_COGRAFYASI',
-      name: 'Türkiye Coğrafyası',
+      code: 'TURKIYENIN_COGRAFI_KONUMU',
+      name: 'Türkiye’nin Coğrafi Konumu',
       order: 1,
     },
   });
-
-  // KPSS Genel Kültür - Vatandaşlık Dersi Konuları
+  
   await prisma.topic.upsert({
-    where: { subjectId_code: { subjectId: kpssGKVatandaslik.id, code: 'ANAYASA' } },
+    where: { subjectId_code: { subjectId: kpssGKCografya.id, code: 'TURKIYENIN_IKLIMI_VE_BITKI_ORTUSU' } },
     update: {},
     create: {
-      subjectId: kpssGKVatandaslik.id,
-      code: 'ANAYASA',
-      name: 'Anayasa',
-      order: 1,
-    },
-  });
-
-  await prisma.topic.upsert({
-    where: { subjectId_code: { subjectId: kpssGKVatandaslik.id, code: 'GUNCEL_BILGILER' } },
-    update: {},
-    create: {
-      subjectId: kpssGKVatandaslik.id,
-      code: 'GUNCEL_BILGILER',
-      name: 'Güncel Bilgiler',
+      subjectId: kpssGKCografya.id,
+      code: 'TURKIYENIN_IKLIMI_VE_BITKI_ORTUSU',
+      name: 'Türkiye’nin İklimi ve Bitki Örtüsü',
       order: 2,
     },
   });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKCografya.id, code: 'TURKIYENIN_FIZIKI_OZELLIKLERI' } },
+    update: {},
+    create: {
+      subjectId: kpssGKCografya.id,
+      code: 'TURKIYENIN_FIZIKI_OZELLIKLERI',
+      name: 'Türkiye’nin Fiziki Özellikleri',
+      order: 3,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKCografya.id, code: 'TURKIYEDE_NUFUS_VE_YERLESME' } },
+    update: {},
+    create: {
+      subjectId: kpssGKCografya.id,
+      code: 'TURKIYEDE_NUFUS_VE_YERLESME',
+      name: 'Türkiye’de Nüfus ve Yerleşme',
+      order: 4,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKCografya.id, code: 'TARIM' } },
+    update: {},
+    create: {
+      subjectId: kpssGKCografya.id,
+      code: 'TARIM',
+      name: 'Tarım',
+      order: 5,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKCografya.id, code: 'HAYVANCILIK' } },
+    update: {},
+    create: {
+      subjectId: kpssGKCografya.id,
+      code: 'HAYVANCILIK',
+      name: 'Hayvancılık',
+      order: 6,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKCografya.id, code: 'MADENLER_VE_ENERJI_KAYNAKLARI' } },
+    update: {},
+    create: {
+      subjectId: kpssGKCografya.id,
+      code: 'MADENLER_VE_ENERJI_KAYNAKLARI',
+      name: 'Madenler ve Enerji Kaynakları',
+      order: 7,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKCografya.id, code: 'SANAYI_VE_ENDUSTRI' } },
+    update: {},
+    create: {
+      subjectId: kpssGKCografya.id,
+      code: 'SANAYI_VE_ENDUSTRI',
+      name: 'Sanayi ve Endüstri',
+      order: 8,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKCografya.id, code: 'ULASIM' } },
+    update: {},
+    create: {
+      subjectId: kpssGKCografya.id,
+      code: 'ULASIM',
+      name: 'Ulaşım',
+      order: 9,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKCografya.id, code: 'TICARET' } },
+    update: {},
+    create: {
+      subjectId: kpssGKCografya.id,
+      code: 'TICARET',
+      name: 'Ticaret',
+      order: 10,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKCografya.id, code: 'TURIZM' } },
+    update: {},
+    create: {
+      subjectId: kpssGKCografya.id,
+      code: 'TURIZM',
+      name: 'Turizm',
+      order: 11,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKCografya.id, code: 'BOLGELER_COGRAFYASI' } },
+    update: {},
+    create: {
+      subjectId: kpssGKCografya.id,
+      code: 'BOLGELER_COGRAFYASI',
+      name: 'Bölgeler Coğrafyası',
+      order: 12,
+    },
+  });
+  
+
+  // KPSS Genel Kültür - Vatandaşlık Dersi Konuları
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKVatandaslik.id, code: 'TEMEL_HUKUK_KAVRAMLARI' } },
+    update: {},
+    create: {
+      subjectId: kpssGKVatandaslik.id,
+      code: 'TEMEL_HUKUK_KAVRAMLARI',
+      name: 'Temel Hukuk Kavramları',
+      order: 1,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKVatandaslik.id, code: 'ANAYASAL_KAVRAMLAR' } },
+    update: {},
+    create: {
+      subjectId: kpssGKVatandaslik.id,
+      code: 'ANAYASAL_KAVRAMLAR',
+      name: 'Anayasal Kavramlar',
+      order: 2,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKVatandaslik.id, code: 'TURK_ANAYASA_TARIHI' } },
+    update: {},
+    create: {
+      subjectId: kpssGKVatandaslik.id,
+      code: 'TURK_ANAYASA_TARIHI',
+      name: 'Türk Anayasa Tarihi',
+      order: 3,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKVatandaslik.id, code: 'TEMEL_HAK_ODEVLER' } },
+    update: {},
+    create: {
+      subjectId: kpssGKVatandaslik.id,
+      code: 'TEMEL_HAK_ODEVLER',
+      name: 'Temel Hak Ödevler',
+      order: 4,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKVatandaslik.id, code: 'YASAMA' } },
+    update: {},
+    create: {
+      subjectId: kpssGKVatandaslik.id,
+      code: 'YASAMA',
+      name: 'Yasama',
+      order: 5,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKVatandaslik.id, code: 'YURUTME' } },
+    update: {},
+    create: {
+      subjectId: kpssGKVatandaslik.id,
+      code: 'YURUTME',
+      name: 'Yürütme',
+      order: 6,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKVatandaslik.id, code: 'YARGI' } },
+    update: {},
+    create: {
+      subjectId: kpssGKVatandaslik.id,
+      code: 'YARGI',
+      name: 'Yargı',
+      order: 7,
+    },
+  });
+  
+  await prisma.topic.upsert({
+    where: { subjectId_code: { subjectId: kpssGKVatandaslik.id, code: 'IDARE_HUKUKU' } },
+    update: {},
+    create: {
+      subjectId: kpssGKVatandaslik.id,
+      code: 'IDARE_HUKUKU',
+      name: 'İdare Hukuku',
+      order: 8,
+    },
+  });
+  
 
   // ALES Sınavı
   const ales = await prisma.exam.upsert({

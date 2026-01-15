@@ -29,6 +29,9 @@ interface DashboardStats {
   notStartedTopics: number;
   reviewedTopics: number;
   totalTopics: number;
+  totalSubjects: number;
+  totalStudyHours: number;
+  totalPomodoroSessions: number;
   activeExam: {
     id: string;
     name: string;
@@ -46,31 +49,54 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchStats() {
-      try {
-        const response = await fetch('/api/dashboard/stats');
-        if (response.ok) {
-          const data = await response.json();
-          setStats(data.data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch stats:', error);
-      } finally {
-        setIsLoading(false);
+  const fetchStats = async () => {
+    try {
+      const response = await fetch('/api/dashboard/stats');
+      if (response.ok) {
+        const data = await response.json();
+        setStats(data.data);
       }
+    } catch (error) {
+      console.error('Failed to fetch stats:', error);
+    } finally {
+      setIsLoading(false);
     }
+  };
 
+  useEffect(() => {
     fetchStats();
   }, []);
 
-  const totalTopics = (stats?.completedTopics || 0) + (stats?.inProgressTopics || 0) + (stats?.notStartedTopics || 0);
+  // Sayfaya odaklanıldığında veya görünür olduğunda verileri yenile
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchStats();
+    };
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchStats();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  // API'den gelen totalTopics kullanılıyor
+  // Eğer totalTopics yoksa, mevcut progress kayıtlarından hesaplanıyor
+  const totalTopics = stats?.totalTopics || (stats?.completedTopics || 0) + (stats?.inProgressTopics || 0) + (stats?.notStartedTopics || 0);
   const completionRate = totalTopics > 0 
     ? Math.round(((stats?.completedTopics || 0) / totalTopics) * 100)
     : 0;
 
-  // Mock study hours - gerçek uygulamada database'den gelecek
-  const studyHours = 0; // TODO: Database'den çalışma saatleri hesaplanacak
+  // Çalışma saatleri artık backend'den geliyor
+  const studyHours = stats?.totalStudyHours || 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -140,6 +166,10 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
                 </span>
               </div>
               <div className="space-y-3 mb-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-blue-100 text-sm">Toplam Ders</span>
+                  <span className="text-2xl font-bold">{stats?.totalSubjects || 0}</span>
+                </div>
                 <div className="flex justify-between items-center">
                   <span className="text-blue-100 text-sm">Toplam Konu</span>
                   <span className="text-2xl font-bold">{stats?.totalTopics || 0}</span>
