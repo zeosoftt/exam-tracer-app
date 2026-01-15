@@ -1,0 +1,227 @@
+// Prisma Schema - Exam Tracker Platform
+// Designed for 10M+ users with proper indexing and relationships
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  INSTITUTION_ADMIN
+  INDIVIDUAL
+  VIEWER
+}
+
+enum ExamStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum ProgressStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  REVIEWED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String
+  firstName     String
+  lastName      String
+  role          UserRole  @default(INDIVIDUAL)
+  institutionId String?
+  isActive      Boolean   @default(true)
+  emailVerified Boolean   @default(false)
+  lastLoginAt   DateTime?
+  // Onboarding data
+  targetScore   Int?
+  dailyStudyHours Int?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime? // Soft delete
+
+  // Relations
+  institution   Institution? @relation(fields: [institutionId], references: [id])
+  userProgress  UserProgress[]
+  sessions      Session[]
+  examAssignments ExamAssignment[]
+
+  @@index([email])
+  @@index([institutionId])
+  @@index([role])
+  @@index([isActive])
+  @@map("users")
+}
+
+model Institution {
+  id          String   @id @default(cuid())
+  name        String
+  code        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime? // Soft delete
+
+  // Relations
+  users       User[]
+  examAssignments ExamAssignment[]
+
+  @@index([code])
+  @@index([isActive])
+  @@map("institutions")
+}
+
+model Exam {
+  id          String     @id @default(cuid())
+  name        String
+  code        String     @unique
+  description String?
+  status      ExamStatus @default(ACTIVE)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  deletedAt   DateTime?  // Soft delete
+
+  // Relations
+  sections        Section[]
+  examAssignments  ExamAssignment[]
+
+  @@index([code])
+  @@index([status])
+  @@index([startDate, endDate])
+  @@map("exams")
+}
+
+model Section {
+  id          String   @id @default(cuid())
+  examId      String
+  name        String
+  code        String
+  description String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime? // Soft delete
+
+  // Relations
+  exam        Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  subjects    Subject[]
+
+  @@unique([examId, code])
+  @@index([examId])
+  @@index([order])
+  @@map("sections")
+}
+
+model Subject {
+  id          String   @id @default(cuid())
+  sectionId   String
+  name        String
+  code        String
+  description String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime? // Soft delete
+
+  // Relations
+  section     Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  topics      Topic[]
+
+  @@unique([sectionId, code])
+  @@index([sectionId])
+  @@index([order])
+  @@map("subjects")
+}
+
+model Topic {
+  id          String   @id @default(cuid())
+  subjectId   String
+  name        String
+  code        String
+  description String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime? // Soft delete
+
+  // Relations
+  subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  userProgress UserProgress[]
+
+  @@unique([subjectId, code])
+  @@index([subjectId])
+  @@index([order])
+  @@map("topics")
+}
+
+model ExamAssignment {
+  id            String   @id @default(cuid())
+  examId        String
+  institutionId String?
+  userId        String?
+  assignedAt    DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime? // Soft delete
+
+  // Relations
+  exam          Exam         @relation(fields: [examId], references: [id], onDelete: Cascade)
+  institution   Institution? @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  user          User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Either institutionId or userId must be set, but not both
+  @@index([examId])
+  @@index([institutionId])
+  @@index([userId])
+  @@map("exam_assignments")
+}
+
+model UserProgress {
+  id          String         @id @default(cuid())
+  userId      String
+  topicId     String
+  status      ProgressStatus @default(NOT_STARTED)
+  completedAt DateTime?
+  notes       String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  deletedAt   DateTime?      // Soft delete
+
+  // Relations
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic       Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, topicId])
+  @@index([userId])
+  @@index([topicId])
+  @@index([status])
+  @@map("user_progress")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+  @@map("sessions")
+}
