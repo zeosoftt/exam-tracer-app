@@ -29,6 +29,7 @@ export default function OnboardingPage() {
   const [targetScore, setTargetScore] = useState<number | null>(null);
   const [dailyStudyHours, setDailyStudyHours] = useState<number | null>(null);
   const [availableExams, setAvailableExams] = useState<ExamType[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_isLoadingExams, setIsLoadingExams] = useState(true);
 
   // Fetch available exams from API
