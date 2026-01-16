@@ -11,9 +11,9 @@ import { asyncHandler, handleError } from '@/lib/errors/errorHandler';
 import { validate } from '@/lib/validation/validate';
 import { createExamSchema, paginationSchema } from '@/lib/validation/schemas';
 import { prisma } from '@/lib/db/prisma';
-import { canCreateExam, canViewExam, UserPermissions } from '@/lib/auth/permissions';
-import { logApi, logError } from '@/lib/logger';
-import { HTTP_STATUS, ERROR_MESSAGES } from '@/config/constants';
+import { canCreateExam, UserPermissions } from '@/lib/auth/permissions';
+import { logApi } from '@/lib/logger';
+import { HTTP_STATUS } from '@/config/constants';
 import { ForbiddenError, UnauthorizedError, ConflictError } from '@/lib/errors/AppError';
 import { getPaginationParams, getSkip, createPaginatedResponse } from '@/lib/utils/pagination';
 
@@ -25,7 +25,7 @@ async function getExamsHandler(req: NextRequest): Promise<NextResponse> {
     }
 
     const userPermissions: UserPermissions = {
-      role: session.user.role as any,
+      role: session.user.role as 'ADMIN' | 'INSTITUTION_ADMIN' | 'INDIVIDUAL' | 'VIEWER',
       institutionId: session.user.institutionId,
       userId: session.user.id,
     };
@@ -40,7 +40,15 @@ async function getExamsHandler(req: NextRequest): Promise<NextResponse> {
     const skip = getSkip(page, pageSize);
 
     // Build where clause based on user role
-    const where: any = {
+    const where: {
+      deletedAt: null;
+      examAssignments?: {
+        some: {
+          OR: Array<{ userId?: string; institutionId?: string | null }>;
+          deletedAt: null;
+        };
+      };
+    } = {
       deletedAt: null,
     };
 
@@ -96,7 +104,7 @@ async function createExamHandler(req: NextRequest): Promise<NextResponse> {
     }
 
     const userPermissions: UserPermissions = {
-      role: session.user.role as any,
+      role: session.user.role as 'ADMIN' | 'INSTITUTION_ADMIN' | 'INDIVIDUAL' | 'VIEWER',
       institutionId: session.user.institutionId,
       userId: session.user.id,
     };

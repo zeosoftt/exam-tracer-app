@@ -28,7 +28,7 @@ async function getExamHandler(
     }
 
     const userPermissions: UserPermissions = {
-      role: session.user.role as any,
+      role: session.user.role as 'ADMIN' | 'INSTITUTION_ADMIN' | 'INDIVIDUAL' | 'VIEWER',
       institutionId: session.user.institutionId,
       userId: session.user.id,
     };
@@ -89,7 +89,7 @@ async function updateExamHandler(
     }
 
     const userPermissions: UserPermissions = {
-      role: session.user.role as any,
+      role: session.user.role as 'ADMIN' | 'INSTITUTION_ADMIN' | 'INDIVIDUAL' | 'VIEWER',
       institutionId: session.user.institutionId,
       userId: session.user.id,
     };
@@ -166,7 +166,7 @@ async function deleteExamHandler(
     }
 
     const userPermissions: UserPermissions = {
-      role: session.user.role as any,
+      role: session.user.role as 'ADMIN' | 'INSTITUTION_ADMIN' | 'INDIVIDUAL' | 'VIEWER',
       institutionId: session.user.institutionId,
       userId: session.user.id,
     };
