@@ -204,8 +204,9 @@ export function CreateExamForm({ user: _user }: CreateExamFormProps) {
             <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
               <Link
                 href="/dashboard/exams"
-                className="px-6 py-3 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
-                disabled={isLoading}
+                className={`px-6 py-3 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors ${
+                  isLoading ? 'pointer-events-none opacity-50' : ''
+                }`}
               >
                 İptal
               </Link>
