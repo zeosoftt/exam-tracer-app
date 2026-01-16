@@ -33,13 +33,13 @@ async function getProgressHandler(req: NextRequest): Promise<NextResponse> {
     const skip = getSkip(page, pageSize);
 
     const topicId = searchParams.get('topicId');
-    const status = searchParams.get('status');
+    const statusParam = searchParams.get('status');
 
     const where: {
       userId: string;
       deletedAt: null;
       topicId?: string;
-      status?: string;
+      status?: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'REVIEWED';
     } = {
       userId: session.user.id,
       deletedAt: null,
@@ -49,8 +49,8 @@ async function getProgressHandler(req: NextRequest): Promise<NextResponse> {
       where.topicId = topicId;
     }
 
-    if (status) {
-      where.status = status;
+    if (statusParam && ['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED', 'REVIEWED'].includes(statusParam)) {
+      where.status = statusParam as 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'REVIEWED';
     }
 
     const [progress, total] = await Promise.all([
