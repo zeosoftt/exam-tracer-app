@@ -35,7 +35,12 @@ async function getProgressHandler(req: NextRequest): Promise<NextResponse> {
     const topicId = searchParams.get('topicId');
     const status = searchParams.get('status');
 
-    const where: any = {
+    const where: {
+      userId: string;
+      deletedAt: null;
+      topicId?: string;
+      status?: string;
+    } = {
       userId: session.user.id,
       deletedAt: null,
     };

@@ -11,7 +11,7 @@ import { asyncHandler, handleError } from '@/lib/errors/errorHandler';
 import { prisma } from '@/lib/db/prisma';
 import { logApi } from '@/lib/logger';
 import { HTTP_STATUS } from '@/config/constants';
-import { UnauthorizedError, BadRequestError } from '@/lib/errors/AppError';
+import { UnauthorizedError } from '@/lib/errors/AppError';
 import { z } from 'zod';
 
 const startPomodoroSchema = z.object({

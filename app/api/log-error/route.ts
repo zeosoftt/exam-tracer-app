@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { asyncHandler, handleError } from '@/lib/errors/errorHandler';
+import { asyncHandler } from '@/lib/errors/errorHandler';
 import { logError } from '@/lib/logger';
 import { HTTP_STATUS } from '@/config/constants';
 

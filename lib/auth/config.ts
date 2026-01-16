@@ -83,16 +83,19 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as { role: string }).role;
-        token.institutionId = (user as { institutionId?: string | null }).institutionId;
+        const userWithRole = user as { role: string; institutionId?: string | null };
+        token.role = userWithRole.role;
+        token.institutionId = userWithRole.institutionId;
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as string;
-        session.user.institutionId = token.institutionId as string | null | undefined;
+      if (session.user && token.id && token.role) {
+        session.user.id = String(token.id);
+        session.user.role = String(token.role);
+        if (token.institutionId !== undefined) {
+          session.user.institutionId = token.institutionId ? String(token.institutionId) : null;
+        }
       }
       return session;
     },
