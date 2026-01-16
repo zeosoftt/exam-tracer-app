@@ -5,7 +5,6 @@
 
 'use client';
 
-import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { ArrowLeft, User, Bell, Shield, Palette, Save } from 'lucide-react';

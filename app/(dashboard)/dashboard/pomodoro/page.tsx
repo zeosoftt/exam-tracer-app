@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { ArrowLeft, Timer, Play, Pause, RotateCcw, Clock, Calendar, TrendingUp, History } from 'lucide-react';
@@ -29,7 +29,6 @@ interface PomodoroStats {
 }
 
 export default function PomodoroPage() {
-  const { data: session } = useSession();
   const [minutes, setMinutes] = useState(25);
   const [seconds, setSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
@@ -41,7 +40,7 @@ export default function PomodoroPage() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch history and stats
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
     try {
       const response = await fetch('/api/pomodoro?limit=10&page=1');
       if (response.ok) {
@@ -54,11 +53,40 @@ export default function PomodoroPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchHistory();
-  }, []);
+  }, [fetchHistory]);
+
+  const handleTimerComplete = useCallback(async () => {
+    setIsActive(false);
+    
+    // Complete the session in backend
+    if (currentSessionId) {
+      try {
+        await fetch(`/api/pomodoro/${currentSessionId}`, {
+          method: 'PATCH',
+        });
+      } catch (error) {
+        console.error('Failed to complete pomodoro session:', error);
+      }
+      setCurrentSessionId(null);
+    }
+
+    // Refresh history
+    await fetchHistory();
+
+    if (!isBreak) {
+      setIsBreak(true);
+      setMinutes(5); // 5 dakika mola
+      setSeconds(0);
+    } else {
+      setIsBreak(false);
+      setMinutes(25); // 25 dakika çalışma
+      setSeconds(0);
+    }
+  }, [currentSessionId, isBreak, fetchHistory]);
 
   // Timer logic
   useEffect(() => {
@@ -88,36 +116,7 @@ export default function PomodoroPage() {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isActive, minutes, seconds]);
-
-  const handleTimerComplete = async () => {
-    setIsActive(false);
-    
-    // Complete the session in backend
-    if (currentSessionId) {
-      try {
-        await fetch(`/api/pomodoro/${currentSessionId}`, {
-          method: 'PATCH',
-        });
-      } catch (error) {
-        console.error('Failed to complete pomodoro session:', error);
-      }
-      setCurrentSessionId(null);
-    }
-
-    // Refresh history
-    await fetchHistory();
-
-    if (!isBreak) {
-      setIsBreak(true);
-      setMinutes(5); // 5 dakika mola
-      setSeconds(0);
-    } else {
-      setIsBreak(false);
-      setMinutes(25); // 25 dakika çalışma
-      setSeconds(0);
-    }
-  };
+  }, [isActive, minutes, seconds, handleTimerComplete]);
 
   const handleStartPause = async () => {
     if (!isActive && !currentSessionId) {

@@ -12,7 +12,7 @@ import { logApi } from '@/lib/logger';
 import { HTTP_STATUS } from '@/config/constants';
 import { UnauthorizedError } from '@/lib/errors/AppError';
 
-async function getStatsHandler(req: NextRequest): Promise<NextResponse> {
+async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
@@ -33,7 +33,15 @@ async function getStatsHandler(req: NextRequest): Promise<NextResponse> {
     });
 
     // Get exams count
-    let examWhere: any = { deletedAt: null };
+    const examWhere: {
+      deletedAt: null;
+      examAssignments?: {
+        some: {
+          OR: Array<{ userId?: string; institutionId?: string | null }>;
+          deletedAt: null;
+        };
+      };
+    } = { deletedAt: null };
     if (userRole !== 'ADMIN') {
       examWhere.examAssignments = {
         some: {

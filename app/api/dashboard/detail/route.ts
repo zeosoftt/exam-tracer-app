@@ -13,7 +13,7 @@ import { logApi } from '@/lib/logger';
 import { HTTP_STATUS } from '@/config/constants';
 import { UnauthorizedError } from '@/lib/errors/AppError';
 
-async function getDetailHandler(req: NextRequest): Promise<NextResponse> {
+async function getDetailHandler(_req: NextRequest): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
