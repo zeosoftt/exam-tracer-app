@@ -75,9 +75,9 @@ export function handleError(error: unknown): NextResponse<ErrorResponse> {
 }
 
 export function asyncHandler(
-  fn: (req: NextRequest | Request, ...args: unknown[]) => Promise<NextResponse>
+  fn: (req: NextRequest, ...args: unknown[]) => Promise<NextResponse>
 ) {
-  return async (req: NextRequest | Request, ...args: unknown[]): Promise<NextResponse> => {
+  return async (req: NextRequest, ...args: unknown[]): Promise<NextResponse> => {
     try {
       return await fn(req, ...args);
     } catch (error) {
