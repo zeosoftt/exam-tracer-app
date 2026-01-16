@@ -11,19 +11,12 @@ import Link from 'next/link';
 import {
   BookOpen,
   CheckCircle,
-  Clock,
-  TrendingUp,
   LogOut,
   User,
   ArrowLeft,
-  BarChart3,
-  Target,
   FileText,
-  Award,
-  Activity,
   Circle,
   PlayCircle,
-  RotateCcw,
   ChevronDown,
 } from 'lucide-react';
 

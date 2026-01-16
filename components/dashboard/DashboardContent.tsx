@@ -142,8 +142,8 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
         {/* 3 Kart */}
         {isLoading ? (
           <div className="grid gap-6 md:grid-cols-3 mb-10">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100 animate-pulse">
+            {[...Array(3)].map((_, _i) => (
+              <div key={_i} className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100 animate-pulse">
                 <div className="h-4 w-24 bg-gray-200 rounded mb-4"></div>
                 <div className="h-10 w-16 bg-gray-200 rounded mb-2"></div>
                 <div className="h-3 w-32 bg-gray-200 rounded"></div>
