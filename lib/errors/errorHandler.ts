@@ -74,10 +74,10 @@ export function handleError(error: unknown): NextResponse<ErrorResponse> {
   );
 }
 
-export function asyncHandler(
-  fn: (req: NextRequest, ...args: unknown[]) => Promise<NextResponse>
+export function asyncHandler<T extends unknown[] = unknown[]>(
+  fn: (req: NextRequest, ...args: T) => Promise<NextResponse>
 ) {
-  return async (req: NextRequest, ...args: unknown[]): Promise<NextResponse> => {
+  return async (req: NextRequest, ...args: T): Promise<NextResponse> => {
     try {
       return await fn(req, ...args);
     } catch (error) {
