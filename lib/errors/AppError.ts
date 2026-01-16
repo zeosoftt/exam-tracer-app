@@ -40,6 +40,12 @@ export class UnauthorizedError extends AppError {
   }
 }
 
+export class BadRequestError extends AppError {
+  constructor(message: string = 'Bad request') {
+    super(message, HTTP_STATUS.BAD_REQUEST, true, 'BAD_REQUEST');
+  }
+}
+
 export class ForbiddenError extends AppError {
   constructor(message: string = ERROR_MESSAGES.FORBIDDEN) {
     super(message, HTTP_STATUS.FORBIDDEN, true, 'FORBIDDEN');
