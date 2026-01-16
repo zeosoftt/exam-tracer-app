@@ -4,7 +4,7 @@
  */
 
 import Link from 'next/link';
-import { BookOpen, Users, TrendingUp, Shield, ArrowRight, CheckCircle, Zap, Target, BarChart3 } from 'lucide-react';
+import { BookOpen, Users, ArrowRight, CheckCircle, Zap, Target, BarChart3 } from 'lucide-react';
 
 export default function LandingPage() {
   return (
@@ -185,7 +185,7 @@ export default function LandingPage() {
                   'Güvenli veri saklama',
                   'Mobil uyumlu arayüz',
                   'Detaylı raporlama araçları',
-                ].map((feature, index) => (
+                ].map((feature) => (
                   <li key={feature} className="flex items-start gap-4">
                     <div className="flex-shrink-0 mt-1">
                       <div className="flex items-center justify-center w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
@@ -237,7 +237,7 @@ export default function LandingPage() {
               Birlikte Çalıştığımız Kurumlar
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Türkiye'nin önde gelen kurumları sınav takiplerini Exam Tracker ile yönetiyor
+              Türkiye&apos;nin önde gelen kurumları sınav takiplerini Exam Tracker ile yönetiyor
             </p>
           </div>
           
@@ -271,7 +271,7 @@ export default function LandingPage() {
 
           <div className="mt-12 text-center">
             <p className="text-gray-500 text-sm">
-              +100'den fazla kamu kurumu ve özel eğitim kurumu Exam Tracker kullanıyor
+              +100&apos;den fazla kamu kurumu ve özel eğitim kurumu Exam Tracker kullanıyor
             </p>
           </div>
         </div>
