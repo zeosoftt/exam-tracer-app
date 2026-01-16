@@ -146,7 +146,7 @@ async function getDetailHandler(_req: NextRequest): Promise<NextResponse> {
           // Count by status
           // REVIEWED durumunu COMPLETED olarak say
           const normalizedStatus = status === 'REVIEWED' ? 'COMPLETED' : status;
-          const finalStatus = (normalizedStatus === 'COMPLETED' || normalizedStatus === 'REVIEWED') 
+          const finalStatus = normalizedStatus === 'COMPLETED' 
             ? 'COMPLETED' 
             : normalizedStatus === 'IN_PROGRESS' 
             ? 'IN_PROGRESS' 
