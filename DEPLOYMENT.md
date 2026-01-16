@@ -1,5 +1,7 @@
 # Deployment Guide
 
+> **Yeni ve detaylı production deployment rehberi için**: [PRODUCTION_DEPLOYMENT.md](./PRODUCTION_DEPLOYMENT.md) dosyasına bakın.
+
 ## Production Deployment
 
 ### Prerequisites

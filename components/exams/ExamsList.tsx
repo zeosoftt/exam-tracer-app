@@ -6,7 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { BookOpen, Plus, Calendar, Users } from 'lucide-react';
+import { BookOpen, Plus, Calendar } from 'lucide-react';
 
 interface Exam {
   id: string;

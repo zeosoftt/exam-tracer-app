@@ -6,9 +6,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession, signOut } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import {
   BookOpen,
   CheckCircle,
@@ -44,8 +43,6 @@ interface DashboardStats {
 }
 
 export function DashboardContent({ user }: { user: { id: string; name: string; email: string; role: string } }) {
-  const { data: session } = useSession();
-  const router = useRouter();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 

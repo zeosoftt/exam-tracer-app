@@ -21,7 +21,7 @@ interface CreateExamFormProps {
   };
 }
 
-export function CreateExamForm({ user }: CreateExamFormProps) {
+export function CreateExamForm({ user: _user }: CreateExamFormProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);

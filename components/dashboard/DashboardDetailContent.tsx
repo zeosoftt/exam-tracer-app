@@ -6,9 +6,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession, signOut } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import {
   BookOpen,
   CheckCircle,
@@ -19,7 +18,6 @@ import {
   ArrowLeft,
   BarChart3,
   Target,
-  Calendar,
   FileText,
   Award,
   Activity,
@@ -79,8 +77,6 @@ export function DashboardDetailContent({
 }: {
   user: { id: string; name: string; email: string; role: string };
 }) {
-  const { data: session } = useSession();
-  const router = useRouter();
   const [detailData, setDetailData] = useState<DetailData | null>(null);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
