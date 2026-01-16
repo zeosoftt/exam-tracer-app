@@ -64,7 +64,11 @@ async function getProgressHandler(req: NextRequest): Promise<NextResponse> {
             include: {
               subject: {
                 include: {
-                  exam: true,
+                  section: {
+                    include: {
+                      exam: true,
+                    },
+                  },
                 },
               },
             },
