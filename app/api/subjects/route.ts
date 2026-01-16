@@ -44,7 +44,10 @@ async function getSubjectsHandler(req: NextRequest): Promise<NextResponse> {
 
     const subjects = await prisma.subject.findMany({
       where: {
-        examId,
+        section: {
+          examId,
+          deletedAt: null,
+        },
         deletedAt: null,
       },
       orderBy: { order: 'asc' },
@@ -87,22 +90,25 @@ async function createSubjectHandler(req: NextRequest): Promise<NextResponse> {
     const body = await req.json();
     const validatedData = validate(createSubjectSchema, body);
 
-    // Verify exam exists
-    const exam = await prisma.exam.findFirst({
+    // Verify section exists
+    const section = await prisma.section.findFirst({
       where: {
-        id: validatedData.examId,
+        id: validatedData.sectionId,
         deletedAt: null,
+      },
+      include: {
+        exam: true,
       },
     });
 
-    if (!exam) {
-      throw new NotFoundError('Exam not found');
+    if (!section) {
+      throw new NotFoundError('Section not found');
     }
 
-    // Check if code already exists for this exam
+    // Check if code already exists for this section
     const existingSubject = await prisma.subject.findFirst({
       where: {
-        examId: validatedData.examId,
+        sectionId: validatedData.sectionId,
         code: validatedData.code,
         deletedAt: null,
       },
