@@ -39,13 +39,19 @@ async function getExamHandler(
         deletedAt: null,
       },
       include: {
-        subjects: {
+        sections: {
           where: { deletedAt: null },
           orderBy: { order: 'asc' },
           include: {
-            topics: {
+            subjects: {
               where: { deletedAt: null },
               orderBy: { order: 'asc' },
+              include: {
+                topics: {
+                  where: { deletedAt: null },
+                  orderBy: { order: 'asc' },
+                },
+              },
             },
           },
         },
