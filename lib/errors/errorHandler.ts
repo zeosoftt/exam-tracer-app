@@ -3,7 +3,7 @@
  * Never expose stack traces to clients
  */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { AppError } from './AppError';
 import { HTTP_STATUS, ERROR_MESSAGES } from '@/config/constants';
 import { logError } from '@/lib/logger';
@@ -75,9 +75,9 @@ export function handleError(error: unknown): NextResponse<ErrorResponse> {
 }
 
 export function asyncHandler(
-  fn: (req: Request, ...args: unknown[]) => Promise<NextResponse>
+  fn: (req: NextRequest | Request, ...args: unknown[]) => Promise<NextResponse>
 ) {
-  return async (req: Request, ...args: unknown[]): Promise<NextResponse> => {
+  return async (req: NextRequest | Request, ...args: unknown[]): Promise<NextResponse> => {
     try {
       return await fn(req, ...args);
     } catch (error) {
