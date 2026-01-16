@@ -6,7 +6,6 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { ArrowLeft, Timer, Play, Pause, RotateCcw, Clock, Calendar, TrendingUp, History } from 'lucide-react';
 

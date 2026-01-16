@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { BookOpen, User, Building2, ArrowRight, ArrowLeft, CheckCircle, Target, Clock } from 'lucide-react';
+import { User, Building2, ArrowRight, ArrowLeft, CheckCircle, Target, Clock } from 'lucide-react';
 import Link from 'next/link';
 
 type UserType = 'individual' | 'institution' | null;
@@ -28,9 +28,8 @@ export default function OnboardingPage() {
   const [selectedExam, setSelectedExam] = useState<ExamType>(null);
   const [targetScore, setTargetScore] = useState<number | null>(null);
   const [dailyStudyHours, setDailyStudyHours] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [availableExams, setAvailableExams] = useState<ExamType[]>([]);
-  const [isLoadingExams, setIsLoadingExams] = useState(true);
+  const [_isLoadingExams, setIsLoadingExams] = useState(true);
 
   // Fetch available exams from API
   useEffect(() => {
@@ -450,7 +449,7 @@ export default function OnboardingPage() {
           </button>
           <button
             onClick={handleComplete}
-            disabled={isLoading}
+            disabled={false}
             className="inline-flex items-center px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg disabled:opacity-50"
           >
             Kayıt Ol

@@ -137,7 +137,7 @@ export default function RegisterPage() {
               Hesap Oluştur
             </h1>
             <p className="text-gray-600">
-              Exam Tracker'a katılın ve sınav hazırlığınıza başlayın
+              Exam Tracker&apos;a katılın ve sınav hazırlığınıza başlayın
             </p>
             {onboardingData?.examName && (
               <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl">
