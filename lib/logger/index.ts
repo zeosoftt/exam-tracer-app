@@ -2,6 +2,7 @@
  * Structured Logging with Winston
  * Server-side only - Never import in client components
  * No console.log in production
+ * On Vercel/serverless: console only (no file system writes)
  */
 
 import winston from 'winston';
@@ -10,12 +11,7 @@ import fs from 'fs';
 
 const logLevel = process.env.LOG_LEVEL || 'info';
 const isDevelopment = process.env.NODE_ENV === 'development';
-
-// Ensure logs directory exists (server-side only)
-const logsDir = path.join(process.cwd(), 'logs');
-if (!fs.existsSync(logsDir)) {
-  fs.mkdirSync(logsDir, { recursive: true });
-}
+const isServerless = typeof process.env.VERCEL !== 'undefined' || typeof process.env.AWS_LAMBDA_FUNCTION_NAME !== 'undefined';
 
 // Define log format
 const logFormat = winston.format.combine(
@@ -38,41 +34,44 @@ const consoleFormat = winston.format.combine(
   })
 );
 
-// Create logger instance
+// Transports: always console; add file transports only when not serverless and logs dir is writable
+const transports: winston.transport[] = [
+  new winston.transports.Console({
+    format: isDevelopment ? consoleFormat : logFormat,
+  }),
+];
+
+if (!isServerless) {
+  try {
+    const logsDir = path.join(process.cwd(), 'logs');
+    if (!fs.existsSync(logsDir)) {
+      fs.mkdirSync(logsDir, { recursive: true });
+    }
+    transports.push(
+      new winston.transports.File({
+        filename: path.join(logsDir, 'error.log'),
+        level: 'error',
+        maxsize: 5242880,
+        maxFiles: 5,
+      }),
+      new winston.transports.File({
+        filename: path.join(logsDir, 'combined.log'),
+        maxsize: 5242880,
+        maxFiles: 5,
+      })
+    );
+  } catch {
+    // Read-only FS or permission error: console only
+  }
+}
+
 const logger = winston.createLogger({
   level: logLevel,
   format: logFormat,
   defaultMeta: { service: 'exam-tracker' },
-  transports: [
-    // Write all logs to console in development
-    new winston.transports.Console({
-      format: isDevelopment ? consoleFormat : logFormat,
-    }),
-    // Write all logs with level 'error' and below to error.log
-    new winston.transports.File({
-      filename: path.join(process.cwd(), 'logs', 'error.log'),
-      level: 'error',
-      maxsize: 5242880, // 5MB
-      maxFiles: 5,
-    }),
-    // Write all logs to combined.log
-    new winston.transports.File({
-      filename: path.join(process.cwd(), 'logs', 'combined.log'),
-      maxsize: 5242880, // 5MB
-      maxFiles: 5,
-    }),
-  ],
-  // Handle exceptions and rejections
-  exceptionHandlers: [
-    new winston.transports.File({
-      filename: path.join(process.cwd(), 'logs', 'exceptions.log'),
-    }),
-  ],
-  rejectionHandlers: [
-    new winston.transports.File({
-      filename: path.join(process.cwd(), 'logs', 'rejections.log'),
-    }),
-  ],
+  transports,
+  exceptionHandlers: isServerless ? [new winston.transports.Console()] : undefined,
+  rejectionHandlers: isServerless ? [new winston.transports.Console()] : undefined,
 });
 
 // Logging helper functions
