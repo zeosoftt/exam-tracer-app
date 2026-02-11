@@ -8,6 +8,15 @@ import { AppError } from './AppError';
 import { HTTP_STATUS, ERROR_MESSAGES } from '@/config/constants';
 import { logError } from '@/lib/logger';
 
+/** Prisma connection error codes → return 503 (service unavailable) */
+const PRISMA_CONNECTION_CODES = new Set([
+  'P1001', // Can't reach database server
+  'P1000', // Authentication failed
+  'P1002', // Connection timeout
+  'P1017', // Server closed connection
+  'P1034', // Query engine process exited
+]);
+
 export interface ErrorResponse {
   success: false;
   error: {
@@ -19,8 +28,19 @@ export interface ErrorResponse {
 }
 
 export function handleError(error: unknown): NextResponse<ErrorResponse> {
-  // Log the error
-  logError('Error occurred', error);
+  // Log the error with more details
+  if (error instanceof Error) {
+    logError('Error occurred', error, {
+      name: error.name,
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+    });
+  } else {
+    logError('Unknown error occurred', new Error(String(error)), {
+      errorType: typeof error,
+      errorValue: String(error),
+    });
+  }
 
   // Handle known AppError instances
   if (error instanceof AppError) {
@@ -35,6 +55,24 @@ export function handleError(error: unknown): NextResponse<ErrorResponse> {
       },
       { status: error.statusCode }
     );
+  }
+
+  // Handle Prisma database connection errors → 503 (do not expose details)
+  if (error && typeof error === 'object' && 'code' in error && typeof (error as { code: string }).code === 'string') {
+    const code = (error as { code: string }).code;
+    if (PRISMA_CONNECTION_CODES.has(code)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            message: ERROR_MESSAGES.DATABASE_UNAVAILABLE,
+            code: 'DATABASE_UNAVAILABLE',
+          },
+          timestamp: new Date().toISOString(),
+        },
+        { status: HTTP_STATUS.SERVICE_UNAVAILABLE }
+      );
+    }
   }
 
   // Handle validation errors (Zod)

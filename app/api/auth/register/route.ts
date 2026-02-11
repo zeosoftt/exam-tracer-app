@@ -18,17 +18,30 @@ async function registerHandler(req: NextRequest): Promise<NextResponse> {
     const body = await req.json();
     const validatedData = validate(registerSchema, body);
 
-    // Check if email already exists
-    const existingUser = await prisma.user.findFirst({
+    // Check if email already exists (including soft-deleted users)
+    // Email must be unique - even if user is soft-deleted, same email cannot be reused
+    // Use findUnique since email is unique in schema
+    const existingUser = await prisma.user.findUnique({
       where: {
         email: validatedData.email.toLowerCase(),
-        deletedAt: null,
       },
     });
 
+    // If user exists (even if soft-deleted), prevent registration
+    // This ensures email uniqueness and prevents account takeover
     if (existingUser) {
-      throw new ConflictError(ERROR_MESSAGES.EMAIL_EXISTS);
+      if (existingUser.deletedAt === null) {
+        // Active user exists
+        throw new ConflictError(ERROR_MESSAGES.EMAIL_EXISTS);
+      } else {
+        // Soft-deleted user exists - still prevent registration for security
+        logAuth('Registration blocked: Email exists (soft-deleted)', existingUser.id, { 
+          email: validatedData.email.toLowerCase() 
+        });
+        throw new ConflictError('Bu e-posta adresi daha önce kullanılmış. Lütfen farklı bir e-posta adresi deneyin.');
+      }
     }
+
 
     // Hash password
     const passwordHash = await hashPassword(validatedData.password);
@@ -52,28 +65,42 @@ async function registerHandler(req: NextRequest): Promise<NextResponse> {
     }
 
     // Create user with onboarding data
-    const user = await prisma.user.create({
-      data: {
-        email: validatedData.email.toLowerCase(),
-        passwordHash,
-        firstName: validatedData.firstName,
-        lastName: validatedData.lastName,
-        role: 'INDIVIDUAL',
-        institutionId: validatedData.institutionId,
-        targetScore: validatedData.targetScore,
-        dailyStudyHours: validatedData.dailyStudyHours,
-      },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-        targetScore: true,
-        dailyStudyHours: true,
-        createdAt: true,
-      },
-    });
+    // Wrap in try-catch to handle Prisma unique constraint errors
+    let user;
+    try {
+      user = await prisma.user.create({
+        data: {
+          email: validatedData.email.toLowerCase(),
+          passwordHash,
+          firstName: validatedData.firstName,
+          lastName: validatedData.lastName,
+          role: 'INDIVIDUAL',
+          institutionId: validatedData.institutionId,
+          targetScore: validatedData.targetScore,
+          dailyStudyHours: validatedData.dailyStudyHours,
+        },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          targetScore: true,
+          dailyStudyHours: true,
+          createdAt: true,
+        },
+      });
+    } catch (createError: any) {
+      // Handle Prisma unique constraint violation (P2002)
+      if (createError?.code === 'P2002' && createError?.meta?.target?.includes('email')) {
+        logAuth('Registration failed: Email unique constraint violation', undefined, { 
+          email: validatedData.email.toLowerCase() 
+        });
+        throw new ConflictError(ERROR_MESSAGES.EMAIL_EXISTS);
+      }
+      // Re-throw other errors
+      throw createError;
+    }
 
     // Create exam assignment if exam was found/created
     if (examId) {

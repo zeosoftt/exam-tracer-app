@@ -18,6 +18,13 @@ import {
   Settings,
   Timer,
   BarChart3,
+  TrendingUp,
+  RefreshCw,
+  Edit2,
+  Save,
+  X,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 
 interface DashboardStats {
@@ -40,11 +47,38 @@ interface DashboardStats {
     targetScore: number | null;
     dailyStudyHours: number | null;
   };
+  evaluation?: {
+    totalTopics: number;
+    goodTopics: number;
+    improvableTopics: number;
+    repeatTopics: number;
+    averageSuccessRate: number;
+    averageNet: number;
+    targetScore: number;
+    requiredNet: number;
+    requiredSuccessRate: number;
+    topics?: Array<{
+      topicId: string;
+      topicName: string;
+      sectionName: string;
+      subjectName: string;
+      totalQuestions: number;
+      correctAnswers: number;
+      wrongAnswers: number;
+    }>;
+  } | null;
 }
 
-export function DashboardContent({ user }: { user: { id: string; name: string; email: string; role: string } }) {
+export function DashboardContent({ user }: { user: { id: string; name: string; email: string; role?: string } }) {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<{
+    totalQuestions: number;
+    correctAnswers: number;
+    wrongAnswers: number;
+  } | null>(null);
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
   const fetchStats = async () => {
     try {
@@ -94,6 +128,107 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
 
   // Çalışma saatleri artık backend'den geliyor
   const studyHours = stats?.totalStudyHours || 0;
+
+  // Soru sayılarını güncelle
+  const updateQuestionStats = async (topicId: string) => {
+    if (!editValues) return;
+
+    try {
+      // Validasyon
+      if (editValues.correctAnswers + editValues.wrongAnswers > editValues.totalQuestions) {
+        alert('Doğru + Yanlış sayısı toplam soru sayısını geçemez!');
+        return;
+      }
+
+      const response = await fetch(`/api/progress/${topicId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          totalQuestions: editValues.totalQuestions,
+          correctAnswers: editValues.correctAnswers,
+          wrongAnswers: editValues.wrongAnswers,
+        }),
+      });
+
+      if (response.ok) {
+        // Verileri yeniden yükle
+        await fetchStats();
+        setEditingTopicId(null);
+        setEditValues(null);
+      } else {
+        const error = await response.json();
+        console.error('Failed to update question stats:', error);
+        alert('Soru sayıları güncellenirken bir hata oluştu');
+      }
+    } catch (error) {
+      console.error('Error updating question stats:', error);
+      alert('Soru sayıları güncellenirken bir hata oluştu');
+    }
+  };
+
+  // Edit modunu başlat
+  const startEdit = (topic: { topicId: string; totalQuestions: number; correctAnswers: number; wrongAnswers: number }) => {
+    setEditingTopicId(topic.topicId);
+    setEditValues({
+      totalQuestions: topic.totalQuestions || 0,
+      correctAnswers: topic.correctAnswers || 0,
+      wrongAnswers: topic.wrongAnswers || 0,
+    });
+  };
+
+  // Edit modunu iptal et
+  const cancelEdit = () => {
+    setEditingTopicId(null);
+    setEditValues(null);
+  };
+
+  // Group topics by section and subject
+  const groupedTopics = stats?.evaluation?.topics?.reduce((acc, topic) => {
+    const key = `${topic.sectionName}|${topic.subjectName}`;
+    if (!acc[key]) {
+      acc[key] = {
+        sectionName: topic.sectionName,
+        subjectName: topic.subjectName,
+        topics: [] as Array<{
+          topicId: string;
+          topicName: string;
+          sectionName: string;
+          subjectName: string;
+          totalQuestions: number;
+          correctAnswers: number;
+          wrongAnswers: number;
+        }>,
+      };
+    }
+    acc[key].topics.push(topic);
+    return acc;
+  }, {} as Record<string, { 
+    sectionName: string; 
+    subjectName: string; 
+    topics: Array<{
+      topicId: string;
+      topicName: string;
+      sectionName: string;
+      subjectName: string;
+      totalQuestions: number;
+      correctAnswers: number;
+      wrongAnswers: number;
+    }>;
+  }>) || {};
+
+  const toggleSection = (key: string) => {
+    setExpandedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -247,6 +382,225 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
                 )}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Evaluation Summary Card */}
+        {stats?.evaluation && (
+          <div className="mb-10 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 rounded-2xl shadow-xl p-8 border-2 border-indigo-200">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-white rounded-xl shadow-sm">
+                  <Target className="h-6 w-6 text-indigo-600" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Hedef Puan Değerlendirmesi</h2>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Hedef: {stats.evaluation.targetScore}/100 | 
+                    Gerekli Net: {stats.evaluation.requiredNet.toFixed(1)} | 
+                    Gerekli Başarı: {(stats.evaluation.requiredSuccessRate * 100).toFixed(1)}%
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="grid gap-4 md:grid-cols-4 mb-6">
+              <div className="bg-white rounded-xl p-5 border border-green-200 shadow-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <span className="text-sm font-semibold text-gray-700">İYİ</span>
+                </div>
+                <div className="text-3xl font-bold text-green-600 mb-1">
+                  {stats.evaluation.goodTopics}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {stats.evaluation.totalTopics > 0 
+                    ? Math.round((stats.evaluation.goodTopics / stats.evaluation.totalTopics) * 100) 
+                    : 0}% konu
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl p-5 border border-yellow-200 shadow-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp className="h-5 w-5 text-yellow-600" />
+                  <span className="text-sm font-semibold text-gray-700">GELİŞTİRİLEBİLİR</span>
+                </div>
+                <div className="text-3xl font-bold text-yellow-600 mb-1">
+                  {stats.evaluation.improvableTopics}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {stats.evaluation.totalTopics > 0 
+                    ? Math.round((stats.evaluation.improvableTopics / stats.evaluation.totalTopics) * 100) 
+                    : 0}% konu
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl p-5 border border-red-200 shadow-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <RefreshCw className="h-5 w-5 text-red-600" />
+                  <span className="text-sm font-semibold text-gray-700">TEKRAR</span>
+                </div>
+                <div className="text-3xl font-bold text-red-600 mb-1">
+                  {stats.evaluation.repeatTopics}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {stats.evaluation.totalTopics > 0 
+                    ? Math.round((stats.evaluation.repeatTopics / stats.evaluation.totalTopics) * 100) 
+                    : 0}% konu
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl p-5 border border-blue-200 shadow-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <BarChart3 className="h-5 w-5 text-blue-600" />
+                  <span className="text-sm font-semibold text-gray-700">ORTALAMA</span>
+                </div>
+                <div className="text-2xl font-bold text-blue-600 mb-1">
+                  {(stats.evaluation.averageSuccessRate * 100).toFixed(1)}%
+                </div>
+                <div className="text-xs text-gray-500">
+                  Net: {stats.evaluation.averageNet.toFixed(2)}
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/60 rounded-xl p-4 border border-gray-200">
+              <div className="flex items-center gap-4 text-xs text-gray-600">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <span>İYİ: Başarı oranı hedefin ≥%95&apos;i</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                  <span>GELİŞTİRİLEBİLİR: Başarı oranı hedefin ≥%80&apos;i</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                  <span>TEKRAR: Başarı oranı hedefin &lt;%80&apos;i</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Konu Bazında Soru İstatistikleri */}
+            {stats.evaluation.topics && stats.evaluation.topics.length > 0 && (
+              <div className="mt-6 bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div className="p-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                  <h3 className="text-lg font-bold text-gray-900">Konu Bazında Soru İstatistikleri</h3>
+                  <p className="text-sm text-gray-600 mt-1">Her konu için çözülen soru sayılarını girebilirsiniz</p>
+                </div>
+                <div className="max-h-96 overflow-y-auto">
+                  {Object.entries(groupedTopics).map(([key, group]) => (
+                    <div key={key} className="border-b border-gray-200 last:border-b-0">
+                      <button
+                        onClick={() => toggleSection(key)}
+                        className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between text-left"
+                      >
+                        <div>
+                          <span className="font-semibold text-gray-900">{group.sectionName}</span>
+                          <span className="text-gray-600 mx-2">/</span>
+                          <span className="text-gray-700">{group.subjectName}</span>
+                          <span className="ml-2 text-xs text-gray-500">({group.topics.length} konu)</span>
+                        </div>
+                        {expandedSections.has(key) ? (
+                          <ChevronDown className="h-4 w-4 text-gray-500" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 text-gray-500" />
+                        )}
+                      </button>
+                      {expandedSections.has(key) && (
+                        <div className="p-4 space-y-3">
+                          {group.topics.map((topic) => (
+                            <div key={topic.topicId} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-gray-900 truncate">{topic.topicName}</div>
+                              </div>
+                              {editingTopicId === topic.topicId && editValues ? (
+                                <>
+                                  <div className="flex items-center gap-2">
+                                    <label className="text-xs text-gray-600">Toplam:</label>
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      value={editValues.totalQuestions}
+                                      onChange={(e) => setEditValues({
+                                        ...editValues,
+                                        totalQuestions: parseInt(e.target.value) || 0,
+                                      })}
+                                      className="w-16 px-2 py-1 text-xs text-center border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <label className="text-xs text-green-600">Doğru:</label>
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      max={editValues.totalQuestions}
+                                      value={editValues.correctAnswers}
+                                      onChange={(e) => setEditValues({
+                                        ...editValues,
+                                        correctAnswers: parseInt(e.target.value) || 0,
+                                      })}
+                                      className="w-16 px-2 py-1 text-xs text-center border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500 text-green-600"
+                                    />
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <label className="text-xs text-red-600">Yanlış:</label>
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      max={editValues.totalQuestions - editValues.correctAnswers}
+                                      value={editValues.wrongAnswers}
+                                      onChange={(e) => setEditValues({
+                                        ...editValues,
+                                        wrongAnswers: parseInt(e.target.value) || 0,
+                                      })}
+                                      className="w-16 px-2 py-1 text-xs text-center border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 text-red-600"
+                                    />
+                                  </div>
+                                  <button
+                                    onClick={() => updateQuestionStats(topic.topicId)}
+                                    className="p-1.5 hover:bg-green-100 rounded transition-colors text-green-600"
+                                    title="Kaydet"
+                                  >
+                                    <Save className="h-4 w-4" />
+                                  </button>
+                                  <button
+                                    onClick={cancelEdit}
+                                    className="p-1.5 hover:bg-red-100 rounded transition-colors text-red-600"
+                                    title="İptal"
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </button>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="text-sm text-gray-600">
+                                    Toplam: <span className="font-semibold">{topic.totalQuestions || '-'}</span>
+                                  </div>
+                                  <div className="text-sm text-green-600">
+                                    Doğru: <span className="font-semibold">{topic.correctAnswers || '-'}</span>
+                                  </div>
+                                  <div className="text-sm text-red-600">
+                                    Yanlış: <span className="font-semibold">{topic.wrongAnswers || '-'}</span>
+                                  </div>
+                                  <button
+                                    onClick={() => startEdit(topic)}
+                                    className="p-1.5 hover:bg-blue-100 rounded transition-colors text-blue-600"
+                                    title="Düzenle"
+                                  >
+                                    <Edit2 className="h-4 w-4" />
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

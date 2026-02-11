@@ -30,50 +30,79 @@ enum ProgressStatus {
   REVIEWED
 }
 
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  TRIAL
+  SUSPENDED
+}
+
+enum PlanType {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  passwordHash  String
-  firstName     String
-  lastName      String
-  role          UserRole  @default(INDIVIDUAL)
+  id           String @id @default(cuid())
+  email        String @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+
+  // DEPRECATED: Legacy role field (kept for backward compatibility)
+  // Use Membership.roleId instead
+  role UserRole? @default(INDIVIDUAL)
+
+  // DEPRECATED: Legacy institution field (kept for backward compatibility)
+  // Use Membership.organizationId instead
   institutionId String?
+
+  // Personal workspace (created automatically on signup)
+  personalOrganizationId String? @unique
+
   isActive      Boolean   @default(true)
   emailVerified Boolean   @default(false)
   lastLoginAt   DateTime?
+
   // Onboarding data
-  targetScore   Int?
+  targetScore     Int?
   dailyStudyHours Int?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  deletedAt     DateTime? // Soft delete
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
 
   // Relations
-  institution   Institution? @relation(fields: [institutionId], references: [id])
-  userProgress  UserProgress[]
-  sessions      Session[]
-  examAssignments ExamAssignment[]
-  pomodoroSessions PomodoroSession[]
+  institution          Institution?      @relation(fields: [institutionId], references: [id])
+  personalOrganization Organization?     @relation("UserPersonalOrganization", fields: [personalOrganizationId], references: [id])
+  memberships          Membership[]
+  userProgress         UserProgress[]
+  sessions             Session[]
+  examAssignments      ExamAssignment[]
+  pomodoroSessions     PomodoroSession[]
 
   @@index([email])
   @@index([institutionId])
   @@index([role])
   @@index([isActive])
+  @@index([personalOrganizationId])
   @@map("users")
 }
 
 model Institution {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   name        String
-  code        String   @unique
+  code        String    @unique
   description String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime? // Soft delete
 
   // Relations
-  users       User[]
+  users           User[]
   examAssignments ExamAssignment[]
 
   @@index([code])
@@ -89,34 +118,40 @@ model Exam {
   status      ExamStatus @default(ACTIVE)
   startDate   DateTime?
   endDate     DateTime?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  deletedAt   DateTime?  // Soft delete
+
+  // Multi-tenant: Exam ownership
+  organizationId String? // NULL = system exam, otherwise = owned by organization
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
 
   // Relations
+  organization    Organization?    @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   sections        Section[]
-  examAssignments  ExamAssignment[]
+  examAssignments ExamAssignment[]
 
   @@index([code])
   @@index([status])
   @@index([startDate, endDate])
+  @@index([organizationId])
   @@map("exams")
 }
 
 model Section {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   examId      String
   name        String
   code        String
   description String?
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime? // Soft delete
 
   // Relations
-  exam        Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
-  subjects    Subject[]
+  exam     Exam      @relation(fields: [examId], references: [id], onDelete: Cascade)
+  subjects Subject[]
 
   @@unique([examId, code])
   @@index([examId])
@@ -125,19 +160,19 @@ model Section {
 }
 
 model Subject {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   sectionId   String
   name        String
   code        String
   description String?
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime? // Soft delete
 
   // Relations
-  section     Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  topics      Topic[]
+  section Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  topics  Topic[]
 
   @@unique([sectionId, code])
   @@index([sectionId])
@@ -146,18 +181,18 @@ model Subject {
 }
 
 model Topic {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   subjectId   String
   name        String
   code        String
   description String?
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime? // Soft delete
 
   // Relations
-  subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subject      Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   userProgress UserProgress[]
 
   @@unique([subjectId, code])
@@ -167,46 +202,62 @@ model Topic {
 }
 
 model ExamAssignment {
-  id            String   @id @default(cuid())
-  examId        String
+  id     String @id @default(cuid())
+  examId String
+
+  // DEPRECATED: Legacy institution assignment (kept for backward compatibility)
   institutionId String?
-  userId        String?
-  assignedAt    DateTime @default(now())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  deletedAt     DateTime? // Soft delete
+
+  // NEW: Multi-tenant organization assignment
+  organizationId String?
+
+  userId     String?
+  assignedAt DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime? // Soft delete
 
   // Relations
-  exam          Exam         @relation(fields: [examId], references: [id], onDelete: Cascade)
-  institution   Institution? @relation(fields: [institutionId], references: [id], onDelete: Cascade)
-  user          User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exam         Exam          @relation(fields: [examId], references: [id], onDelete: Cascade)
+  institution  Institution?  @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Either institutionId or userId must be set, but not both
+  // Either organizationId, institutionId, or userId must be set
   @@index([examId])
   @@index([institutionId])
+  @@index([organizationId])
   @@index([userId])
+  @@index([userId, deletedAt]) // OPTIMIZED: Composite index for user's active exam queries
+  @@index([organizationId, deletedAt]) // OPTIMIZED: Composite index for organization's active exam assignments
   @@map("exam_assignments")
 }
 
 model UserProgress {
-  id          String         @id @default(cuid())
-  userId      String
-  topicId     String
-  status      ProgressStatus @default(NOT_STARTED)
-  completedAt DateTime?
-  notes       String?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  deletedAt   DateTime?      // Soft delete
+  id             String         @id @default(cuid())
+  userId         String
+  topicId        String
+  status         ProgressStatus @default(NOT_STARTED)
+  completedAt    DateTime?
+  notes          String?
+  // Question statistics
+  totalQuestions Int? // Çözülen toplam soru sayısı
+  correctAnswers Int? // Doğru cevap sayısı
+  wrongAnswers   Int? // Yanlış cevap sayısı
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  deletedAt      DateTime? // Soft delete
 
   // Relations
-  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  topic       Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic Topic @relation(fields: [topicId], references: [id], onDelete: Cascade)
 
   @@unique([userId, topicId])
   @@index([userId])
   @@index([topicId])
   @@index([status])
+  @@index([userId, deletedAt]) // OPTIMIZED: Composite index for common query pattern
+  @@index([topicId, deletedAt]) // OPTIMIZED: Composite index for topic-based queries
   @@map("user_progress")
 }
 
@@ -219,7 +270,7 @@ model Session {
   updatedAt DateTime @updatedAt
 
   // Relations
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([token])
@@ -228,22 +279,314 @@ model Session {
 }
 
 model PomodoroSession {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   userId      String
-  duration    Int      // Dakika cinsinden (25 veya 5)
-  isBreak     Boolean  @default(false) // Mola mı yoksa çalışma mı
-  completed   Boolean  @default(false) // Tamamlandı mı
-  startedAt   DateTime @default(now())
+  duration    Int // Dakika cinsinden (25 veya 5)
+  isBreak     Boolean   @default(false) // Mola mı yoksa çalışma mı
+  completed   Boolean   @default(false) // Tamamlandı mı
+  startedAt   DateTime  @default(now())
   completedAt DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime? // Soft delete
 
   // Relations
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([startedAt])
   @@index([completed])
+  @@index([userId, completed, deletedAt]) // OPTIMIZED: Composite index for user stats queries
   @@map("pomodoro_sessions")
+}
+
+// ============================================================================
+// MULTI-TENANT AUTHORIZATION MODELS
+// ============================================================================
+
+model Organization {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique // URL-friendly identifier
+  code        String  @unique // Internal code (backward compatibility with Institution)
+  description String?
+  logo        String? // Logo URL
+  isActive    Boolean @default(true)
+  isPersonal  Boolean @default(false) // Personal workspace (not an institution)
+
+  // Billing
+  subscriptionId String?
+  currentPlanId  String?
+
+  // Limits (cached from plan, updated when subscription changes)
+  maxUsers    Int @default(1)
+  maxExams    Int @default(1)
+  maxStudents Int @default(10)
+
+  // Metadata
+  metadata  Json? // Flexible JSON for custom fields
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  // Relations
+  memberships     Membership[]
+  subscriptions   Subscription[]
+  examAssignments ExamAssignment[]
+  exams           Exam[]
+  personalUsers   User[]           @relation("UserPersonalOrganization")
+  roles           Role[]
+
+  @@index([slug])
+  @@index([code])
+  @@index([isActive])
+  @@index([deletedAt])
+  @@index([currentPlanId])
+  @@map("organizations")
+}
+
+model Membership {
+  id             String @id @default(cuid())
+  userId         String
+  organizationId String
+  roleId         String
+
+  // Status
+  isActive  Boolean   @default(true)
+  invitedBy String? // User ID who invited
+  invitedAt DateTime?
+  joinedAt  DateTime  @default(now())
+
+  // Metadata
+  metadata  Json? // Custom fields (e.g., department, grade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  // Relations
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role         Role         @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  // Unique constraint: User can only have one active membership per organization
+  @@unique([userId, organizationId, deletedAt])
+  @@index([userId])
+  @@index([organizationId])
+  @@index([roleId])
+  @@index([userId, isActive, deletedAt]) // Common query: user's active memberships
+  @@index([organizationId, isActive, deletedAt]) // Common query: organization's active members
+  @@map("memberships")
+}
+
+model Role {
+  id          String  @id @default(cuid())
+  code        String  @unique // SYSTEM_ROLE_ADMIN, SYSTEM_ROLE_TEACHER, etc.
+  name        String
+  description String?
+
+  // Role type
+  isSystem  Boolean @default(false) // System role (cannot be deleted)
+  isDefault Boolean @default(false) // Default role for new members
+
+  // Scope
+  organizationId String? // NULL = system role, otherwise = organization-specific role
+
+  // Metadata
+  metadata  Json? // Custom fields
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  // Relations
+  organization Organization?    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  memberships  Membership[]
+  permissions  RolePermission[]
+
+  @@index([code])
+  @@index([organizationId])
+  @@index([isSystem])
+  @@index([isDefault])
+  @@map("roles")
+}
+
+model Permission {
+  id          String  @id @default(cuid())
+  code        String  @unique // USER_CREATE, EXAM_CREATE, etc.
+  name        String
+  description String?
+  category    String // USER, EXAM, REPORT, BILLING, etc.
+
+  // System permission (cannot be deleted)
+  isSystem Boolean @default(true)
+
+  // Metadata
+  metadata  Json? // Custom fields
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  // Relations
+  rolePermissions RolePermission[]
+
+  @@index([code])
+  @@index([category])
+  @@index([isSystem])
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String @id @default(cuid())
+  roleId       String
+  permissionId String
+
+  // Optional: Context-specific permissions
+  // e.g., can edit only own exams, can view only assigned students
+  context Json? // { scope: "OWN", resource: "EXAM" }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  // Unique constraint: Role can have permission only once
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+  @@map("role_permissions")
+}
+
+model Plan {
+  id          String   @id @default(cuid())
+  code        String   @unique // FREE, PRO, ENTERPRISE
+  name        String
+  description String?
+  type        PlanType // FREE, PRO, ENTERPRISE
+
+  // Pricing
+  price    Decimal? @db.Decimal(10, 2) // Monthly price (null for FREE)
+  currency String   @default("USD")
+
+  // Limits
+  maxUsers    Int  @default(1)
+  maxExams    Int  @default(1)
+  maxStudents Int  @default(10)
+  maxStorage  Int? // MB (null = unlimited)
+
+  // Features (cached from PlanFeature)
+  features Json? // Array of feature codes for quick lookup
+
+  // Trial
+  trialDays Int @default(0)
+
+  // Status
+  isActive Boolean @default(true)
+  isPublic Boolean @default(true) // Can be subscribed to publicly
+
+  // Metadata
+  metadata  Json? // Custom fields
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  // Relations
+  subscriptions Subscription[]
+  planFeatures  PlanFeature[]
+
+  @@index([code])
+  @@index([type])
+  @@index([isActive])
+  @@index([isPublic])
+  @@map("plans")
+}
+
+model Feature {
+  id          String  @id @default(cuid())
+  code        String  @unique // ADVANCED_ANALYTICS, API_ACCESS, EXPORT_CSV, etc.
+  name        String
+  description String?
+  category    String // ANALYTICS, EXPORT, API, etc.
+
+  // Feature type
+  isSystem Boolean @default(true) // System feature (cannot be deleted)
+
+  // Metadata
+  metadata  Json? // Custom fields
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  // Relations
+  planFeatures PlanFeature[]
+
+  @@index([code])
+  @@index([category])
+  @@index([isSystem])
+  @@map("features")
+}
+
+model PlanFeature {
+  id        String @id @default(cuid())
+  planId    String
+  featureId String
+
+  // Feature configuration per plan
+  // e.g., API_ACCESS: { rateLimit: 1000, endpoints: ["read", "write"] }
+  config Json? // Feature-specific configuration
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  plan    Plan    @relation(fields: [planId], references: [id], onDelete: Cascade)
+  feature Feature @relation(fields: [featureId], references: [id], onDelete: Cascade)
+
+  // Unique constraint: Plan can have feature only once
+  @@unique([planId, featureId])
+  @@index([planId])
+  @@index([featureId])
+  @@map("plan_features")
+}
+
+model Subscription {
+  id             String @id @default(cuid())
+  organizationId String
+  planId         String
+
+  // Status
+  status SubscriptionStatus @default(TRIAL)
+
+  // Dates
+  startedAt          DateTime  @default(now())
+  currentPeriodStart DateTime  @default(now())
+  currentPeriodEnd   DateTime
+  trialEndsAt        DateTime?
+  cancelledAt        DateTime?
+  expiresAt          DateTime?
+
+  // Pricing
+  price    Decimal @db.Decimal(10, 2)
+  currency String  @default("USD")
+
+  // Billing
+  billingCycle    String  @default("monthly") // monthly, yearly
+  paymentMethodId String? // External payment system ID
+
+  // Metadata
+  metadata  Json? // Custom fields (stripe_subscription_id, etc.)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  plan         Plan         @relation(fields: [planId], references: [id], onDelete: Restrict)
+
+  @@index([organizationId])
+  @@index([planId])
+  @@index([status])
+  @@index([currentPeriodEnd])
+  @@index([organizationId, status, deletedAt]) // Active subscription query
+  @@map("subscriptions")
 }

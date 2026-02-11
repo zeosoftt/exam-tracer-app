@@ -25,17 +25,20 @@ export const authOptions: NextAuthOptions = {
 
         try {
           // Find user by email (excluding soft-deleted users)
-          const user = await prisma.user.findFirst({
+          // Use findUnique since email is unique in schema
+          // Don't use select to avoid issues if migration hasn't been run yet
+          const user = await prisma.user.findUnique({
             where: {
               email: credentials.email.toLowerCase(),
-              deletedAt: null,
             },
           });
 
-          if (!user) {
-            logAuth('Login failed: User not found', undefined, { email: credentials.email });
+          // Check if user exists and is not soft-deleted
+          if (!user || user.deletedAt !== null) {
+            logAuth('Login failed: User not found or deleted', undefined, { email: credentials.email });
             throw new Error(ERROR_MESSAGES.INVALID_CREDENTIALS);
           }
+
 
           if (!user.isActive) {
             logAuth('Login failed: User inactive', user.id, { email: credentials.email });
@@ -58,13 +61,46 @@ export const authOptions: NextAuthOptions = {
 
           logAuth('Login successful', user.id, { email: credentials.email, role: user.role });
 
+          // Get user's active organization (personal or most recent membership)
+          // Migration may not be done yet, so handle gracefully
+          let activeOrganizationId: string | null = null;
+          
+          try {
+            // Check if personalOrganizationId field exists in schema and user has it
+            // Use type assertion to safely check for the field
+            const userWithOrg = user as typeof user & { personalOrganizationId?: string | null };
+            if (userWithOrg.personalOrganizationId) {
+              activeOrganizationId = userWithOrg.personalOrganizationId;
+            } else {
+              // Try to get from memberships (only if migration is done)
+              try {
+                const { getActiveOrganizationId } = await import('./authorization');
+                activeOrganizationId = await getActiveOrganizationId(user.id);
+              } catch (membershipError: any) {
+                // memberships table or personalOrganizationId column doesn't exist yet
+                // This is OK - migration hasn't been run yet
+                if (membershipError?.code === 'P2021' || membershipError?.message?.includes('does not exist')) {
+                  logAuth('Schema migration not done yet - skipping organization lookup', user.id);
+                } else {
+                  logAuth('Error getting active organization', user.id, { error: membershipError });
+                }
+                activeOrganizationId = null;
+              }
+            }
+          } catch (error: any) {
+            // Any other error - log but don't fail login
+            logAuth('Error getting active organization (non-critical)', user.id, { error });
+            activeOrganizationId = null;
+          }
+
           return {
             id: user.id,
             email: user.email,
             name: `${user.firstName} ${user.lastName}`,
-            role: user.role,
-            institutionId: user.institutionId,
-          };
+            role: user.role ?? undefined, // DEPRECATED: kept for backward compatibility
+            institutionId: user.institutionId ?? undefined, // DEPRECATED: kept for backward compatibility
+            activeOrganizationId, // NEW: Active organization ID (null if not migrated yet)
+          } as const;
         } catch (error) {
           logError('Auth error', error);
           throw error;
@@ -79,22 +115,71 @@ export const authOptions: NextAuthOptions = {
   jwt: {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === 'production' 
+        ? '__Secure-next-auth.session-token' 
+        : 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+  },
   callbacks: {
     async jwt({ token, user }) {
+      // When user logs in, set token data from user object
       if (user) {
         token.id = user.id;
-        const userWithRole = user as { role: string; institutionId?: string | null };
-        token.role = userWithRole.role;
-        token.institutionId = userWithRole.institutionId;
+        token.email = user.email;
+        const userWithAuth = user as {
+          role?: string;
+          institutionId?: string | null;
+          activeOrganizationId?: string | null;
+        };
+        
+        // DEPRECATED: Legacy fields (kept for backward compatibility)
+        token.role = userWithAuth.role;
+        token.institutionId = userWithAuth.institutionId;
+        
+        // NEW: Active organization ID for multi-tenant support
+        token.activeOrganizationId = userWithAuth.activeOrganizationId;
       }
+      
+      // Verify token still has valid user ID
+      if (!token.id) {
+        logAuth('JWT token missing user ID', undefined);
+        return token;
+      }
+      
       return token;
     },
     async session({ session, token }) {
-      if (session.user && token.id && token.role) {
+      // Verify token has valid user ID before setting session
+      if (!token.id) {
+        logAuth('Session callback: Token missing user ID', undefined);
+        return session;
+      }
+      
+      if (session.user) {
         session.user.id = String(token.id);
-        session.user.role = String(token.role);
+        session.user.email = token.email ? String(token.email) : session.user.email;
+        
+        // DEPRECATED: Legacy fields (kept for backward compatibility)
+        if (token.role) {
+          session.user.role = String(token.role);
+        }
         if (token.institutionId !== undefined) {
           session.user.institutionId = token.institutionId ? String(token.institutionId) : null;
+        }
+        
+        // NEW: Active organization ID
+        if (token.activeOrganizationId !== undefined) {
+          session.user.activeOrganizationId = token.activeOrganizationId
+            ? String(token.activeOrganizationId)
+            : null;
         }
       }
       return session;

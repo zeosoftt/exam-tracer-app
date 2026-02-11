@@ -18,6 +18,12 @@ import {
   Circle,
   PlayCircle,
   ChevronDown,
+  TrendingUp,
+  RefreshCw,
+  Target,
+  Edit2,
+  Save,
+  X,
 } from 'lucide-react';
 
 interface Section {
@@ -34,12 +40,27 @@ interface Section {
   subjects: Subject[];
 }
 
+interface TopicEvaluation {
+  topicNet: number;
+  topicSuccessRate: number;
+  requiredSuccessRate: number;
+  requiredNet: number;
+  status: 'GOOD' | 'IMPROVABLE' | 'REPEAT';
+  isGood: boolean;
+  isImprovable: boolean;
+  needsRepeat: boolean;
+}
+
 interface Topic {
   id: string;
   code: string;
   name: string;
   order: number;
   status: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED';
+  totalQuestions: number;
+  correctAnswers: number;
+  wrongAnswers: number;
+  evaluation: TopicEvaluation | null;
 }
 
 interface Subject {
@@ -63,18 +84,30 @@ interface DetailData {
     code: string;
   } | null;
   sections: Section[];
+  evaluation: {
+    targetScore: number;
+    totalExamQuestions: number;
+    requiredNet: number | null;
+    requiredSuccessRate: number | null;
+  } | null;
 }
 
 export function DashboardDetailContent({
   user,
 }: {
-  user: { id: string; name: string; email: string; role: string };
+  user: { id: string; name: string; email: string; role?: string };
 }) {
   const [detailData, setDetailData] = useState<DetailData | null>(null);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [updatingTopicId, setUpdatingTopicId] = useState<string | null>(null);
+  const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<{
+    totalQuestions: number;
+    correctAnswers: number;
+    wrongAnswers: number;
+  } | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -155,6 +188,79 @@ export function DashboardDetailContent({
     } finally {
       setUpdatingTopicId(null);
     }
+  };
+
+  // Soru sayılarını güncelle
+  const updateQuestionStats = async (topicId: string) => {
+    if (!editValues) return;
+
+    setUpdatingTopicId(topicId);
+    try {
+      // Validasyon
+      if (editValues.correctAnswers + editValues.wrongAnswers > editValues.totalQuestions) {
+        alert('Doğru + Yanlış sayısı toplam soru sayısını geçemez!');
+        setUpdatingTopicId(null);
+        return;
+      }
+
+      const response = await fetch(`/api/progress/${topicId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          totalQuestions: editValues.totalQuestions,
+          correctAnswers: editValues.correctAnswers,
+          wrongAnswers: editValues.wrongAnswers,
+        }),
+      });
+
+      if (response.ok) {
+        // Verileri yeniden yükle
+        const detailResponse = await fetch('/api/dashboard/detail');
+        if (detailResponse.ok) {
+          const data = await detailResponse.json();
+          setDetailData(data.data);
+          // Seçili bölüm ve dersi koru
+          if (data.data?.sections) {
+            const updatedSection = data.data.sections.find((s: Section) => s.id === selectedSectionId);
+            if (updatedSection) {
+              const updatedSubject = updatedSection.subjects.find((s: Subject) => s.id === selectedSubjectId);
+              if (updatedSubject) {
+                setSelectedSubjectId(updatedSubject.id);
+              }
+            }
+          }
+        }
+        setEditingTopicId(null);
+        setEditValues(null);
+      } else {
+        const error = await response.json();
+        console.error('Failed to update question stats:', error);
+        alert('Soru sayıları güncellenirken bir hata oluştu');
+      }
+    } catch (error) {
+      console.error('Error updating question stats:', error);
+      alert('Soru sayıları güncellenirken bir hata oluştu');
+    } finally {
+      setUpdatingTopicId(null);
+    }
+  };
+
+  // Edit modunu başlat
+  const startEdit = (topic: Topic) => {
+    setEditingTopicId(topic.id);
+    setEditValues({
+      totalQuestions: topic.totalQuestions || 0,
+      correctAnswers: topic.correctAnswers || 0,
+      wrongAnswers: topic.wrongAnswers || 0,
+    });
+  };
+
+  // Edit modunu iptal et
+  const cancelEdit = () => {
+    setEditingTopicId(null);
+    setEditValues(null);
   };
 
   return (
@@ -352,6 +458,49 @@ export function DashboardDetailContent({
                   {/* Ders İçerikleri - Alt kısım */}
                   {selectedSubject && (
                     <div className="min-h-[300px] bg-gradient-to-br from-white to-gray-50 rounded-xl p-8 border-2 border-gray-100 shadow-inner">
+                      {/* Evaluation Info Card */}
+                      {detailData?.evaluation && (
+                        <div className="mb-6 p-5 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-xl border border-blue-200 shadow-sm">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-white rounded-lg shadow-sm">
+                                <Target className="h-5 w-5 text-blue-600" />
+                              </div>
+                              <div>
+                                <h5 className="text-sm font-bold text-gray-900">Hedef Puan Temelli Değerlendirme</h5>
+                                <p className="text-xs text-gray-600 mt-0.5">
+                                  Hedef: {detailData.evaluation.targetScore}/100 | 
+                                  Gerekli Net: {detailData.evaluation.requiredNet?.toFixed(1) || '-'} | 
+                                  Gerekli Başarı: {detailData.evaluation.requiredSuccessRate ? (detailData.evaluation.requiredSuccessRate * 100).toFixed(1) : '-'}%
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <div className="text-center">
+                                <div className="text-xs text-gray-600 mb-1">İYİ</div>
+                                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                                  <CheckCircle className="h-3 w-3" />
+                                  ≥%95
+                                </span>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-xs text-gray-600 mb-1">GELİŞTİRİLEBİLİR</div>
+                                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
+                                  <TrendingUp className="h-3 w-3" />
+                                  ≥%80
+                                </span>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-xs text-gray-600 mb-1">TEKRAR</div>
+                                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                                  <RefreshCw className="h-3 w-3" />
+                                  &lt;%80
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                       <div className="mb-6">
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex-1">
@@ -411,6 +560,28 @@ export function DashboardDetailContent({
                                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                   Konu Adı
                                 </th>
+                                <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                  Çözülen Soru
+                                </th>
+                                <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                  Doğru
+                                </th>
+                                <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                  Yanlış
+                                </th>
+                                {detailData?.evaluation && (
+                                  <>
+                                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                      Net
+                                    </th>
+                                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                      Başarı Oranı
+                                    </th>
+                                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                      Değerlendirme
+                                    </th>
+                                  </>
+                                )}
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
@@ -490,6 +661,154 @@ export function DashboardDetailContent({
                                         </span>
                                       </div>
                                     </td>
+                                    <td className="px-6 py-4 text-center">
+                                      {editingTopicId === topic.id && editValues ? (
+                                        <div className="flex items-center justify-center gap-2">
+                                          <input
+                                            type="number"
+                                            min="0"
+                                            value={editValues.totalQuestions}
+                                            onChange={(e) => setEditValues({
+                                              ...editValues,
+                                              totalQuestions: parseInt(e.target.value) || 0,
+                                            })}
+                                            className="w-16 px-2 py-1 text-sm text-center border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            disabled={updatingTopicId === topic.id}
+                                          />
+                                        </div>
+                                      ) : (
+                                        <div className="flex items-center justify-center gap-2">
+                                          <span className={`text-sm font-semibold ${
+                                            topic.totalQuestions > 0 ? 'text-gray-700' : 'text-gray-400'
+                                          }`}>
+                                            {topic.totalQuestions > 0 ? topic.totalQuestions : '-'}
+                                          </span>
+                                          {!editingTopicId && (
+                                            <button
+                                              onClick={() => startEdit(topic)}
+                                              className="p-1 hover:bg-gray-100 rounded transition-colors"
+                                              title="Düzenle"
+                                            >
+                                              <Edit2 className="h-3 w-3 text-gray-500" />
+                                            </button>
+                                          )}
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className="px-6 py-4 text-center">
+                                      {editingTopicId === topic.id && editValues ? (
+                                        <input
+                                          type="number"
+                                          min="0"
+                                          max={editValues.totalQuestions}
+                                          value={editValues.correctAnswers}
+                                          onChange={(e) => setEditValues({
+                                            ...editValues,
+                                            correctAnswers: parseInt(e.target.value) || 0,
+                                          })}
+                                          className="w-16 px-2 py-1 text-sm text-center border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-green-600 font-semibold"
+                                          disabled={updatingTopicId === topic.id}
+                                        />
+                                      ) : (
+                                        <span className={`text-sm font-semibold ${
+                                          topic.correctAnswers > 0 ? 'text-green-600' : 'text-gray-400'
+                                        }`}>
+                                          {topic.correctAnswers > 0 ? topic.correctAnswers : '-'}
+                                        </span>
+                                      )}
+                                    </td>
+                                    <td className="px-6 py-4 text-center">
+                                      {editingTopicId === topic.id && editValues ? (
+                                        <div className="flex items-center justify-center gap-2">
+                                          <input
+                                            type="number"
+                                            min="0"
+                                            max={editValues.totalQuestions - editValues.correctAnswers}
+                                            value={editValues.wrongAnswers}
+                                            onChange={(e) => setEditValues({
+                                              ...editValues,
+                                              wrongAnswers: parseInt(e.target.value) || 0,
+                                            })}
+                                            className="w-16 px-2 py-1 text-sm text-center border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-red-600 font-semibold"
+                                            disabled={updatingTopicId === topic.id}
+                                          />
+                                          <button
+                                            onClick={() => updateQuestionStats(topic.id)}
+                                            disabled={updatingTopicId === topic.id}
+                                            className="p-1.5 hover:bg-green-100 rounded transition-colors text-green-600 disabled:opacity-50"
+                                            title="Kaydet"
+                                          >
+                                            <Save className="h-3.5 w-3.5" />
+                                          </button>
+                                          <button
+                                            onClick={cancelEdit}
+                                            disabled={updatingTopicId === topic.id}
+                                            className="p-1.5 hover:bg-red-100 rounded transition-colors text-red-600 disabled:opacity-50"
+                                            title="İptal"
+                                          >
+                                            <X className="h-3.5 w-3.5" />
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        <span className={`text-sm font-semibold ${
+                                          topic.wrongAnswers > 0 ? 'text-red-600' : 'text-gray-400'
+                                        }`}>
+                                          {topic.wrongAnswers > 0 ? topic.wrongAnswers : '-'}
+                                        </span>
+                                      )}
+                                    </td>
+                                    {detailData?.evaluation && topic.evaluation && (
+                                      <>
+                                        <td className="px-6 py-4 text-center">
+                                          <span className="text-sm font-semibold text-blue-600">
+                                            {topic.evaluation.topicNet.toFixed(2)}
+                                          </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                          <div className="flex flex-col items-center gap-1">
+                                            <span className="text-sm font-semibold text-gray-700">
+                                              {(topic.evaluation.topicSuccessRate * 100).toFixed(1)}%
+                                            </span>
+                                            {detailData.evaluation.requiredSuccessRate && (
+                                              <span className="text-xs text-gray-500">
+                                                Hedef: {(detailData.evaluation.requiredSuccessRate * 100).toFixed(1)}%
+                                              </span>
+                                            )}
+                                          </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                          {topic.evaluation.isGood ? (
+                                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700 border border-green-200">
+                                              <CheckCircle className="h-3 w-3" />
+                                              İYİ
+                                            </span>
+                                          ) : topic.evaluation.isImprovable ? (
+                                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700 border border-yellow-200">
+                                              <TrendingUp className="h-3 w-3" />
+                                              GELİŞTİRİLEBİLİR
+                                            </span>
+                                          ) : (
+                                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-200">
+                                              <RefreshCw className="h-3 w-3" />
+                                              TEKRAR
+                                            </span>
+                                          )}
+                                        </td>
+                                      </>
+                                    )}
+                                    {detailData?.evaluation && !topic.evaluation && (
+                                      <>
+                                        <td className="px-6 py-4 text-center">
+                                          <span className="text-sm text-gray-400">-</span>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                          <span className="text-sm text-gray-400">-</span>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                          <span className="text-sm text-gray-400">-</span>
+                                        </td>
+                                      </>
+                                    )}
                                   </tr>
                                 );
                               })}

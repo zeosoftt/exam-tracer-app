@@ -11,8 +11,11 @@ declare module 'next-auth' {
       id: string;
       email: string;
       name: string;
-      role: string;
+      // DEPRECATED: Legacy fields (kept for backward compatibility)
+      role?: string;
       institutionId?: string | null;
+      // NEW: Multi-tenant support
+      activeOrganizationId?: string | null;
     };
   }
 
@@ -20,15 +23,22 @@ declare module 'next-auth' {
     id: string;
     email: string;
     name: string;
-    role: string;
+    // DEPRECATED: Legacy fields (kept for backward compatibility)
+    role?: string;
     institutionId?: string | null;
+    // NEW: Multi-tenant support
+    activeOrganizationId?: string | null;
   }
 }
 
 declare module 'next-auth/jwt' {
   interface JWT {
     id: string;
-    role: string;
+    email?: string;
+    // DEPRECATED: Legacy fields (kept for backward compatibility)
+    role?: string;
     institutionId?: string | null;
+    // NEW: Multi-tenant support
+    activeOrganizationId?: string | null;
   }
 }

@@ -3,7 +3,8 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
-  output: 'standalone',
+  // Standalone output only for production builds
+  ...(process.env.NODE_ENV === 'production' && { output: 'standalone' }),
   images: {
     domains: [],
   },

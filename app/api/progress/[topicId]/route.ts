@@ -13,9 +13,13 @@ import { logApi } from '@/lib/logger';
 import { HTTP_STATUS } from '@/config/constants';
 import { UnauthorizedError, BadRequestError } from '@/lib/errors/AppError';
 import { z } from 'zod';
+import { ProgressStatus } from '@prisma/client';
 
 const updateProgressSchema = z.object({
-  status: z.enum(['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED']),
+  status: z.enum(['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED']).optional(),
+  totalQuestions: z.number().int().min(0).optional(),
+  correctAnswers: z.number().int().min(0).optional(),
+  wrongAnswers: z.number().int().min(0).optional(),
 });
 
 async function updateProgressHandler(
@@ -36,7 +40,8 @@ async function updateProgressHandler(
     }
 
     const body = await req.json();
-    const { status } = updateProgressSchema.parse(body);
+    const parsed = updateProgressSchema.parse(body);
+    const { status, totalQuestions, correctAnswers, wrongAnswers } = parsed;
 
     // Verify topic exists
     const topic = await prisma.topic.findUnique({
@@ -47,6 +52,52 @@ async function updateProgressHandler(
       throw new BadRequestError('Topic not found');
     }
 
+    // Validate question statistics
+    if (totalQuestions !== undefined && correctAnswers !== undefined && wrongAnswers !== undefined) {
+      if (correctAnswers + wrongAnswers > totalQuestions) {
+        throw new BadRequestError('Doğru + Yanlış sayısı toplam soru sayısını geçemez');
+      }
+    }
+
+    // Prepare update data
+    const updateData: {
+      status?: string;
+      completedAt?: Date | null;
+      totalQuestions?: number | null;
+      correctAnswers?: number | null;
+      wrongAnswers?: number | null;
+      updatedAt: Date;
+    } = {
+      updatedAt: new Date(),
+    };
+
+    if (status !== undefined) {
+      updateData.status = status;
+      updateData.completedAt = status === 'COMPLETED' ? new Date() : null;
+    }
+
+    if (totalQuestions !== undefined) {
+      updateData.totalQuestions = totalQuestions;
+    }
+
+    if (correctAnswers !== undefined) {
+      updateData.correctAnswers = correctAnswers;
+    }
+
+    if (wrongAnswers !== undefined) {
+      updateData.wrongAnswers = wrongAnswers;
+    }
+
+    // Get existing progress to preserve fields
+    const existingProgress = await prisma.userProgress.findUnique({
+      where: {
+        userId_topicId: {
+          userId,
+          topicId,
+        },
+      },
+    });
+
     // Update or create user progress
     const userProgress = await prisma.userProgress.upsert({
       where: {
@@ -56,15 +107,24 @@ async function updateProgressHandler(
         },
       },
       update: {
-        status,
-        completedAt: status === 'COMPLETED' ? new Date() : null,
-        updatedAt: new Date(),
+        ...updateData,
+        // Preserve existing values if not provided
+        status: (updateData.status as ProgressStatus) ?? existingProgress?.status ?? ProgressStatus.NOT_STARTED,
+        completedAt: updateData.completedAt !== undefined 
+          ? updateData.completedAt 
+          : existingProgress?.completedAt ?? null,
+        totalQuestions: updateData.totalQuestions ?? existingProgress?.totalQuestions ?? null,
+        correctAnswers: updateData.correctAnswers ?? existingProgress?.correctAnswers ?? null,
+        wrongAnswers: updateData.wrongAnswers ?? existingProgress?.wrongAnswers ?? null,
       },
       create: {
         userId,
         topicId,
-        status,
+        status: (status as ProgressStatus) || ProgressStatus.NOT_STARTED,
         completedAt: status === 'COMPLETED' ? new Date() : null,
+        totalQuestions: totalQuestions ?? null,
+        correctAnswers: correctAnswers ?? null,
+        wrongAnswers: wrongAnswers ?? null,
       },
     });
 

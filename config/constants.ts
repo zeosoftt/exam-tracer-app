@@ -90,13 +90,14 @@ export const HTTP_STATUS = {
 } as const;
 
 export const ERROR_MESSAGES = {
-  UNAUTHORIZED: 'Unauthorized access',
-  FORBIDDEN: 'You do not have permission to perform this action',
-  NOT_FOUND: 'Resource not found',
+  UNAUTHORIZED: 'Yetkisiz erişim',
+  FORBIDDEN: 'Bu işlemi gerçekleştirmek için izniniz yok',
+  NOT_FOUND: 'Kaynak bulunamadı',
   VALIDATION_ERROR: 'Validation failed',
-  INTERNAL_ERROR: 'An internal error occurred',
+  INTERNAL_ERROR: 'Dahili bir hata oluştu',
   INVALID_CREDENTIALS: 'Invalid email or password',
-  EMAIL_EXISTS: 'Email already exists',
+  EMAIL_EXISTS: 'E-posta zaten mevcut',
   INVALID_TOKEN: 'Invalid or expired token',
   RATE_LIMIT_EXCEEDED: 'Too many requests, please try again later',
+  DATABASE_UNAVAILABLE: 'Veritabanına şu an ulaşılamıyor. Lütfen kısa süre sonra tekrar deneyin.',
 } as const;

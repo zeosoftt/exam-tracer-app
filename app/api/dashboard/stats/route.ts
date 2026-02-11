@@ -11,6 +11,8 @@ import { prisma } from '@/lib/db/prisma';
 import { logApi } from '@/lib/logger';
 import { HTTP_STATUS } from '@/config/constants';
 import { UnauthorizedError } from '@/lib/errors/AppError';
+import { evaluateTopics, getEvaluationSummary } from '@/lib/services/targetScoreEvaluation';
+import { getRequiredNet } from '@/config/targetScoreMaps';
 
 async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
   try {
@@ -101,65 +103,71 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
     if (activeExamAssignment?.exam?.id) {
       const examId = activeExamAssignment.exam.id;
       
-      // Count all topics across all sections of this exam
-      // This query counts topics from ALL sections of the exam (e.g., Genel Yetenek + Genel Kültür for KPSS)
-      const topicsCount = await prisma.topic.count({
-        where: {
-          subject: {
+      // OPTIMIZED: Run counts and topic fetch in parallel to reduce total query time
+      const [topicsCount, subjectsCount, , progressStats] = await Promise.all([
+        // Count all topics across all sections of this exam
+        prisma.topic.count({
+          where: {
+            subject: {
+              section: {
+                examId: examId,
+                deletedAt: null,
+              },
+              deletedAt: null,
+            },
+            deletedAt: null,
+          },
+        }),
+        // Count all subjects across all sections of this exam
+        prisma.subject.count({
+          where: {
             section: {
               examId: examId,
               deletedAt: null,
             },
             deletedAt: null,
           },
-          deletedAt: null,
-        },
-      });
+        }),
+        // Get all topic IDs for this exam (lightweight query, only IDs)
+        prisma.topic.findMany({
+          where: {
+            subject: {
+              section: {
+                examId: examId,
+                deletedAt: null,
+              },
+              deletedAt: null,
+            },
+            deletedAt: null,
+          },
+          select: {
+            id: true,
+          },
+        }),
+        // Get progress stats (we'll filter by topicIds in a separate query if needed)
+        // First, get all progress for this user in this exam
+        prisma.userProgress.groupBy({
+          by: ['status'],
+          where: {
+            userId,
+            topic: {
+              subject: {
+                section: {
+                  examId: examId,
+                  deletedAt: null,
+                },
+                deletedAt: null,
+              },
+              deletedAt: null,
+            },
+            deletedAt: null,
+          },
+          _count: true,
+        }),
+      ]);
+
       totalTopics = topicsCount;
-
-      // Count all subjects across all sections of this exam
-      const subjectsCount = await prisma.subject.count({
-        where: {
-          section: {
-            examId: examId,
-            deletedAt: null,
-          },
-          deletedAt: null,
-        },
-      });
       totalSubjects = subjectsCount;
-
-      // Get all topic IDs for this exam
-      const examTopics = await prisma.topic.findMany({
-        where: {
-          subject: {
-            section: {
-              examId: examId,
-              deletedAt: null,
-            },
-            deletedAt: null,
-          },
-          deletedAt: null,
-        },
-        select: {
-          id: true,
-        },
-      });
-
-      const examTopicIds = examTopics.map((t) => t.id);
-
-      // Get progress stats only for topics in this active exam
-      const progressStats = await prisma.userProgress.groupBy({
-        by: ['status'],
-        where: {
-          userId,
-          topicId: {
-            in: examTopicIds,
-          },
-          deletedAt: null,
-        },
-        _count: true,
-      });
 
       completedTopics = progressStats.find((s) => s.status === 'COMPLETED')?._count || 0;
       inProgressTopics = progressStats.find((s) => s.status === 'IN_PROGRESS')?._count || 0;
@@ -189,6 +197,130 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
     
     const totalPomodoroSessions = studyHoursStats._count || 0;
 
+    // Calculate evaluation summary if targetScore is set and there's an active exam
+    let evaluationSummary = null;
+    if (user?.targetScore && user.targetScore > 0 && activeExamAssignment?.exam?.id) {
+      const examId = activeExamAssignment.exam.id;
+      const examCode = activeExamAssignment.exam.code;
+      const targetScore = user.targetScore;
+      const totalExamQuestions = 120; // Default for KPSS, can be made configurable
+
+      // OPTIMIZED: Use JOIN to fetch topics and progress in a single query
+      // This reduces 2 queries to 1 query
+      const topicsWithProgress = await prisma.topic.findMany({
+        where: {
+          subject: {
+            section: {
+              examId: examId,
+              deletedAt: null,
+            },
+            deletedAt: null,
+          },
+          deletedAt: null,
+        },
+        select: {
+          id: true,
+          name: true,
+          order: true,
+          subject: {
+            select: {
+              name: true,
+              order: true,
+              section: {
+                select: {
+                  name: true,
+                  order: true,
+                },
+              },
+            },
+          },
+          userProgress: {
+            where: {
+              userId,
+              deletedAt: null,
+            },
+            select: {
+              totalQuestions: true,
+              correctAnswers: true,
+              wrongAnswers: true,
+            },
+            take: 1, // Should only be one per user+topic
+          },
+        },
+        orderBy: [
+          {
+            subject: {
+              section: {
+                order: 'asc',
+              },
+            },
+          },
+          {
+            subject: {
+              order: 'asc',
+            },
+          },
+          {
+            order: 'asc',
+          },
+        ],
+      });
+
+      // OPTIMIZED: Already have progress in the query result
+      const topicsWithQuestions = topicsWithProgress.map((topic) => {
+        const progress = topic.userProgress[0] || {
+          totalQuestions: null,
+          correctAnswers: null,
+          wrongAnswers: null,
+        };
+        return {
+          topicId: topic.id,
+          topicName: topic.name,
+          sectionName: topic.subject.section.name,
+          subjectName: topic.subject.name,
+          totalQuestions: progress.totalQuestions ?? 0,
+          correctAnswers: progress.correctAnswers ?? 0,
+          wrongAnswers: progress.wrongAnswers ?? 0,
+        };
+      });
+
+      if (topicsWithQuestions.length > 0) {
+        // Filter topics with questions for evaluation
+        const topicsDataForEvaluation = topicsWithQuestions
+          .filter((t) => t.totalQuestions > 0)
+          .map((progress) => ({
+            topicId: progress.topicId,
+            topicName: progress.topicName,
+            totalQuestions: progress.totalQuestions,
+            correctAnswers: progress.correctAnswers,
+            wrongAnswers: progress.wrongAnswers,
+          }));
+
+        const evaluations = evaluateTopics(topicsDataForEvaluation, {
+          targetScore,
+          totalExamQuestions,
+          examCode,
+        });
+
+        const summary = getEvaluationSummary(evaluations);
+        const requiredNet = getRequiredNet(targetScore, examCode);
+        const requiredSuccessRate = requiredNet / totalExamQuestions;
+
+        evaluationSummary = {
+          totalTopics: summary.totalTopics,
+          goodTopics: summary.goodTopics,
+          improvableTopics: summary.improvableTopics,
+          repeatTopics: summary.repeatTopics,
+          averageSuccessRate: summary.averageSuccessRate,
+          averageNet: summary.averageNet,
+          targetScore,
+          requiredNet,
+          requiredSuccessRate,
+          topics: topicsWithQuestions, // Include all topics for editing
+        };
+      }
+    }
+
     const stats = {
       totalExams,
       activeExams,
@@ -205,6 +337,7 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
         targetScore: user?.targetScore || null,
         dailyStudyHours: user?.dailyStudyHours || null,
       },
+      evaluation: evaluationSummary,
     };
 
     logApi('GET', '/api/dashboard/stats', HTTP_STATUS.OK, undefined, { userId });

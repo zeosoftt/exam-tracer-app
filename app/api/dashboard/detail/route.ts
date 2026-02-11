@@ -12,6 +12,8 @@ import { prisma } from '@/lib/db/prisma';
 import { logApi } from '@/lib/logger';
 import { HTTP_STATUS } from '@/config/constants';
 import { UnauthorizedError } from '@/lib/errors/AppError';
+import { evaluateTopics, calculateRequiredSuccessRate } from '@/lib/services/targetScoreEvaluation';
+import { getRequiredNet } from '@/config/targetScoreMaps';
 
 async function getDetailHandler(_req: NextRequest): Promise<NextResponse> {
   try {
@@ -21,6 +23,19 @@ async function getDetailHandler(_req: NextRequest): Promise<NextResponse> {
     }
 
     const userId = session.user.id;
+
+    // Get user info including targetScore
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        targetScore: true,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedError();
+    }
 
     // Get active exam assigned to user
     const activeExamAssignment = await prisma.examAssignment.findFirst({
@@ -57,6 +72,8 @@ async function getDetailHandler(_req: NextRequest): Promise<NextResponse> {
     }
 
     const examId = activeExamAssignment.exam.id;
+    const examCode = activeExamAssignment.exam.code;
+    const targetScore = user.targetScore ?? 0;
 
     // Get all sections for this exam
     const sections = await prisma.section.findMany({
@@ -114,13 +131,108 @@ async function getDetailHandler(_req: NextRequest): Promise<NextResponse> {
       select: {
         topicId: true,
         status: true,
+        totalQuestions: true,
+        correctAnswers: true,
+        wrongAnswers: true,
       },
     });
 
-    // Create a map of topicId -> status for quick lookup
+    // Create maps for quick lookup
     const progressMap = new Map(
       userProgress.map((progress) => [progress.topicId, progress.status])
     );
+    const questionStatsMap = new Map(
+      userProgress.map((progress) => [
+        progress.topicId,
+        {
+          totalQuestions: progress.totalQuestions ?? 0,
+          correctAnswers: progress.correctAnswers ?? 0,
+          wrongAnswers: progress.wrongAnswers ?? 0,
+        },
+      ])
+    );
+
+    // Calculate total exam questions (sum of all topics' questions or default to 120 for KPSS)
+    // In future, this should come from Exam model
+    const totalExamQuestions = 120; // Default for KPSS, can be made configurable per exam
+
+    // Prepare evaluation config if targetScore is set
+    const evaluationConfig = targetScore > 0 ? {
+      targetScore,
+      totalExamQuestions,
+      examCode,
+    } : null;
+
+    // PRE-OPTIMIZATION: Calculate evaluation for all topics at once (instead of N times)
+    const evaluationMap = new Map<string, {
+      topicNet: number;
+      topicSuccessRate: number;
+      requiredSuccessRate: number;
+      requiredNet: number;
+      status: string;
+      isGood: boolean;
+      isImprovable: boolean;
+      needsRepeat: boolean;
+    }>();
+    let requiredNet: number | null = null;
+    let requiredSuccessRate: number | null = null;
+
+    if (evaluationConfig) {
+      // Collect all topics with questions for batch evaluation
+      const topicsForEvaluation: Array<{
+        topicId: string;
+        topicName: string;
+        totalQuestions: number;
+        correctAnswers: number;
+        wrongAnswers: number;
+      }> = [];
+
+      // Prepare topics data
+      for (const section of sections) {
+        for (const subject of section.subjects) {
+          for (const topic of subject.topics) {
+            const questionStats = questionStatsMap.get(topic.id) || {
+              totalQuestions: 0,
+              correctAnswers: 0,
+              wrongAnswers: 0,
+            };
+            
+            if (questionStats.totalQuestions > 0) {
+              topicsForEvaluation.push({
+                topicId: topic.id,
+                topicName: topic.name,
+                totalQuestions: questionStats.totalQuestions,
+                correctAnswers: questionStats.correctAnswers,
+                wrongAnswers: questionStats.wrongAnswers,
+              });
+            }
+          }
+        }
+      }
+
+      // Batch evaluate all topics at once (1 call instead of N calls)
+      if (topicsForEvaluation.length > 0) {
+        const evaluations = evaluateTopics(topicsForEvaluation, evaluationConfig);
+        
+        // Pre-calculate required values (once instead of N times)
+        requiredNet = getRequiredNet(evaluationConfig.targetScore, examCode);
+        requiredSuccessRate = calculateRequiredSuccessRate(evaluationConfig);
+        
+        // Create evaluation map for O(1) lookup
+        for (const evalResult of evaluations) {
+          evaluationMap.set(evalResult.topicId, {
+            topicNet: evalResult.topicNet,
+            topicSuccessRate: evalResult.topicSuccessRate,
+            requiredSuccessRate: evalResult.requiredSuccessRate,
+            requiredNet: evalResult.requiredNet,
+            status: evalResult.status,
+            isGood: evalResult.isGood,
+            isImprovable: evalResult.isImprovable,
+            needsRepeat: evalResult.needsRepeat,
+          });
+        }
+      }
+    }
 
     // Calculate progress for each section and subject
     const sectionsWithProgress = sections.map((section) => {
@@ -142,6 +254,11 @@ async function getDetailHandler(_req: NextRequest): Promise<NextResponse> {
           sectionTopics.push(topic.id);
           subjectTopics.push(topic.id);
           const status = progressMap.get(topic.id) || 'NOT_STARTED';
+          const questionStats = questionStatsMap.get(topic.id) || {
+            totalQuestions: 0,
+            correctAnswers: 0,
+            wrongAnswers: 0,
+          };
           
           // Count by status
           // REVIEWED durumunu COMPLETED olarak say
@@ -168,12 +285,19 @@ async function getDetailHandler(_req: NextRequest): Promise<NextResponse> {
             subjectReviewed.push(topic.id);
           }
           
+          // OPTIMIZED: Get evaluation from pre-calculated map (O(1) lookup)
+          const evaluation = evaluationMap.get(topic.id) || null;
+
           return {
             id: topic.id,
             code: topic.code,
             name: topic.name,
             order: topic.order,
             status: finalStatus as 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED',
+            totalQuestions: questionStats.totalQuestions,
+            correctAnswers: questionStats.correctAnswers,
+            wrongAnswers: questionStats.wrongAnswers,
+            evaluation,
           };
         });
 
@@ -229,11 +353,23 @@ async function getDetailHandler(_req: NextRequest): Promise<NextResponse> {
 
     logApi('GET', '/api/dashboard/detail', HTTP_STATUS.OK, undefined, { userId });
 
+    // OPTIMIZED: Use pre-calculated values instead of recalculating
+    let evaluationSummary = null;
+    if (evaluationConfig && requiredNet !== null && requiredSuccessRate !== null) {
+      evaluationSummary = {
+        targetScore,
+        totalExamQuestions,
+        requiredNet,
+        requiredSuccessRate,
+      };
+    }
+
     return NextResponse.json({
       success: true,
       data: {
         exam: activeExamAssignment.exam,
         sections: sectionsWithProgress,
+        evaluation: evaluationSummary,
       },
     });
   } catch (error) {

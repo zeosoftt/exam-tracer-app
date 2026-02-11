@@ -4,10 +4,10 @@
  */
 
 import { NextResponse } from 'next/server';
-import { asyncHandler, handleError } from '@/lib/errors/errorHandler';
-import { prisma } from '@/lib/db/prisma';
-import { logApi } from '@/lib/logger';
-import { HTTP_STATUS } from '@/config/constants';
+import { asyncHandler, handleError } from '../../../../lib/errors/errorHandler';
+import { prisma } from '../../../../lib/db/prisma';
+import { logApi } from '../../../../lib/logger';
+import { HTTP_STATUS } from '../../../../config/constants';
 
 // Exam score ranges configuration
 const examScoreRanges: Record<string, { minScore: number; maxScore: number; step: number }> = {

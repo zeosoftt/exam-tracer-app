@@ -19,7 +19,7 @@ interface Exam {
   createdAt: string;
 }
 
-export function ExamsList({ user }: { user: { id: string; role: string } }) {
+export function ExamsList({ user }: { user: { id: string; role?: string } }) {
   const [exams, setExams] = useState<Exam[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

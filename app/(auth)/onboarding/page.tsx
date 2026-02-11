@@ -29,21 +29,30 @@ export default function OnboardingPage() {
   const [targetScore, setTargetScore] = useState<number | null>(null);
   const [dailyStudyHours, setDailyStudyHours] = useState<number | null>(null);
   const [availableExams, setAvailableExams] = useState<ExamType[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_isLoadingExams, setIsLoadingExams] = useState(true);
+  const [isLoadingExams, setIsLoadingExams] = useState(true);
+  const [examError, setExamError] = useState<string | null>(null);
 
   // Fetch available exams from API
   useEffect(() => {
     async function fetchExams() {
       try {
         setIsLoadingExams(true);
+        setExamError(null);
         const response = await fetch('/api/exams/available');
         if (response.ok) {
           const data = await response.json();
-          setAvailableExams(data.data || []);
+          if (data.success && data.data) {
+            setAvailableExams(data.data || []);
+          } else {
+            setExamError('Sınavlar yüklenemedi. Lütfen sayfayı yenileyin.');
+          }
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          setExamError(errorData.message || 'Sınavlar yüklenemedi. Lütfen sayfayı yenileyin.');
         }
       } catch (error) {
         console.error('Failed to fetch exams:', error);
+        setExamError('Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.');
       } finally {
         setIsLoadingExams(false);
       }
@@ -128,8 +137,48 @@ export default function OnboardingPage() {
       </div>
 
       <div className="max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {availableExams.map((exam) => (
+        {isLoadingExams ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600 mb-4"></div>
+              <p className="text-gray-600">Sınavlar yükleniyor...</p>
+            </div>
+          </div>
+        ) : examError ? (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+            <p className="text-red-800 font-semibold mb-2">Hata</p>
+            <p className="text-red-600 text-sm mb-4">{examError}</p>
+            <button
+              onClick={() => {
+                setIsLoadingExams(true);
+                setExamError(null);
+                fetch('/api/exams/available')
+                  .then(res => res.json())
+                  .then(data => {
+                    if (data.success && data.data) {
+                      setAvailableExams(data.data || []);
+                    } else {
+                      setExamError('Sınavlar yüklenemedi. Lütfen sayfayı yenileyin.');
+                    }
+                  })
+                  .catch(() => {
+                    setExamError('Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.');
+                  })
+                  .finally(() => setIsLoadingExams(false));
+              }}
+              className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+            >
+              Tekrar Dene
+            </button>
+          </div>
+        ) : availableExams.length === 0 ? (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center">
+            <p className="text-yellow-800 font-semibold mb-2">Henüz sınav bulunmuyor</p>
+            <p className="text-yellow-600 text-sm">Sistem yöneticisi ile iletişime geçin.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {availableExams.map((exam) => (
             <button
               key={exam?.id}
               onClick={() => setSelectedExam(exam)}
@@ -177,7 +226,8 @@ export default function OnboardingPage() {
               </div>
             </button>
           ))}
-        </div>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center justify-between pt-6">

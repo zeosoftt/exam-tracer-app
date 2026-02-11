@@ -17,7 +17,7 @@ import Link from 'next/link';
 interface CreateExamFormProps {
   user: {
     id: string;
-    role: string;
+    role?: string;
   };
 }
 
