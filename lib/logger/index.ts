@@ -1,19 +1,16 @@
 /**
  * Structured Logging with Winston
  * Server-side only - Never import in client components
- * No console.log in production
- * On Vercel/serverless: console only (no file system writes)
+ * In all environments (including Vercel/serverless), we log to console only.
+ * Vercel and most platforms already capture console output as structured logs.
  */
 
 import winston from 'winston';
-import path from 'path';
-import fs from 'fs';
 
 const logLevel = process.env.LOG_LEVEL || 'info';
 const isDevelopment = process.env.NODE_ENV === 'development';
-const isServerless = typeof process.env.VERCEL !== 'undefined' || typeof process.env.AWS_LAMBDA_FUNCTION_NAME !== 'undefined';
 
-// Define log format
+// Base JSON format
 const logFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
   winston.format.errors({ stack: true }),
@@ -21,7 +18,7 @@ const logFormat = winston.format.combine(
   winston.format.json()
 );
 
-// Console format for development
+// Human-readable console format for development
 const consoleFormat = winston.format.combine(
   winston.format.colorize(),
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
@@ -34,44 +31,16 @@ const consoleFormat = winston.format.combine(
   })
 );
 
-// Transports: always console; add file transports only when not serverless and logs dir is writable
-const transports: winston.transport[] = [
-  new winston.transports.Console({
-    format: isDevelopment ? consoleFormat : logFormat,
-  }),
-];
-
-if (!isServerless) {
-  try {
-    const logsDir = path.join(process.cwd(), 'logs');
-    if (!fs.existsSync(logsDir)) {
-      fs.mkdirSync(logsDir, { recursive: true });
-    }
-    transports.push(
-      new winston.transports.File({
-        filename: path.join(logsDir, 'error.log'),
-        level: 'error',
-        maxsize: 5242880,
-        maxFiles: 5,
-      }),
-      new winston.transports.File({
-        filename: path.join(logsDir, 'combined.log'),
-        maxsize: 5242880,
-        maxFiles: 5,
-      })
-    );
-  } catch {
-    // Read-only FS or permission error: console only
-  }
-}
-
+// Single console transport (works everywhere, including Vercel)
 const logger = winston.createLogger({
   level: logLevel,
   format: logFormat,
   defaultMeta: { service: 'exam-tracker' },
-  transports,
-  exceptionHandlers: isServerless ? [new winston.transports.Console()] : undefined,
-  rejectionHandlers: isServerless ? [new winston.transports.Console()] : undefined,
+  transports: [
+    new winston.transports.Console({
+      format: isDevelopment ? consoleFormat : logFormat,
+    }),
+  ],
 });
 
 // Logging helper functions
