@@ -16,6 +16,15 @@ const GA_MEASUREMENT_ID = 'G-6YZFCN5KML';
 export const metadata: Metadata = {
   title: 'Exam Tracker - Sınav Takip Platformu',
   description: 'Kurumlar ve bireyler için sınav takip platformu',
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: 'any' },
+    ],
+    apple: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+  },
 };
 
 export default function RootLayout({
