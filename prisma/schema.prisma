@@ -82,6 +82,7 @@ model User {
   sessions             Session[]
   examAssignments      ExamAssignment[]
   pomodoroSessions     PomodoroSession[]
+  passwordResetTokens  PasswordResetToken[]
 
   @@index([email])
   @@index([institutionId])
@@ -589,4 +590,23 @@ model Subscription {
   @@index([currentPeriodEnd])
   @@index([organizationId, status, deletedAt]) // Active subscription query
   @@map("subscriptions")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+  @@index([used])
+  @@map("password_reset_tokens")
 }

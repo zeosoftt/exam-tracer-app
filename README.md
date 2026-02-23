@@ -116,11 +116,31 @@ docker-compose exec app npx prisma migrate deploy
 
 ### Environment Variables
 
-Required environment variables (see `.env.example`):
-- `DATABASE_URL`: PostgreSQL connection string
-- `NEXTAUTH_URL`: Application URL
-- `NEXTAUTH_SECRET`: Secret key for JWT (generate with `openssl rand -base64 32`)
-- `NODE_ENV`: Environment (development/staging/production)
+**📖 Detaylı kılavuz için:** [ENV_SETUP_GUIDE.md](./ENV_SETUP_GUIDE.md)
+
+**Hızlı başlangıç:**
+```bash
+# 1. Template'i kopyala
+cp .env.development.example .env.local
+
+# 2. Değerleri doldur (DATABASE_URL, NEXTAUTH_SECRET, NEXTAUTH_URL)
+
+# 3. Secret oluştur
+node scripts/generate-secret.js
+
+# 4. Kontrol et
+npm run dev:check
+```
+
+**Zorunlu değişkenler:**
+- `DATABASE_URL`: PostgreSQL connection string (Supabase pooler kullanın)
+- `NEXTAUTH_URL`: Application URL (`http://localhost:3000` veya production domain)
+- `NEXTAUTH_SECRET`: JWT secret key (min 32 karakter)
+
+**Opsiyonel değişkenler:**
+- `NODE_ENV`: `development` | `production` (otomatik ayarlanır)
+- `LOG_LEVEL`: `error` | `warn` | `info` | `debug` (varsayılan: `info`)
+- `ALLOWED_ORIGINS`: CORS origins (virgülle ayrılmış)
 
 ### Production Checklist
 

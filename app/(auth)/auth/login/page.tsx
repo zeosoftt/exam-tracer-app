@@ -13,14 +13,16 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema } from '@/lib/validation/schemas';
 import type { z } from 'zod';
-import { BookOpen, Mail, Lock, Loader2, ArrowLeft, CheckCircle } from 'lucide-react';
+import { BookOpen, Mail, Lock, Loader2, ArrowLeft, CheckCircle, Eye, EyeOff } from 'lucide-react';
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const registered = searchParams.get('registered');
+  const passwordReset = searchParams.get('passwordReset');
 
   const {
     register,
@@ -100,6 +102,17 @@ function LoginForm() {
             </div>
           )}
 
+          {passwordReset && (
+            <div className="mb-6 rounded-xl bg-green-50 border border-green-200 p-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+                <p className="text-sm font-medium text-green-800">
+                  Şifreniz başarıyla güncellendi! Yeni şifrenizle giriş yapabilirsiniz.
+                </p>
+              </div>
+            </div>
+          )}
+
           {error && (
             <div className="mb-6 rounded-xl bg-red-50 border border-red-200 p-4">
               <p className="text-sm font-medium text-red-800">{error}</p>
@@ -142,17 +155,39 @@ function LoginForm() {
                 </div>
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   {...register('password')}
-                  className="w-full pl-10 rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-colors"
+                  className="w-full pl-10 pr-10 rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-colors"
                   placeholder="••••••••"
                   autoComplete="current-password"
                   disabled={isLoading}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
               </div>
               {errors.password && (
                 <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
               )}
+            </div>
+
+            {/* Forgot Password Link */}
+            <div className="flex justify-end">
+              <Link
+                href="/auth/forgot-password"
+                className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+              >
+                Şifremi Unuttum
+              </Link>
             </div>
 
             {/* Submit Button */}
