@@ -10,7 +10,7 @@ import { authOptions } from '@/lib/auth/config';
 import { prisma } from '@/lib/db/prisma';
 import { validate } from '@/lib/validation/validate';
 import { updateUserSettingsSchema } from '@/lib/validation/schemas';
-import { asyncHandler, handleError } from '@/lib/errors/errorHandler';
+import { asyncHandler } from '@/lib/errors/errorHandler';
 import { UnauthorizedError } from '@/lib/errors/AppError';
 import { HTTP_STATUS } from '@/config/constants';
 

@@ -4,6 +4,7 @@
  * Creates default permissions, roles, and role-permission mappings
  * Run this after initial migration
  */
+/* eslint-disable no-console */
 
 import { prisma } from '@/lib/db/prisma';
 
