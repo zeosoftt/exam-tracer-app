@@ -90,9 +90,10 @@ async function registerHandler(req: NextRequest): Promise<NextResponse> {
           createdAt: true,
         },
       });
-    } catch (createError: any) {
+    } catch (createError: unknown) {
       // Handle Prisma unique constraint violation (P2002)
-      if (createError?.code === 'P2002' && createError?.meta?.target?.includes('email')) {
+      const prismaError = createError as { code?: string; meta?: { target?: string[] } };
+      if (prismaError?.code === 'P2002' && prismaError?.meta?.target?.includes('email')) {
         logAuth('Registration failed: Email unique constraint violation', undefined, { 
           email: validatedData.email.toLowerCase() 
         });

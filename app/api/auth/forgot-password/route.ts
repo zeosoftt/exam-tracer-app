@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { randomBytes } from 'crypto';
 import { handleError } from '@/lib/errors/errorHandler';
+import { logInfo } from '@/lib/logger';
 
 export async function POST(req: NextRequest) {
   try {
@@ -64,11 +65,12 @@ export async function POST(req: NextRequest) {
 
     // TODO: Send email with reset link
     // For now, log it (in production, use email service like SendGrid, Resend, etc.)
-    console.log('=== PASSWORD RESET EMAIL ===');
-    console.log(`To: ${user.email}`);
-    console.log(`Subject: Şifre Sıfırlama - Exam Tracker`);
-    console.log(`Reset Link: ${resetUrl}`);
-    console.log('===========================');
+    logInfo('Password reset token generated', {
+      userId: user.id,
+      email: user.email,
+      resetUrl,
+      expiresAt: expiresAt.toISOString(),
+    });
 
     // In production, uncomment and configure email service:
     /*

@@ -76,10 +76,11 @@ export const authOptions: NextAuthOptions = {
               try {
                 const { getActiveOrganizationId } = await import('./authorization');
                 activeOrganizationId = await getActiveOrganizationId(user.id);
-              } catch (membershipError: any) {
+              } catch (membershipError: unknown) {
                 // memberships table or personalOrganizationId column doesn't exist yet
                 // This is OK - migration hasn't been run yet
-                if (membershipError?.code === 'P2021' || membershipError?.message?.includes('does not exist')) {
+                const error = membershipError as { code?: string; message?: string };
+                if (error?.code === 'P2021' || error?.message?.includes('does not exist')) {
                   logAuth('Schema migration not done yet - skipping organization lookup', user.id);
                 } else {
                   logAuth('Error getting active organization', user.id, { error: membershipError });
@@ -87,9 +88,10 @@ export const authOptions: NextAuthOptions = {
                 activeOrganizationId = null;
               }
             }
-          } catch (error: any) {
+          } catch (error: unknown) {
             // Any other error - log but don't fail login
-            logAuth('Error getting active organization (non-critical)', user.id, { error });
+            const errorObj = error instanceof Error ? { message: error.message, name: error.name } : error;
+            logAuth('Error getting active organization (non-critical)', user.id, { error: errorObj });
             activeOrganizationId = null;
           }
 

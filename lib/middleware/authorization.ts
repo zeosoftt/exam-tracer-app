@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getServerSession, type Session } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
 import { authorize, getActiveOrganizationId } from '@/lib/auth/authorization';
 import { hasFeatureAccess } from '@/lib/auth/planLimits';
@@ -68,7 +68,7 @@ export function withAuthorization<T extends unknown[] = unknown[]>(
     context: {
       userId: string;
       organizationId: string | null;
-      session: any;
+      session: Session;
     },
     ...args: T
   ) => Promise<NextResponse>,
@@ -152,7 +152,7 @@ export function requirePermission(
   return <T extends unknown[] = unknown[]>(
     handler: (
       req: NextRequest,
-      context: { userId: string; organizationId: string | null; session: any },
+      context: { userId: string; organizationId: string | null; session: Session },
       ...args: T
     ) => Promise<NextResponse>
   ) => {
@@ -175,7 +175,7 @@ export function requireFeature(
   return <T extends unknown[] = unknown[]>(
     handler: (
       req: NextRequest,
-      context: { userId: string; organizationId: string | null; session: any },
+      context: { userId: string; organizationId: string | null; session: Session },
       ...args: T
     ) => Promise<NextResponse>
   ) => {
@@ -203,7 +203,7 @@ export function requirePermissionAndLimit(
   return <T extends unknown[] = unknown[]>(
     handler: (
       req: NextRequest,
-      context: { userId: string; organizationId: string | null; session: any },
+      context: { userId: string; organizationId: string | null; session: Session },
       ...args: T
     ) => Promise<NextResponse>
   ) => {
@@ -222,7 +222,7 @@ export function requirePermissionAndLimit(
 export async function getAuthContext(req: NextRequest): Promise<{
   userId: string;
   organizationId: string | null;
-  session: any;
+  session: Session;
 }> {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
