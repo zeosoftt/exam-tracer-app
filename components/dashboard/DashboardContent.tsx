@@ -26,6 +26,7 @@ import {
   ChevronDown,
   ChevronRight,
   Circle,
+  Shield,
 } from 'lucide-react';
 
 interface StudyDay {
@@ -274,6 +275,15 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
               </span>
             </Link>
             <div className="flex items-center gap-4">
+              {user.role === 'ADMIN' && (
+                <Link
+                  href="/dashboard/super-admin"
+                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-colors"
+                >
+                  <Shield className="h-4 w-4" />
+                  <span>Super Admin</span>
+                </Link>
+              )}
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <User className="h-4 w-4" />
                 <span className="font-medium">{user.name}</span>
@@ -304,100 +314,100 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
 
         {/* 3 Kart */}
         {isLoading ? (
-          <div className="grid gap-6 md:grid-cols-3 mb-10">
-            {[...Array(3)].map((_, _i) => (
-              <div key={_i} className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100 animate-pulse">
-                <div className="h-4 w-24 bg-gray-200 rounded mb-4"></div>
-                <div className="h-10 w-16 bg-gray-200 rounded mb-2"></div>
-                <div className="h-3 w-32 bg-gray-200 rounded"></div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-10">
+            {[...Array(4)].map((_, _i) => (
+              <div key={_i} className="bg-white rounded-2xl shadow-lg p-5 border border-gray-100 animate-pulse">
+                <div className="h-3 w-20 bg-gray-200 rounded mb-3"></div>
+                <div className="h-8 w-14 bg-gray-200 rounded mb-1.5"></div>
+                <div className="h-2.5 w-28 bg-gray-200 rounded"></div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-3 mb-10">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-10">
             {/* Kart 1: Konu/Ders Tamamlanma Durumları */}
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-xl p-8 text-white hover:shadow-2xl transition-all hover:scale-[1.02]">
-              <div className="flex items-center justify-between mb-6">
-                <div className="rounded-full bg-white/20 p-3 backdrop-blur-sm">
-                  <CheckCircle className="h-7 w-7" />
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-xl p-5 text-white hover:shadow-2xl transition-all hover:scale-[1.02]">
+              <div className="flex items-center justify-between mb-3">
+                <div className="rounded-full bg-white/20 p-2.5 backdrop-blur-sm">
+                  <CheckCircle className="h-5 w-5" />
                 </div>
-                <span className="text-xs font-semibold bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
+                <span className="text-xs font-semibold bg-white/20 px-2.5 py-0.5 rounded-full backdrop-blur-sm">
                   İlerleme
                 </span>
               </div>
-              <div className="space-y-3 mb-4">
+              <div className="space-y-1.5 mb-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-blue-100 text-sm">Toplam Ders</span>
-                  <span className="text-2xl font-bold">{stats?.totalSubjects || 0}</span>
+                  <span className="text-blue-100 text-xs">Toplam Ders</span>
+                  <span className="text-lg font-bold">{stats?.totalSubjects || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-blue-100 text-sm">Toplam Konu</span>
-                  <span className="text-2xl font-bold">{stats?.totalTopics || 0}</span>
+                  <span className="text-blue-100 text-xs">Toplam Konu</span>
+                  <span className="text-lg font-bold">{stats?.totalTopics || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-blue-100 text-sm">Tamamlanan</span>
-                  <span className="text-2xl font-bold">{stats?.completedTopics || 0}</span>
+                  <span className="text-blue-100 text-xs">Tamamlanan</span>
+                  <span className="text-lg font-bold">{stats?.completedTopics || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-blue-100 text-sm">Devam Eden</span>
-                  <span className="text-2xl font-bold">{stats?.inProgressTopics || 0}</span>
+                  <span className="text-blue-100 text-xs">Devam Eden</span>
+                  <span className="text-lg font-bold">{stats?.inProgressTopics || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-blue-100 text-sm">Başlanmamış</span>
-                  <span className="text-2xl font-bold">{stats?.notStartedTopics || 0}</span>
+                  <span className="text-blue-100 text-xs">Başlanmamış</span>
+                  <span className="text-lg font-bold">{stats?.notStartedTopics || 0}</span>
                 </div>
               </div>
-              <div className="pt-4 border-t border-white/20">
+              <div className="pt-2 border-t border-white/20">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-blue-100">Tamamlanma Oranı</span>
-                  <span className="text-xl font-bold">{completionRate}%</span>
+                  <span className="text-xs text-blue-100">Tamamlanma Oranı</span>
+                  <span className="text-lg font-bold">{completionRate}%</span>
                 </div>
               </div>
             </div>
 
             {/* Kart 2: Çalışma Saati */}
-            <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl shadow-xl p-8 text-white hover:shadow-2xl transition-all hover:scale-[1.02]">
-              <div className="flex items-center justify-between mb-6">
-                <div className="rounded-full bg-white/20 p-3 backdrop-blur-sm">
-                  <Clock className="h-7 w-7" />
+            <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl shadow-xl p-5 text-white hover:shadow-2xl transition-all hover:scale-[1.02]">
+              <div className="flex items-center justify-between mb-3">
+                <div className="rounded-full bg-white/20 p-2.5 backdrop-blur-sm">
+                  <Clock className="h-5 w-5" />
                 </div>
-                <span className="text-xs font-semibold bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
+                <span className="text-xs font-semibold bg-white/20 px-2.5 py-0.5 rounded-full backdrop-blur-sm">
                   Çalışma
                 </span>
               </div>
-              <div className="mb-4">
-                <p className="text-5xl font-bold mb-2">{studyHours}</p>
-                <p className="text-purple-100 text-sm">Toplam Çalışma Saati</p>
+              <div className="mb-2">
+                <p className="text-3xl font-bold mb-0.5">{studyHours}</p>
+                <p className="text-purple-100 text-xs">Toplam Çalışma Saati</p>
               </div>
               {stats?.user?.dailyStudyHours && (
-                <div className="pt-4 border-t border-white/20 mb-3">
+                <div className="pt-2 border-t border-white/20 mb-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-purple-100">Günlük Hedef</span>
-                    <span className="text-lg font-bold">{stats.user.dailyStudyHours} saat/gün</span>
+                    <span className="text-xs text-purple-100">Günlük Hedef</span>
+                    <span className="text-sm font-bold">{stats.user.dailyStudyHours} saat/gün</span>
                   </div>
                 </div>
               )}
               {/* Haftalık: günlük hedefe ulaşan günler */}
               {stats?.study && stats.study.weeklySummary.length > 0 && (
-                <div className="pt-3 border-t border-white/20">
-                  <p className="text-xs text-purple-100 mb-2">Bu hafta hedefe ulaşma</p>
-                  <div className="flex flex-wrap gap-1.5">
+                <div className="pt-2 border-t border-white/20">
+                  <p className="text-[10px] text-purple-100 mb-1">Bu hafta hedefe ulaşma</p>
+                  <div className="flex flex-wrap gap-1">
                     {stats.study.weeklySummary.map((day) => {
                       const goalHours = day.goalMinutes / 60;
                       const met = day.completed;
                       return (
                         <div
                           key={day.date}
-                          className={`flex flex-col items-center py-1.5 px-1.5 rounded-lg min-w-[2.5rem] ${
+                          className={`flex flex-col items-center py-1 px-1 rounded min-w-[2rem] ${
                             met ? 'bg-white/25' : 'bg-white/10'
                           }`}
                           title={`${day.dayName}: ${day.hoursStudied} / ${goalHours} saat${met ? ' ✓' : ''}`}
                         >
-                          <span className="text-[10px] font-semibold text-purple-100">{day.dayName}</span>
+                          <span className="text-[9px] font-semibold text-purple-100">{day.dayName}</span>
                           {met ? (
-                            <CheckCircle className="h-3.5 w-3.5 text-white mt-0.5" />
+                            <CheckCircle className="h-3 w-3 text-white mt-0.5" />
                           ) : (
-                            <Circle className="h-3.5 w-3.5 text-white/50 mt-0.5" />
+                            <Circle className="h-3 w-3 text-white/50 mt-0.5" />
                           )}
                         </div>
                       );
@@ -407,34 +417,48 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
               )}
             </div>
 
-            {/* Kart 3: Aktif Sınav ve Hedef Puan */}
-            <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-xl p-8 text-white hover:shadow-2xl transition-all hover:scale-[1.02]">
-              <div className="flex items-center justify-between mb-6">
-                <div className="rounded-full bg-white/20 p-3 backdrop-blur-sm">
-                  <Target className="h-7 w-7" />
+            {/* Kart: Deneme Takibi (placeholder – içerik sonra eklenecek) */}
+            <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl shadow-xl p-5 text-white hover:shadow-2xl transition-all hover:scale-[1.02]">
+              <div className="flex items-center justify-between mb-3">
+                <div className="rounded-full bg-white/20 p-2.5 backdrop-blur-sm">
+                  <BarChart3 className="h-5 w-5" />
                 </div>
-                <span className="text-xs font-semibold bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
+                <span className="text-xs font-semibold bg-white/20 px-2.5 py-0.5 rounded-full backdrop-blur-sm">
+                  Deneme Takibi
+                </span>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-amber-100 mb-0.5">Deneme Takibi</p>
+                <p className="text-xs text-amber-100/90">İçerik yakında eklenecek.</p>
+              </div>
+            </div>
+
+            {/* Kart 3: Aktif Sınav ve Hedef Puan */}
+            <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-xl p-5 text-white hover:shadow-2xl transition-all hover:scale-[1.02]">
+              <div className="flex items-center justify-between mb-3">
+                <div className="rounded-full bg-white/20 p-2.5 backdrop-blur-sm">
+                  <Target className="h-5 w-5" />
+                </div>
+                <span className="text-xs font-semibold bg-white/20 px-2.5 py-0.5 rounded-full backdrop-blur-sm">
                   Hedef
                 </span>
               </div>
-              <div className="mb-4">
+              <div>
                 {stats?.activeExam ? (
                   <>
-                    <p className="text-lg font-semibold text-green-100 mb-1">Aktif Sınav</p>
-                    <p className="text-2xl font-bold mb-4">{stats.activeExam.name}</p>
+                    <p className="text-xs font-semibold text-green-100 mb-0.5">Aktif Sınav</p>
+                    <p className="text-lg font-bold mb-2 truncate" title={stats.activeExam.name}>{stats.activeExam.name}</p>
                   </>
                 ) : (
-                  <p className="text-lg text-green-100 mb-4">Aktif sınav bulunamadı</p>
+                  <p className="text-sm text-green-100 mb-2">Aktif sınav bulunamadı</p>
                 )}
                 {stats?.user?.targetScore && (
-                  <>
-                    <div className="pt-4 border-t border-white/20">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-green-100">Hedef Puan</span>
-                        <span className="text-3xl font-bold">{stats.user.targetScore}</span>
-                      </div>
+                  <div className="pt-2 border-t border-white/20">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-green-100">Hedef Puan</span>
+                      <span className="text-xl font-bold">{stats.user.targetScore}</span>
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
             </div>

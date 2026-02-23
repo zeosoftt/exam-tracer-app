@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Timer, Play, Pause, RotateCcw, Clock, Calendar, TrendingUp, History } from 'lucide-react';
+import { ArrowLeft, Timer, Play, Pause, RotateCcw, Clock, Calendar, TrendingUp, History, Volume2, VolumeX } from 'lucide-react';
 
 interface PomodoroSession {
   id: string;
@@ -36,7 +36,64 @@ export default function PomodoroPage() {
   const [history, setHistory] = useState<PomodoroSession[]>([]);
   const [stats, setStats] = useState<PomodoroStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  const POMODORO_SOUND_KEY = 'pomodoro-sound-enabled';
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(POMODORO_SOUND_KEY);
+      if (stored !== null) setSoundEnabled(stored === 'true');
+    } catch {
+      // localStorage erişilemezse varsayılan (açık) kalsın
+    }
+  }, []);
+
+  const toggleSound = useCallback(() => {
+    setSoundEnabled((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(POMODORO_SOUND_KEY, String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }, []);
+
+  // Süre bitince bildirim sesi (Web Audio API)
+  const playCompletionSound = useCallback(() => {
+    try {
+      const AudioContextClass = typeof window !== 'undefined' ? window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext : null;
+      if (!AudioContextClass) return;
+
+      const ctx = audioContextRef.current ?? new AudioContextClass();
+      if (!audioContextRef.current) audioContextRef.current = ctx;
+
+      if (ctx.state === 'suspended') ctx.resume();
+
+      const playBeep = (frequency: number, startTime: number, duration: number) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = frequency;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.15, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+      };
+
+      playBeep(880, 0, 0.15);
+      playBeep(880, 0.22, 0.15);
+      playBeep(1100, 0.44, 0.25);
+    } catch {
+      // Ses çalınamazsa sessizce geç (örn. autoplay kısıtı)
+    }
+  }, []);
 
   // Fetch history and stats
   const fetchHistory = useCallback(async () => {
@@ -60,7 +117,8 @@ export default function PomodoroPage() {
 
   const handleTimerComplete = useCallback(async () => {
     setIsActive(false);
-    
+    if (soundEnabled) playCompletionSound();
+
     // Complete the session in backend
     if (currentSessionId) {
       try {
@@ -85,7 +143,7 @@ export default function PomodoroPage() {
       setMinutes(25); // 25 dakika çalışma
       setSeconds(0);
     }
-  }, [currentSessionId, isBreak, fetchHistory]);
+  }, [currentSessionId, isBreak, fetchHistory, playCompletionSound, soundEnabled]);
 
   // Timer logic
   useEffect(() => {
@@ -118,6 +176,13 @@ export default function PomodoroPage() {
   }, [isActive, minutes, seconds, handleTimerComplete]);
 
   const handleStartPause = async () => {
+    // Kullanıcı etkileşiminde ses bağlamını hazırla (süre bitince ses çalınabilsin)
+    if (!audioContextRef.current && typeof window !== 'undefined') {
+      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (AudioContextClass) audioContextRef.current = new AudioContextClass();
+    }
+    if (audioContextRef.current?.state === 'suspended') audioContextRef.current.resume();
+
     if (!isActive && !currentSessionId) {
       // Start new session
       try {
@@ -277,6 +342,27 @@ export default function PomodoroPage() {
               >
                 <RotateCcw className="h-5 w-5" />
                 Sıfırla
+              </button>
+            </div>
+
+            {/* Sesi kapat seçeneği */}
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={toggleSound}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                  soundEnabled
+                    ? 'text-purple-600 hover:bg-purple-50'
+                    : 'text-gray-500 hover:bg-gray-100'
+                }`}
+                title={soundEnabled ? 'Süre bitince ses çalar' : 'Ses kapalı'}
+              >
+                {soundEnabled ? (
+                  <Volume2 className="h-4 w-4" />
+                ) : (
+                  <VolumeX className="h-4 w-4" />
+                )}
+                <span>{soundEnabled ? 'Ses açık' : 'Ses kapalı'}</span>
               </button>
             </div>
           </div>
