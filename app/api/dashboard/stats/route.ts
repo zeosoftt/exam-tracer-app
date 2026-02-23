@@ -197,6 +197,59 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
     
     const totalPomodoroSessions = studyHoursStats._count || 0;
 
+    // Haftalık çalışma: son 7 gün, günlük hedefe ulaşma
+    const dailyGoalMinutes = (user?.dailyStudyHours ?? 0) * 60;
+    const dayNames = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+    const now = new Date();
+    const weeklyStudySummary: Array<{
+      date: string;
+      dayName: string;
+      minutesStudied: number;
+      goalMinutes: number;
+      completed: boolean;
+      hoursStudied: number;
+    }> = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      d.setUTCHours(0, 0, 0, 0);
+      const dateStr = d.toISOString().slice(0, 10);
+      weeklyStudySummary.push({
+        date: dateStr,
+        dayName: dayNames[d.getDay()],
+        minutesStudied: 0,
+        goalMinutes: dailyGoalMinutes,
+        completed: false,
+        hoursStudied: 0,
+      });
+    }
+    if (dailyGoalMinutes > 0) {
+      const firstDay = new Date(weeklyStudySummary[0].date + 'T00:00:00.000Z');
+      const lastDayEnd = new Date(weeklyStudySummary[6].date + 'T23:59:59.999Z');
+      const sessions = await prisma.pomodoroSession.findMany({
+        where: {
+          userId,
+          deletedAt: null,
+          completed: true,
+          isBreak: false,
+          startedAt: {
+            gte: firstDay,
+            lte: lastDayEnd,
+          },
+        },
+        select: { startedAt: true, duration: true },
+      });
+      for (const s of sessions) {
+        const dateStr = new Date(s.startedAt).toISOString().slice(0, 10);
+        const row = weeklyStudySummary.find((r) => r.date === dateStr);
+        if (row) {
+          row.minutesStudied += s.duration;
+          row.hoursStudied = Math.round((row.minutesStudied / 60) * 10) / 10;
+          row.completed = row.minutesStudied >= dailyGoalMinutes;
+        }
+      }
+    }
+
     // Calculate evaluation summary if targetScore is set and there's an active exam
     let evaluationSummary = null;
     if (user?.targetScore && user.targetScore > 0 && activeExamAssignment?.exam?.id) {
@@ -306,6 +359,17 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
         const requiredNet = getRequiredNet(targetScore, examCode);
         const requiredSuccessRate = requiredNet / totalExamQuestions;
 
+        const evaluationByTopicId = new Map(evaluations.map((e) => [e.topicId, e]));
+        const topicsWithStatus = topicsWithQuestions.map((t) => {
+          const evalResult = evaluationByTopicId.get(t.topicId);
+          return {
+            ...t,
+            status: evalResult?.status ?? null,
+            topicSuccessRate: evalResult?.topicSuccessRate ?? null,
+            topicNet: evalResult?.topicNet ?? null,
+          };
+        });
+
         evaluationSummary = {
           totalTopics: summary.totalTopics,
           goodTopics: summary.goodTopics,
@@ -316,7 +380,7 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
           targetScore,
           requiredNet,
           requiredSuccessRate,
-          topics: topicsWithQuestions, // Include all topics for editing
+          topics: topicsWithStatus,
         };
       }
     }
@@ -338,6 +402,10 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
         dailyStudyHours: user?.dailyStudyHours || null,
       },
       evaluation: evaluationSummary,
+      study: {
+        dailyStudyHoursGoal: user?.dailyStudyHours ?? 0,
+        weeklySummary: weeklyStudySummary,
+      },
     };
 
     logApi('GET', '/api/dashboard/stats', HTTP_STATUS.OK, undefined, { userId });

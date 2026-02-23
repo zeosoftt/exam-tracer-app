@@ -25,7 +25,17 @@ import {
   X,
   ChevronDown,
   ChevronRight,
+  Circle,
 } from 'lucide-react';
+
+interface StudyDay {
+  date: string;
+  dayName: string;
+  minutesStudied: number;
+  goalMinutes: number;
+  completed: boolean;
+  hoursStudied: number;
+}
 
 interface DashboardStats {
   totalExams: number;
@@ -47,6 +57,10 @@ interface DashboardStats {
     targetScore: number | null;
     dailyStudyHours: number | null;
   };
+  study?: {
+    dailyStudyHoursGoal: number;
+    weeklySummary: StudyDay[];
+  };
   evaluation?: {
     totalTopics: number;
     goodTopics: number;
@@ -65,6 +79,9 @@ interface DashboardStats {
       totalQuestions: number;
       correctAnswers: number;
       wrongAnswers: number;
+      status?: string | null;
+      topicSuccessRate?: number | null;
+      topicNet?: number | null;
     }>;
   } | null;
 }
@@ -79,6 +96,7 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
     wrongAnswers: number;
   } | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [evaluationFilter, setEvaluationFilter] = useState<'GOOD' | 'IMPROVABLE' | 'REPEAT' | null>(null);
 
   const fetchStats = async () => {
     try {
@@ -184,14 +202,38 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
     setEditValues(null);
   };
 
+  // Filter topics by selected evaluation category (İYİ / Geliştirilebilir / Tekrar)
+  const evaluationTopics = stats?.evaluation?.topics ?? [];
+  const filteredEvaluationTopics = evaluationFilter
+    ? evaluationTopics.filter((t) => t.status === evaluationFilter)
+    : evaluationTopics;
+
   // Group topics by section and subject
-  const groupedTopics = stats?.evaluation?.topics?.reduce((acc, topic) => {
-    const key = `${topic.sectionName}|${topic.subjectName}`;
-    if (!acc[key]) {
-      acc[key] = {
-        sectionName: topic.sectionName,
-        subjectName: topic.subjectName,
-        topics: [] as Array<{
+  const groupedTopics = filteredEvaluationTopics.length > 0
+    ? filteredEvaluationTopics.reduce((acc, topic) => {
+        const key = `${topic.sectionName}|${topic.subjectName}`;
+        if (!acc[key]) {
+          acc[key] = {
+            sectionName: topic.sectionName,
+            subjectName: topic.subjectName,
+            topics: [] as Array<{
+              topicId: string;
+              topicName: string;
+              sectionName: string;
+              subjectName: string;
+              totalQuestions: number;
+              correctAnswers: number;
+              wrongAnswers: number;
+              status?: string | null;
+            }>,
+          };
+        }
+        acc[key].topics.push(topic);
+        return acc;
+      }, {} as Record<string, {
+        sectionName: string;
+        subjectName: string;
+        topics: Array<{
           topicId: string;
           topicName: string;
           sectionName: string;
@@ -199,24 +241,10 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
           totalQuestions: number;
           correctAnswers: number;
           wrongAnswers: number;
-        }>,
-      };
-    }
-    acc[key].topics.push(topic);
-    return acc;
-  }, {} as Record<string, { 
-    sectionName: string; 
-    subjectName: string; 
-    topics: Array<{
-      topicId: string;
-      topicName: string;
-      sectionName: string;
-      subjectName: string;
-      totalQuestions: number;
-      correctAnswers: number;
-      wrongAnswers: number;
-    }>;
-  }>) || {};
+          status?: string | null;
+        }>;
+      }>)
+    : {};
 
   const toggleSection = (key: string) => {
     setExpandedSections((prev) => {
@@ -337,15 +365,43 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
                   Çalışma
                 </span>
               </div>
-              <div className="mb-6">
+              <div className="mb-4">
                 <p className="text-5xl font-bold mb-2">{studyHours}</p>
                 <p className="text-purple-100 text-sm">Toplam Çalışma Saati</p>
               </div>
               {stats?.user?.dailyStudyHours && (
-                <div className="pt-4 border-t border-white/20">
+                <div className="pt-4 border-t border-white/20 mb-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-purple-100">Günlük Hedef</span>
                     <span className="text-lg font-bold">{stats.user.dailyStudyHours} saat/gün</span>
+                  </div>
+                </div>
+              )}
+              {/* Haftalık: günlük hedefe ulaşan günler */}
+              {stats?.study && stats.study.weeklySummary.length > 0 && (
+                <div className="pt-3 border-t border-white/20">
+                  <p className="text-xs text-purple-100 mb-2">Bu hafta hedefe ulaşma</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {stats.study.weeklySummary.map((day) => {
+                      const goalHours = day.goalMinutes / 60;
+                      const met = day.completed;
+                      return (
+                        <div
+                          key={day.date}
+                          className={`flex flex-col items-center py-1.5 px-1.5 rounded-lg min-w-[2.5rem] ${
+                            met ? 'bg-white/25' : 'bg-white/10'
+                          }`}
+                          title={`${day.dayName}: ${day.hoursStudied} / ${goalHours} saat${met ? ' ✓' : ''}`}
+                        >
+                          <span className="text-[10px] font-semibold text-purple-100">{day.dayName}</span>
+                          {met ? (
+                            <CheckCircle className="h-3.5 w-3.5 text-white mt-0.5" />
+                          ) : (
+                            <Circle className="h-3.5 w-3.5 text-white/50 mt-0.5" />
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -405,7 +461,15 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
             </div>
             
             <div className="grid gap-4 md:grid-cols-4 mb-6">
-              <div className="bg-white rounded-xl p-5 border border-green-200 shadow-sm">
+              <button
+                type="button"
+                onClick={() => setEvaluationFilter((prev) => (prev === 'GOOD' ? null : 'GOOD'))}
+                className={`text-left rounded-xl p-5 border shadow-sm transition-all hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 ${
+                  evaluationFilter === 'GOOD'
+                    ? 'bg-green-50 border-green-400 ring-2 ring-green-300'
+                    : 'bg-white border-green-200'
+                }`}
+              >
                 <div className="flex items-center gap-2 mb-2">
                   <CheckCircle className="h-5 w-5 text-green-600" />
                   <span className="text-sm font-semibold text-gray-700">İYİ</span>
@@ -418,9 +482,20 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
                     ? Math.round((stats.evaluation.goodTopics / stats.evaluation.totalTopics) * 100) 
                     : 0}% konu
                 </div>
-              </div>
+                {evaluationFilter === 'GOOD' && (
+                  <div className="text-xs text-green-600 mt-2 font-medium">Tıklayarak listele</div>
+                )}
+              </button>
 
-              <div className="bg-white rounded-xl p-5 border border-yellow-200 shadow-sm">
+              <button
+                type="button"
+                onClick={() => setEvaluationFilter((prev) => (prev === 'IMPROVABLE' ? null : 'IMPROVABLE'))}
+                className={`text-left rounded-xl p-5 border shadow-sm transition-all hover:shadow-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 ${
+                  evaluationFilter === 'IMPROVABLE'
+                    ? 'bg-yellow-50 border-yellow-400 ring-2 ring-yellow-300'
+                    : 'bg-white border-yellow-200'
+                }`}
+              >
                 <div className="flex items-center gap-2 mb-2">
                   <TrendingUp className="h-5 w-5 text-yellow-600" />
                   <span className="text-sm font-semibold text-gray-700">GELİŞTİRİLEBİLİR</span>
@@ -433,9 +508,20 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
                     ? Math.round((stats.evaluation.improvableTopics / stats.evaluation.totalTopics) * 100) 
                     : 0}% konu
                 </div>
-              </div>
+                {evaluationFilter === 'IMPROVABLE' && (
+                  <div className="text-xs text-yellow-700 mt-2 font-medium">Tıklayarak listele</div>
+                )}
+              </button>
 
-              <div className="bg-white rounded-xl p-5 border border-red-200 shadow-sm">
+              <button
+                type="button"
+                onClick={() => setEvaluationFilter((prev) => (prev === 'REPEAT' ? null : 'REPEAT'))}
+                className={`text-left rounded-xl p-5 border shadow-sm transition-all hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 ${
+                  evaluationFilter === 'REPEAT'
+                    ? 'bg-red-50 border-red-400 ring-2 ring-red-300'
+                    : 'bg-white border-red-200'
+                }`}
+              >
                 <div className="flex items-center gap-2 mb-2">
                   <RefreshCw className="h-5 w-5 text-red-600" />
                   <span className="text-sm font-semibold text-gray-700">TEKRAR</span>
@@ -448,7 +534,10 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
                     ? Math.round((stats.evaluation.repeatTopics / stats.evaluation.totalTopics) * 100) 
                     : 0}% konu
                 </div>
-              </div>
+                {evaluationFilter === 'REPEAT' && (
+                  <div className="text-xs text-red-600 mt-2 font-medium">Tıklayarak listele</div>
+                )}
+              </button>
 
               <div className="bg-white rounded-xl p-5 border border-blue-200 shadow-sm">
                 <div className="flex items-center gap-2 mb-2">
@@ -485,11 +574,33 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
             {stats.evaluation.topics && stats.evaluation.topics.length > 0 && (
               <div className="mt-6 bg-white rounded-xl border border-gray-200 overflow-hidden">
                 <div className="p-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-                  <h3 className="text-lg font-bold text-gray-900">Konu Bazında Soru İstatistikleri</h3>
-                  <p className="text-sm text-gray-600 mt-1">Her konu için çözülen soru sayılarını girebilirsiniz</p>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900">Konu Bazında Soru İstatistikleri</h3>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {evaluationFilter
+                          ? `${evaluationFilter === 'GOOD' ? 'İYİ' : evaluationFilter === 'IMPROVABLE' ? 'Geliştirilebilir' : 'Tekrar'} konular listeleniyor (${filteredEvaluationTopics.length} konu)`
+                          : 'Her konu için çözülen soru sayılarını girebilirsiniz'}
+                      </p>
+                    </div>
+                    {evaluationFilter && (
+                      <button
+                        type="button"
+                        onClick={() => setEvaluationFilter(null)}
+                        className="text-sm font-medium text-gray-600 hover:text-gray-900 underline focus:outline-none"
+                      >
+                        Filtreyi kaldır
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="max-h-96 overflow-y-auto">
-                  {Object.entries(groupedTopics).map(([key, group]) => (
+                  {evaluationFilter && filteredEvaluationTopics.length === 0 ? (
+                    <div className="p-8 text-center text-gray-500">
+                      Bu kategoride konu bulunmuyor.
+                    </div>
+                  ) : (
+                  Object.entries(groupedTopics).map(([key, group]) => (
                     <div key={key} className="border-b border-gray-200 last:border-b-0">
                       <button
                         onClick={() => toggleSection(key)}
@@ -597,7 +708,7 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
                         </div>
                       )}
                     </div>
-                  ))}
+                  )))}
                 </div>
               </div>
             )}

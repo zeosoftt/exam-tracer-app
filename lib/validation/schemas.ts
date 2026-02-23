@@ -72,6 +72,19 @@ export const updateUserSchema = z.object({
   institutionId: z.string().cuid().optional(),
 });
 
+export const updateUserSettingsSchema = z.object({
+  firstName: nameSchema.optional(),
+  lastName: nameSchema.optional(),
+  targetScore: z.number().int().min(0).max(1000).nullable().optional(),
+  dailyStudyHours: z.number().int().min(0).max(24).nullable().optional(),
+  examId: z.union([z.string().cuid(), z.literal('')]).optional(),
+});
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Mevcut şifre gerekli'),
+  newPassword: passwordSchema,
+});
+
 // Exam schemas
 export const createExamSchema = z.object({
   name: nameSchema,
