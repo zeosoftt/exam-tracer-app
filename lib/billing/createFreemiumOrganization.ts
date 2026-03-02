@@ -61,7 +61,10 @@ export async function createFreemiumPersonalOrganization(
 
   await prisma.user.update({
     where: { id: userId },
-    data: { personalOrganizationId: org.id },
+    data: {
+      personalOrganizationId: org.id,
+      currentPlanId: freePlan.id,
+    },
   });
 
   return org.id;

@@ -16,6 +16,7 @@ model User {
   role                   UserRole?         @default(INDIVIDUAL)
   institutionId          String?
   personalOrganizationId String?           @unique
+  currentPlanId          String?           // Kişisel org planı (hangi planda olduğu)
   isActive               Boolean           @default(true)
   emailVerified          Boolean           @default(false)
   lastLoginAt            DateTime?
@@ -33,12 +34,14 @@ model User {
   userProgress           UserProgress[]
   institution            Institution?      @relation(fields: [institutionId], references: [id])
   personalOrganization   Organization?     @relation("UserPersonalOrganization", fields: [personalOrganizationId], references: [id])
+  currentPlan            Plan?             @relation(fields: [currentPlanId], references: [id])
 
   @@index([email])
   @@index([institutionId])
   @@index([role])
   @@index([isActive])
   @@index([personalOrganizationId])
+  @@index([currentPlanId])
   @@map("users")
 }
 
@@ -408,6 +411,7 @@ model Plan {
   deletedAt     DateTime?
   planFeatures  PlanFeature[]
   subscriptions Subscription[]
+  users         User[]
 
   @@index([code])
   @@index([type])
