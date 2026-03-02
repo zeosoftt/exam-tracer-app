@@ -62,6 +62,13 @@ interface DashboardStats {
     dailyStudyHoursGoal: number;
     weeklySummary: StudyDay[];
   };
+  deneme?: {
+    totalAttempts: number;
+    lastAttemptAt: string | null;
+    lastAttemptScore: number | null;
+    lastAttemptNet: number | null;
+    lastAttemptExamName: string | null;
+  };
   evaluation?: {
     totalTopics: number;
     goodTopics: number;
@@ -417,8 +424,11 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
               )}
             </div>
 
-            {/* Kart: Deneme Takibi (placeholder – içerik sonra eklenecek) */}
-            <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl shadow-xl p-5 text-white hover:shadow-2xl transition-all hover:scale-[1.02]">
+            {/* Kart: Deneme Takibi özet */}
+            <Link
+              href="/dashboard/deneme"
+              className="block bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl shadow-xl p-5 text-white hover:shadow-2xl transition-all hover:scale-[1.02]"
+            >
               <div className="flex items-center justify-between mb-3">
                 <div className="rounded-full bg-white/20 p-2.5 backdrop-blur-sm">
                   <BarChart3 className="h-5 w-5" />
@@ -428,10 +438,27 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
                 </span>
               </div>
               <div>
-                <p className="text-sm font-semibold text-amber-100 mb-0.5">Deneme Takibi</p>
-                <p className="text-xs text-amber-100/90">İçerik yakında eklenecek.</p>
+                <p className="text-sm font-semibold text-amber-100 mb-1">Deneme Takibi</p>
+                {stats?.deneme && stats.deneme.totalAttempts > 0 ? (
+                  <div className="space-y-1 text-xs text-amber-100/95">
+                    <p className="font-medium text-white">{stats.deneme.totalAttempts} deneme</p>
+                    {stats.deneme.lastAttemptAt && (
+                      <>
+                        <p>Son: {new Date(stats.deneme.lastAttemptAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                        {stats.deneme.lastAttemptExamName && (
+                          <p className="truncate" title={stats.deneme.lastAttemptExamName}>{stats.deneme.lastAttemptExamName}</p>
+                        )}
+                        {stats.deneme.lastAttemptScore != null && (
+                          <p className="font-semibold text-white">{stats.deneme.lastAttemptScore} puan</p>
+                        )}
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-xs text-amber-100/90">Henüz deneme kaydı yok.</p>
+                )}
               </div>
-            </div>
+            </Link>
 
             {/* Kart 3: Aktif Sınav ve Hedef Puan */}
             <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-xl p-5 text-white hover:shadow-2xl transition-all hover:scale-[1.02]">
@@ -739,8 +766,8 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
           </div>
         )}
 
-        {/* 3 Buton */}
-        <div className="grid gap-4 md:grid-cols-3">
+        {/* Hızlı erişim butonları */}
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
           {/* Detay Görüntüle */}
           <Link
             href="/dashboard/detail"
@@ -748,6 +775,15 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
           >
             <BarChart3 className="h-5 w-5 text-blue-600 group-hover:text-blue-700 transition-colors" />
             <span className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">Detay Görüntüle</span>
+          </Link>
+
+          {/* Deneme Takibi */}
+          <Link
+            href="/dashboard/deneme"
+            className="group bg-white rounded-xl shadow-md p-4 border border-gray-200 hover:shadow-lg hover:border-amber-300 transition-all flex items-center justify-center gap-3"
+          >
+            <BarChart3 className="h-5 w-5 text-amber-600 group-hover:text-amber-700 transition-colors" />
+            <span className="font-semibold text-gray-900 group-hover:text-amber-600 transition-colors">Deneme Takibi</span>
           </Link>
 
           {/* Pomodoro Sayacı */}

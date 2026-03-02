@@ -8,21 +8,7 @@ import { asyncHandler, handleError } from '../../../../lib/errors/errorHandler';
 import { prisma } from '../../../../lib/db/prisma';
 import { logApi } from '../../../../lib/logger';
 import { HTTP_STATUS } from '../../../../config/constants';
-
-// Exam score ranges configuration
-const examScoreRanges: Record<string, { minScore: number; maxScore: number; step: number }> = {
-  KPSS: { minScore: 0, maxScore: 100, step: 1 },
-  KPSS_ORTAOGRETIM: { minScore: 0, maxScore: 100, step: 1 },
-  KPSS_ONLISANS: { minScore: 0, maxScore: 100, step: 1 },
-  KPSS_LISANS: { minScore: 0, maxScore: 100, step: 1 },
-  ALES: { minScore: 0, maxScore: 100, step: 0.5 },
-  DGS: { minScore: 0, maxScore: 500, step: 1 },
-  YKS_TYT: { minScore: 0, maxScore: 500, step: 1 },
-  YKS_AYT: { minScore: 0, maxScore: 500, step: 1 },
-  YKS_YDT: { minScore: 0, maxScore: 500, step: 1 },
-  E_YDS: { minScore: 0, maxScore: 100, step: 1 },
-  YOKDIL: { minScore: 0, maxScore: 100, step: 1 },
-};
+import { EXAM_SCORE_RANGES } from '@/lib/constants/examScoreRanges';
 
 async function getAvailableExamsHandler(): Promise<NextResponse> {
   try {
@@ -45,7 +31,7 @@ async function getAvailableExamsHandler(): Promise<NextResponse> {
 
     // Add score ranges to exams
     const examsWithRanges = exams.map((exam) => {
-      const scoreRange = examScoreRanges[exam.code] || { minScore: 0, maxScore: 100, step: 1 };
+      const scoreRange = EXAM_SCORE_RANGES[exam.code] ?? { minScore: 0, maxScore: 100, step: 1 };
       return {
         ...exam,
         ...scoreRange,

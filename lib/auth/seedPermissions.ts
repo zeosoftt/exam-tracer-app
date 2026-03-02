@@ -160,24 +160,28 @@ const ROLES = [
 // ============================================================================
 
 const FEATURES = [
-  { code: 'ADVANCED_ANALYTICS', name: 'Advanced Analytics', category: 'ANALYTICS' },
-  { code: 'API_ACCESS', name: 'API Access', category: 'API' },
-  { code: 'EXPORT_CSV', name: 'CSV Export', category: 'EXPORT' },
-  { code: 'EXPORT_PDF', name: 'PDF Export', category: 'EXPORT' },
-  { code: 'CUSTOM_BRANDING', name: 'Custom Branding', category: 'BRANDING' },
-  { code: 'PRIORITY_SUPPORT', name: 'Priority Support', category: 'SUPPORT' },
+  // Freemium: sadece temel takip (dashboard, ilerleme) — ek feature kodu yok, varsayılan erişim
+  { code: 'ADVANCED_ANALYTICS', name: 'Gelişmiş Analitik', category: 'ANALYTICS' },
+  { code: 'API_ACCESS', name: 'API Erişimi', category: 'API' },
+  { code: 'EXPORT_CSV', name: 'CSV Dışa Aktarma', category: 'EXPORT' },
+  { code: 'EXPORT_PDF', name: 'PDF Dışa Aktarma', category: 'EXPORT' },
+  { code: 'CUSTOM_BRANDING', name: 'Özel Marka', category: 'BRANDING' },
+  { code: 'PRIORITY_SUPPORT', name: 'Öncelikli Destek', category: 'SUPPORT' },
   { code: 'WHITE_LABEL', name: 'White Label', category: 'BRANDING' },
 ];
 
 // ============================================================================
-// PLANS
+// PLANS — Freemium (FREE) vs Premium (PRO/ENTERPRISE)
+// ============================================================================
+// FREE = Sadece temel takip (sınav listesi, konu ilerlemesi, basit dashboard)
+// PRO  = Temel takip + raporlar, dışa aktarma, gelişmiş analitik (ödeme gerekli)
 // ============================================================================
 
 const PLANS = [
   {
     code: 'FREE',
-    name: 'Free Plan',
-    description: 'Basic features for individual users',
+    name: 'Ücretsiz (Freemium)',
+    description: 'Sadece temel takip: sınav listesi, konu ilerlemesi ve basit dashboard.',
     type: 'FREE' as const,
     price: null,
     maxUsers: 1,
@@ -185,12 +189,12 @@ const PLANS = [
     maxStudents: 10,
     maxStorage: 100, // MB
     trialDays: 0,
-    features: [], // No premium features
+    features: [], // Premium özellik yok — sadece temel takip
   },
   {
     code: 'PRO',
-    name: 'Pro Plan',
-    description: 'Advanced features for individual users',
+    name: 'Premium',
+    description: 'Temel takip + raporlar, CSV/PDF dışa aktarma ve gelişmiş analitik.',
     type: 'PRO' as const,
     price: 29.99,
     maxUsers: 1,
@@ -202,8 +206,8 @@ const PLANS = [
   },
   {
     code: 'ENTERPRISE',
-    name: 'Enterprise Plan',
-    description: 'Full features for institutions',
+    name: 'Kurumsal',
+    description: 'Tüm özellikler: API, özel marka, öncelikli destek.',
     type: 'ENTERPRISE' as const,
     price: 99.99,
     maxUsers: 100,

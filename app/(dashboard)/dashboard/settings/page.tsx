@@ -20,6 +20,7 @@ import {
   Loader2,
   CheckCircle,
   AlertCircle,
+  CreditCard,
 } from 'lucide-react';
 
 type ExamOption = { id: string; name: string; code: string };
@@ -34,6 +35,15 @@ type SettingsData = {
     dailyStudyHours: number | null;
   };
   activeExam: { id: string; name: string; code: string } | null;
+};
+type PlanInfo = {
+  planCode: string;
+  planName: string;
+  planType: string;
+  subscriptionStatus: string;
+  limits: Array<{ resourceType: string; current: number; limit: number; allowed: boolean }>;
+  features: string[];
+  expiresAt: string | null;
 };
 
 export default function SettingsPage() {
@@ -59,6 +69,9 @@ export default function SettingsPage() {
   const [changingPassword, setChangingPassword] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  const [planInfo, setPlanInfo] = useState<PlanInfo | null>(null);
+  const [planLoading, setPlanLoading] = useState(true);
+
   useEffect(() => {
     async function fetchData() {
       try {
@@ -83,11 +96,19 @@ export default function SettingsPage() {
             setExams(examsData.data);
           }
         }
+        const planRes = await fetch('/api/billing/plan');
+        if (planRes.ok) {
+          const planData = await planRes.json();
+          if (planData.success && planData.data) {
+            setPlanInfo(planData.data);
+          }
+        }
       } catch (e) {
         console.error(e);
         setMessage({ type: 'error', text: 'Ayarlar yüklenemedi.' });
       } finally {
         setLoading(false);
+        setPlanLoading(false);
       }
     }
     fetchData();
@@ -333,6 +354,54 @@ export default function SettingsPage() {
                 )}
               </div>
             </div>
+          </div>
+
+          {/* Plan ve Faturalandırma */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-gray-100">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="rounded-full bg-emerald-100 p-3">
+                <CreditCard className="h-6 w-6 text-emerald-600" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Plan ve Faturalandırma</h2>
+            </div>
+            {planLoading ? (
+              <div className="flex items-center gap-2 text-gray-500">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span>Plan bilgisi yükleniyor...</span>
+              </div>
+            ) : planInfo ? (
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-semibold text-gray-900">{planInfo.planName}</span>
+                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
+                    {planInfo.planType}
+                  </span>
+                  {planInfo.subscriptionStatus === 'ACTIVE' && (
+                    <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700">
+                      Aktif
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-gray-600">
+                  {planInfo.planCode === 'FREE'
+                    ? 'Sadece temel takip: sınav listesi, konu ilerlemesi ve basit dashboard.'
+                    : 'Raporlar, dışa aktarma ve gelişmiş analitik dahil.'}
+                </p>
+                {planInfo.limits.length > 0 && (
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    {planInfo.limits.map((l) => (
+                      <li key={l.resourceType}>
+                        {l.resourceType === 'EXAMS' && `Sınav: ${l.current} / ${l.limit}`}
+                        {l.resourceType === 'STUDENTS' && `Öğrenci: ${l.current} / ${l.limit}`}
+                        {l.resourceType === 'USERS' && `Kullanıcı: ${l.current} / ${l.limit}`}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">Plan bilgisi alınamadı.</p>
+            )}
           </div>
 
           {/* Hedef ve çalışma */}

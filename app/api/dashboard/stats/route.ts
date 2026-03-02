@@ -8,6 +8,24 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
 import { asyncHandler, handleError } from '@/lib/errors/errorHandler';
 import { prisma } from '@/lib/db/prisma';
+
+// Prisma client'ta ExamAttempt modeli schema'da var; generate sonrası examAttempt gelir. Tip için:
+type PrismaWithExamAttempt = typeof prisma & {
+  examAttempt: {
+    count: (args: { where: { userId: string; deletedAt: null } }) => Promise<number>;
+    findFirst: (args: {
+      where: { userId: string; deletedAt: null };
+      orderBy: { attemptedAt: 'desc' };
+      select: { attemptedAt: true; totalScore: true; netScore: true; exam: { select: { name: true; code: true } } };
+    }) => Promise<{
+      attemptedAt: Date;
+      totalScore: unknown;
+      netScore: unknown;
+      exam: { name: string; code: string };
+    } | null>;
+  };
+};
+const db = prisma as PrismaWithExamAttempt;
 import { logApi } from '@/lib/logger';
 import { HTTP_STATUS } from '@/config/constants';
 import { UnauthorizedError } from '@/lib/errors/AppError';
@@ -25,7 +43,7 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
     const userRole = session.user.role;
     const institutionId = session.user.institutionId;
 
-    // Get user data
+    // 1) Kullanıcı (hedef ve günlük saat için gerekli)
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -34,7 +52,6 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
       },
     });
 
-    // Get exams count
     const examWhere: {
       deletedAt: null;
       examAssignments?: {
@@ -47,52 +64,68 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
     if (userRole !== 'ADMIN') {
       examWhere.examAssignments = {
         some: {
-          OR: [
-            { userId },
-            { institutionId },
-          ],
+          OR: [{ userId }, { institutionId }],
           deletedAt: null,
         },
       };
     }
 
-    const totalExams = await prisma.exam.count({ where: examWhere });
-
-    const activeExams = await prisma.exam.count({
-      where: {
-        ...examWhere,
-        status: 'ACTIVE',
-      },
-    });
-
-    // Get active exam assigned to user
-    const activeExamAssignment = await prisma.examAssignment.findFirst({
-      where: {
-        userId,
-        deletedAt: null,
-        exam: {
-          status: 'ACTIVE',
+    // 2) Bağımsız tüm sorguları tek seferde paralel çalıştır
+    const [
+      totalExams,
+      activeExams,
+      activeExamAssignment,
+      studyHoursStats,
+      denemeCount,
+      lastDeneme,
+    ] = await Promise.all([
+      prisma.exam.count({ where: examWhere }),
+      prisma.exam.count({ where: { ...examWhere, status: 'ACTIVE' } }),
+      prisma.examAssignment.findFirst({
+        where: {
+          userId,
           deletedAt: null,
+          exam: { status: 'ACTIVE', deletedAt: null },
         },
-      },
-      include: {
-        exam: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-          },
+        include: { exam: { select: { id: true, name: true, code: true } } },
+        orderBy: { assignedAt: 'desc' },
+      }),
+      prisma.pomodoroSession.aggregate({
+        where: {
+          userId,
+          deletedAt: null,
+          completed: true,
+          isBreak: false,
         },
-      },
-      orderBy: {
-        assignedAt: 'desc',
-      },
-    });
+        _sum: { duration: true },
+        _count: true,
+      }),
+      db.examAttempt.count({ where: { userId, deletedAt: null } }),
+      db.examAttempt.findFirst({
+        where: { userId, deletedAt: null },
+        orderBy: { attemptedAt: 'desc' },
+        select: {
+          attemptedAt: true,
+          totalScore: true,
+          netScore: true,
+          exam: { select: { name: true, code: true } },
+        },
+      }),
+    ]);
 
-    // Get total topics and subjects count for active exam
-    // Count all topics under all sections of the active exam
-    // Hierarchy: Exam -> Section -> Subject -> Topic
-    // For KPSS: Exam (KPSS) -> Sections (Genel Yetenek, Genel Kültür) -> Subjects -> Topics
+    const totalStudyHours = studyHoursStats._sum.duration
+      ? Math.round((studyHoursStats._sum.duration / 60) * 10) / 10
+      : 0;
+    const totalPomodoroSessions = studyHoursStats._count || 0;
+    const denemeSummary = {
+      totalAttempts: denemeCount,
+      lastAttemptAt: lastDeneme?.attemptedAt?.toISOString() ?? null,
+      lastAttemptScore: lastDeneme?.totalScore != null ? Number(lastDeneme.totalScore) : null,
+      lastAttemptNet: lastDeneme?.netScore != null ? Number(lastDeneme.netScore) : null,
+      lastAttemptExamName: lastDeneme?.exam?.name ?? null,
+    };
+
+    // 3) Aktif sınava göre konu / ilerleme sayıları
     let totalTopics = 0;
     let totalSubjects = 0;
     let completedTopics = 0;
@@ -104,60 +137,28 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
       const examId = activeExamAssignment.exam.id;
       
       // OPTIMIZED: Run counts and topic fetch in parallel to reduce total query time
-      const [topicsCount, subjectsCount, , progressStats] = await Promise.all([
-        // Count all topics across all sections of this exam
+      const [topicsCount, subjectsCount, progressStats] = await Promise.all([
         prisma.topic.count({
           where: {
             subject: {
-              section: {
-                examId: examId,
-                deletedAt: null,
-              },
+              section: { examId, deletedAt: null },
               deletedAt: null,
             },
             deletedAt: null,
           },
         }),
-        // Count all subjects across all sections of this exam
         prisma.subject.count({
           where: {
-            section: {
-              examId: examId,
-              deletedAt: null,
-            },
+            section: { examId, deletedAt: null },
             deletedAt: null,
           },
         }),
-        // Get all topic IDs for this exam (lightweight query, only IDs)
-        prisma.topic.findMany({
-          where: {
-            subject: {
-              section: {
-                examId: examId,
-                deletedAt: null,
-              },
-              deletedAt: null,
-            },
-            deletedAt: null,
-          },
-          select: {
-            id: true,
-          },
-        }),
-        // Get progress stats (we'll filter by topicIds in a separate query if needed)
-        // First, get all progress for this user in this exam
         prisma.userProgress.groupBy({
           by: ['status'],
           where: {
             userId,
             topic: {
-              subject: {
-                section: {
-                  examId: examId,
-                  deletedAt: null,
-                },
-                deletedAt: null,
-              },
+              subject: { section: { examId, deletedAt: null }, deletedAt: null },
               deletedAt: null,
             },
             deletedAt: null,
@@ -177,27 +178,7 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
       notStartedTopics = totalTopics - (completedTopics + inProgressTopics + reviewedTopics);
     }
 
-    // Get total study hours from completed pomodoro sessions (only work sessions, not breaks)
-    const studyHoursStats = await prisma.pomodoroSession.aggregate({
-      where: {
-        userId,
-        deletedAt: null,
-        completed: true,
-        isBreak: false,
-      },
-      _sum: {
-        duration: true,
-      },
-      _count: true,
-    });
-
-    const totalStudyHours = studyHoursStats._sum.duration 
-      ? Math.round((studyHoursStats._sum.duration / 60) * 10) / 10 // Convert minutes to hours, round to 1 decimal
-      : 0;
-    
-    const totalPomodoroSessions = studyHoursStats._count || 0;
-
-    // Haftalık çalışma: son 7 gün, günlük hedefe ulaşma
+    // 4) Haftalık çalışma: son 7 gün
     const dailyGoalMinutes = (user?.dailyStudyHours ?? 0) * 60;
     const dayNames = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
     const now = new Date();
@@ -406,14 +387,18 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
         dailyStudyHoursGoal: user?.dailyStudyHours ?? 0,
         weeklySummary: weeklyStudySummary,
       },
+      deneme: denemeSummary,
     };
 
     logApi('GET', '/api/dashboard/stats', HTTP_STATUS.OK, undefined, { userId });
 
-    return NextResponse.json({
+    const res = NextResponse.json({
       success: true,
       data: stats,
     });
+    // Kısa önbellek: tekrar ziyarette 10 sn cache, sonra arka planda yenile
+    res.headers.set('Cache-Control', 'private, max-age=10, stale-while-revalidate=30');
+    return res;
   } catch (error) {
     return handleError(error);
   }

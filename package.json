@@ -17,6 +17,7 @@
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:auth": "tsx prisma/seed-auth.ts",
+    "db:backfill-freemium": "tsx scripts/backfill-freemium-users.ts",
     "db:test": "node scripts/test-db-connection.js",
     "db:check-network": "node scripts/check-supabase-status.js",
     "postinstall": "prisma generate",

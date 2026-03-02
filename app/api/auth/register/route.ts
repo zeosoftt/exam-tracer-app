@@ -9,6 +9,7 @@ import { validate } from '@/lib/validation/validate';
 import { registerSchema } from '@/lib/validation/schemas';
 import { prisma } from '@/lib/db/prisma';
 import { hashPassword } from '@/lib/auth/password';
+import { createFreemiumPersonalOrganization } from '@/lib/billing/createFreemiumOrganization';
 import { logAuth, logError } from '@/lib/logger';
 import { HTTP_STATUS, ERROR_MESSAGES } from '@/config/constants';
 import { ConflictError } from '@/lib/errors/AppError';
@@ -101,6 +102,17 @@ async function registerHandler(req: NextRequest): Promise<NextResponse> {
       }
       // Re-throw other errors
       throw createError;
+    }
+
+    // Varsayılan Freemium: her yeni kullanıcı için kişisel organizasyon (FREE plan)
+    try {
+      await createFreemiumPersonalOrganization({
+        userId: user.id,
+        userName: `${validatedData.firstName ?? ''} ${validatedData.lastName ?? ''}`.trim(),
+      });
+    } catch (orgError) {
+      logError('Freemium organization creation failed', orgError as Error);
+      throw orgError;
     }
 
     // Create exam assignment if exam was found/created

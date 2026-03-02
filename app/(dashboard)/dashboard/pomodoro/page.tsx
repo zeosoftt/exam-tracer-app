@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Timer, Play, Pause, RotateCcw, Clock, Calendar, TrendingUp, History, Volume2, VolumeX } from 'lucide-react';
+import { ArrowLeft, Timer, Play, Pause, RotateCcw, Clock, Calendar, TrendingUp, History, Volume2, VolumeX, Lock, Sparkles } from 'lucide-react';
 
 interface PomodoroSession {
   id: string;
@@ -36,6 +36,7 @@ export default function PomodoroPage() {
   const [history, setHistory] = useState<PomodoroSession[]>([]);
   const [stats, setStats] = useState<PomodoroStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [statsPremiumRequired, setStatsPremiumRequired] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -95,7 +96,7 @@ export default function PomodoroPage() {
     }
   }, []);
 
-  // Fetch history and stats
+  // Fetch history and stats (Premium gerekli; freemium'da 403 döner)
   const fetchHistory = useCallback(async () => {
     try {
       const response = await fetch('/api/pomodoro?limit=10&page=1');
@@ -103,6 +104,14 @@ export default function PomodoroPage() {
         const data = await response.json();
         setHistory(data.data.sessions || []);
         setStats(data.data.stats || null);
+        setStatsPremiumRequired(false);
+      } else if (response.status === 403) {
+        const body = await response.json().catch(() => ({}));
+        if (body.code === 'PREMIUM_REQUIRED') {
+          setStatsPremiumRequired(true);
+          setHistory([]);
+          setStats(null);
+        }
       }
     } catch (error) {
       console.error('Failed to fetch pomodoro history:', error);
@@ -367,8 +376,27 @@ export default function PomodoroPage() {
             </div>
           </div>
 
-          {/* Stats Section */}
-          <div className="space-y-6">
+          {/* Stats & History Section — Freemium'da Premium CTA */}
+            <div className="space-y-6">
+            {statsPremiumRequired ? (
+              <div className="bg-white rounded-2xl shadow-lg p-6 border border-amber-200 bg-gradient-to-br from-amber-50/50 to-orange-50/50">
+                <div className="flex items-center gap-2 mb-3">
+                  <Lock className="h-5 w-5 text-amber-600" />
+                  <h2 className="text-lg font-bold text-gray-900">İstatistikler Premium&apos;da</h2>
+                </div>
+                <p className="text-gray-600 text-sm mb-4">
+                  Pomodoro istatistikleri ve oturum geçmişi Premium plan özelliğidir. Görüntülemek için Premium&apos;a yükseltin.
+                </p>
+                <Link
+                  href="/dashboard/settings"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-xl hover:bg-amber-600 font-medium text-sm"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  Planı görüntüle / Yükselt
+                </Link>
+              </div>
+            ) : (
+              <>
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
               <div className="flex items-center gap-2 mb-4">
                 <TrendingUp className="h-5 w-5 text-purple-600" />
@@ -476,6 +504,8 @@ export default function PomodoroPage() {
                 </p>
               )}
             </div>
+              </>
+            )}
           </div>
         </div>
       </main>
