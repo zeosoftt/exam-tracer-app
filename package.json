@@ -29,6 +29,7 @@
     "@hookform/resolvers": "^3.3.4",
     "@neondatabase/serverless": "^1.0.2",
     "@prisma/client": "^5.19.0",
+    "@vercel/analytics": "^1.6.1",
     "bcryptjs": "^2.4.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
