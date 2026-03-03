@@ -96,6 +96,13 @@ interface DashboardStats {
 
 export function DashboardContent({ user }: { user: { id: string; name: string; email: string; role?: string } }) {
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [planBadge, setPlanBadge] = useState<{
+    code: string;
+    label: string;
+    bgClass: string;
+    textClass: string;
+    dotClass: string;
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<{
@@ -122,6 +129,65 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
 
   useEffect(() => {
     fetchStats();
+  }, []);
+
+  // Kullanıcının planını yükle (FREE / PRO / ENTERPRISE) ve header'da rozet olarak göster
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/billing/plan');
+        if (!res.ok) return;
+        const json = await res.json();
+        if (!json.success || !json.data) return;
+        const code: string = json.data.planCode ?? '';
+        let badge:
+          | {
+              code: string;
+              label: string;
+              bgClass: string;
+              textClass: string;
+              dotClass: string;
+            }
+          | null = null;
+
+        if (code === 'FREE') {
+          badge = {
+            code,
+            label: 'Free',
+            bgClass: 'bg-gray-100',
+            textClass: 'text-gray-700',
+            dotClass: 'bg-gray-400',
+          };
+        } else if (code === 'PRO') {
+          badge = {
+            code,
+            label: 'Pro',
+            bgClass: 'bg-amber-100',
+            textClass: 'text-amber-800',
+            dotClass: 'bg-amber-500',
+          };
+        } else if (code === 'ENTERPRISE') {
+          badge = {
+            code,
+            label: 'Enterprise',
+            bgClass: 'bg-purple-100',
+            textClass: 'text-purple-800',
+            dotClass: 'bg-purple-500',
+          };
+        }
+
+        if (!cancelled && badge) {
+          setPlanBadge(badge);
+        }
+      } catch {
+        // sessizce yut – plan rozeti opsiyonel
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Sayfaya odaklanıldığında veya görünür olduğunda verileri yenile
@@ -294,6 +360,15 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <User className="h-4 w-4" />
                 <span className="font-medium">{user.name}</span>
+                {planBadge && (
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${planBadge.bgClass} ${planBadge.textClass}`}
+                    title={`${planBadge.label} planı`}
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full ${planBadge.dotClass}`} />
+                    {planBadge.label}
+                  </span>
+                )}
               </div>
               <button
                 onClick={() => signOut({ callbackUrl: '/' })}
@@ -394,27 +469,29 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
                   </div>
                 </div>
               )}
-              {/* Haftalık: günlük hedefe ulaşan günler */}
-              {stats?.study && stats.study.weeklySummary.length > 0 && (
+              {/* Haftalık: günlük hedefe ulaşma — sabit sıra: Pzt, Sal, Çar, Per, Cum, Cmt, Paz */}
+              {stats?.study && (
                 <div className="pt-2 border-t border-white/20">
                   <p className="text-[10px] text-purple-100 mb-1">Bu hafta hedefe ulaşma</p>
-                  <div className="flex flex-wrap gap-1">
-                    {stats.study.weeklySummary.map((day) => {
-                      const goalHours = day.goalMinutes / 60;
-                      const met = day.completed;
+                  <div className="grid grid-cols-7 gap-0.5 min-w-0">
+                    {(['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'] as const).map((label) => {
+                      const day = stats?.study?.weeklySummary?.find((d) => d.dayName === label);
+                      const goalHours = day ? day.goalMinutes / 60 : 0;
+                      const met = day?.completed ?? false;
+                      const hoursStudied = day?.hoursStudied ?? 0;
                       return (
                         <div
-                          key={day.date}
-                          className={`flex flex-col items-center py-1 px-1 rounded min-w-[2rem] ${
+                          key={label}
+                          className={`flex flex-col items-center justify-center py-0.5 rounded min-w-0 ${
                             met ? 'bg-white/25' : 'bg-white/10'
                           }`}
-                          title={`${day.dayName}: ${day.hoursStudied} / ${goalHours} saat${met ? ' ✓' : ''}`}
+                          title={day ? `${label}: ${hoursStudied} / ${goalHours} saat${met ? ' ✓' : ''}` : label}
                         >
-                          <span className="text-[9px] font-semibold text-purple-100">{day.dayName}</span>
+                          <span className="text-[8px] font-semibold text-purple-100 leading-tight truncate max-w-full">{label}</span>
                           {met ? (
-                            <CheckCircle className="h-3 w-3 text-white mt-0.5" />
+                            <CheckCircle className="h-2.5 w-2.5 text-white mt-0.5 shrink-0" />
                           ) : (
-                            <Circle className="h-3 w-3 text-white/50 mt-0.5" />
+                            <Circle className="h-2.5 w-2.5 text-white/50 mt-0.5 shrink-0" />
                           )}
                         </div>
                       );
