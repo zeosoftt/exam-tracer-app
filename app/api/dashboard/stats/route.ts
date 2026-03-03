@@ -178,10 +178,16 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
       notStartedTopics = totalTopics - (completedTopics + inProgressTopics + reviewedTopics);
     }
 
-    // 4) Haftalık çalışma: son 7 gün
+    // 4) Haftalık çalışma: bu hafta (Pazartesi → Pazar), sabit gün sırası
     const dailyGoalMinutes = (user?.dailyStudyHours ?? 0) * 60;
-    const dayNames = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+    const dayNames = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz']; // Pazartesi ile başla
     const now = new Date();
+    const dayOfWeek = now.getDay(); // 0=Pazar, 1=Pzt, ...
+    const daysToMonday = (dayOfWeek + 6) % 7;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - daysToMonday);
+    monday.setUTCHours(0, 0, 0, 0);
+
     const weeklyStudySummary: Array<{
       date: string;
       dayName: string;
@@ -189,19 +195,20 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
       goalMinutes: number;
       completed: boolean;
       hoursStudied: number;
+      dayIndex: number;
     }> = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(now);
-      d.setDate(d.getDate() - i);
-      d.setUTCHours(0, 0, 0, 0);
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
       const dateStr = d.toISOString().slice(0, 10);
       weeklyStudySummary.push({
         date: dateStr,
-        dayName: dayNames[d.getDay()],
+        dayName: dayNames[i],
         minutesStudied: 0,
         goalMinutes: dailyGoalMinutes,
         completed: false,
         hoursStudied: 0,
+        dayIndex: i,
       });
     }
     if (dailyGoalMinutes > 0) {

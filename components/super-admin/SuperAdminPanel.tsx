@@ -19,6 +19,13 @@ interface AdminStats {
   examsCount: number;
   pomodoroSessionsCount: number;
   examAssignmentsCount: number;
+  planStats?: Array<{
+    planId: string | null;
+    planCode: string;
+    planName: string;
+    planType: string;
+    userCount: number;
+  }>;
 }
 
 interface AdminUser {
@@ -130,6 +137,7 @@ export function SuperAdminPanel() {
             ))}
           </div>
         ) : stats ? (
+          <>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5 mb-8">
             <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
               <div className="flex items-center gap-3 mb-2">
@@ -177,6 +185,45 @@ export function SuperAdminPanel() {
               <p className="text-2xl font-bold text-gray-900">{stats.examAssignmentsCount}</p>
             </div>
           </div>
+
+          {stats.planStats && stats.planStats.length > 0 && (
+            <div className="mb-10 bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+              <h2 className="text-lg font-bold text-gray-900 mb-2">Planlara göre kullanıcı sayısı</h2>
+              <p className="text-sm text-gray-500 mb-4">
+                FREE / PRO / ENTERPRISE dağılımı
+              </p>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="bg-gray-50 text-gray-600 text-xs font-semibold uppercase tracking-wider">
+                      <th className="px-4 py-2">Plan</th>
+                      <th className="px-4 py-2">Tür</th>
+                      <th className="px-4 py-2">Kullanıcı</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stats.planStats.map((p) => (
+                      <tr key={p.planId ?? p.planCode} className="border-t border-gray-100">
+                        <td className="px-4 py-2">
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-gray-900">{p.planName}</span>
+                            <span className="text-xs text-gray-500">{p.planCode}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-2 text-gray-700">
+                          {p.planType}
+                        </td>
+                        <td className="px-4 py-2 text-gray-900 font-semibold">
+                          {p.userCount}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+          </>
         ) : null}
 
         {/* Users table */}
@@ -273,6 +320,91 @@ export function SuperAdminPanel() {
             </>
           )}
         </div>
+
+        {/* TODO: Yönetim alanları (altyapı hazır, içerik sonra doldurulacak) */}
+        <section className="mt-10 space-y-6">
+          <h2 className="text-xl font-bold text-gray-900">Yönetim Alanları</h2>
+          <p className="text-sm text-gray-500">
+            Bu bölümde planlar, kurumlar, sınavlar ve sistem ayarları için gelişmiş yönetim ekranları olacak.
+          </p>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {/* Planlar & abonelikler */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-col justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-1">Planlar &amp; Abonelikler</h3>
+                <p className="text-xs text-gray-500">
+                  Plan listesi, fiyatlar, limitler ve özellikler. Kurum bazlı plan atama / değiştirme.
+                </p>
+              </div>
+              <div className="mt-3">
+                <button
+                  type="button"
+                  disabled
+                  className="inline-flex items-center rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-500 bg-gray-50 cursor-not-allowed"
+                >
+                  Yakında
+                </button>
+              </div>
+            </div>
+
+            {/* Kurumlar & organizasyonlar */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-col justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-1">Kurumlar &amp; Organizasyonlar</h3>
+                <p className="text-xs text-gray-500">
+                  Kurum listesi, kota kullanımı, aktif sınavlar ve yöneticiler için yönetim ekranı.
+                </p>
+              </div>
+              <div className="mt-3">
+                <button
+                  type="button"
+                  disabled
+                  className="inline-flex items-center rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-500 bg-gray-50 cursor-not-allowed"
+                >
+                  Yakında
+                </button>
+              </div>
+            </div>
+
+            {/* Sınav & içerik yönetimi */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-col justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-1">Sınav &amp; İçerik Yönetimi</h3>
+                <p className="text-xs text-gray-500">
+                  Sınav şablonları, ders / konu ağaçları ve sistem genelinde kullanılacak içeriklerin yönetimi.
+                </p>
+              </div>
+              <div className="mt-3">
+                <button
+                  type="button"
+                  disabled
+                  className="inline-flex items-center rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-500 bg-gray-50 cursor-not-allowed"
+                >
+                  Yakında
+                </button>
+              </div>
+            </div>
+
+            {/* Sistem & güvenlik */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-col justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-1">Sistem &amp; Güvenlik</h3>
+                <p className="text-xs text-gray-500">
+                  Loglar, hata raporları, oran limitleri ve kritik sistem ayarları için yönetim araçları.
+                </p>
+              </div>
+              <div className="mt-3">
+                <button
+                  type="button"
+                  disabled
+                  className="inline-flex items-center rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-500 bg-gray-50 cursor-not-allowed"
+                >
+                  Yakında
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   );
