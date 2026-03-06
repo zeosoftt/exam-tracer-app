@@ -56,6 +56,7 @@ interface Topic {
   code: string;
   name: string;
   order: number;
+  examQuestionCount: number | null;
   status: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED';
   totalQuestions: number;
   correctAnswers: number;
@@ -552,6 +553,9 @@ export function DashboardDetailContent({
                                   Konu Adı
                                 </th>
                                 <th className="px-2 sm:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                  Soru Dağılımı
+                                </th>
+                                <th className="px-2 sm:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
                                   Çözülen
                                 </th>
                                 <th className="px-2 sm:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
@@ -651,6 +655,11 @@ export function DashboardDetailContent({
                                           {topic.name}
                                         </span>
                                       </div>
+                                    </td>
+                                    <td className="px-2 sm:px-6 py-3 sm:py-4 text-center">
+                                      <span className="text-sm font-medium text-gray-700">
+                                        {topic.examQuestionCount != null ? topic.examQuestionCount : '–'}
+                                      </span>
                                     </td>
                                     <td className="px-2 sm:px-6 py-3 sm:py-4 text-center">
                                       {editingTopicId === topic.id && editValues ? (

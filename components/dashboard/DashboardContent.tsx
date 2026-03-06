@@ -18,6 +18,7 @@ import {
   Settings,
   Timer,
   BarChart3,
+  ClipboardList,
   TrendingUp,
   RefreshCw,
   Edit2,
@@ -508,7 +509,7 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="rounded-full bg-white/20 p-2.5 backdrop-blur-sm">
-                  <BarChart3 className="h-5 w-5" />
+                  <ClipboardList className="h-5 w-5" />
                 </div>
                 <span className="text-xs font-semibold bg-white/20 px-2.5 py-0.5 rounded-full backdrop-blur-sm">
                   Deneme Takibi
@@ -859,7 +860,7 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
             href="/dashboard/deneme"
             className="group bg-white rounded-xl shadow-md p-4 border border-gray-200 hover:shadow-lg hover:border-amber-300 transition-all flex items-center justify-center gap-3"
           >
-            <BarChart3 className="h-5 w-5 text-amber-600 group-hover:text-amber-700 transition-colors" />
+            <ClipboardList className="h-5 w-5 text-amber-600 group-hover:text-amber-700 transition-colors" />
             <span className="font-semibold text-gray-900 group-hover:text-amber-600 transition-colors">Deneme Takibi</span>
           </Link>
 

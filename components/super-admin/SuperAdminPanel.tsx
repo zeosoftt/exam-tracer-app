@@ -186,43 +186,6 @@ export function SuperAdminPanel() {
             </div>
           </div>
 
-          {stats.planStats && stats.planStats.length > 0 && (
-            <div className="mb-10 bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-              <h2 className="text-lg font-bold text-gray-900 mb-2">Planlara göre kullanıcı sayısı</h2>
-              <p className="text-sm text-gray-500 mb-4">
-                FREE / PRO / ENTERPRISE dağılımı
-              </p>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead>
-                    <tr className="bg-gray-50 text-gray-600 text-xs font-semibold uppercase tracking-wider">
-                      <th className="px-4 py-2">Plan</th>
-                      <th className="px-4 py-2">Tür</th>
-                      <th className="px-4 py-2">Kullanıcı</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stats.planStats.map((p) => (
-                      <tr key={p.planId ?? p.planCode} className="border-t border-gray-100">
-                        <td className="px-4 py-2">
-                          <div className="flex flex-col">
-                            <span className="font-semibold text-gray-900">{p.planName}</span>
-                            <span className="text-xs text-gray-500">{p.planCode}</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-2 text-gray-700">
-                          {p.planType}
-                        </td>
-                        <td className="px-4 py-2 text-gray-900 font-semibold">
-                          {p.userCount}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
           </>
         ) : null}
 
@@ -329,23 +292,22 @@ export function SuperAdminPanel() {
           </p>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {/* Planlar & abonelikler */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-col justify-between">
+            <Link
+              href="/dashboard/super-admin/plans"
+              className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-col justify-between hover:border-indigo-200 hover:shadow-md transition-all group"
+            >
               <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">Planlar &amp; Abonelikler</h3>
+                <h3 className="text-sm font-semibold text-gray-900 mb-1 group-hover:text-indigo-700">Planlar &amp; Abonelikler</h3>
                 <p className="text-xs text-gray-500">
                   Plan listesi, fiyatlar, limitler ve özellikler. Kurum bazlı plan atama / değiştirme.
                 </p>
               </div>
               <div className="mt-3">
-                <button
-                  type="button"
-                  disabled
-                  className="inline-flex items-center rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-500 bg-gray-50 cursor-not-allowed"
-                >
-                  Yakında
-                </button>
+                <span className="inline-flex items-center rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 group-hover:bg-indigo-100">
+                  Görüntüle
+                </span>
               </div>
-            </div>
+            </Link>
 
             {/* Kurumlar & organizasyonlar */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-col justify-between">
@@ -367,23 +329,22 @@ export function SuperAdminPanel() {
             </div>
 
             {/* Sınav & içerik yönetimi */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-col justify-between">
+            <Link
+              href="/dashboard/super-admin/exam-content"
+              className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-col justify-between hover:border-indigo-200 hover:shadow-md transition-all group"
+            >
               <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">Sınav &amp; İçerik Yönetimi</h3>
+                <h3 className="text-sm font-semibold text-gray-900 mb-1 group-hover:text-indigo-700">Sınav &amp; İçerik Yönetimi</h3>
                 <p className="text-xs text-gray-500">
                   Sınav şablonları, ders / konu ağaçları ve sistem genelinde kullanılacak içeriklerin yönetimi.
                 </p>
               </div>
               <div className="mt-3">
-                <button
-                  type="button"
-                  disabled
-                  className="inline-flex items-center rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-500 bg-gray-50 cursor-not-allowed"
-                >
+                <span className="inline-flex items-center rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 group-hover:bg-indigo-100">
                   Yakında
-                </button>
+                </span>
               </div>
-            </div>
+            </Link>
 
             {/* Sistem & güvenlik */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-col justify-between">

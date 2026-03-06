@@ -140,17 +140,18 @@ model Subject {
 }
 
 model Topic {
-  id           String         @id @default(cuid())
-  subjectId    String
-  name         String
-  code         String
-  description  String?
-  order        Int            @default(0)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  deletedAt    DateTime?
-  subject      Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  userProgress UserProgress[]
+  id                 String         @id @default(cuid())
+  subjectId          String
+  name               String
+  code               String
+  description        String?
+  order              Int            @default(0)
+  examQuestionCount  Int?           // Sınavda bu konudan çıkan soru sayısı (soru dağılımı)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  deletedAt          DateTime?
+  subject            Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  userProgress       UserProgress[]
 
   @@unique([subjectId, code])
   @@index([subjectId])
