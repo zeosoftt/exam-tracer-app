@@ -132,14 +132,14 @@ export function ExamContentManager() {
 
   const openEdit = (type: EntityType, entity: ExamNode | SectionNode | SubjectNode | TopicNode, parentId?: string) => {
     setModal({ type, parentId, edit: entity });
-    const e = entity as Record<string, unknown>;
+    const e = entity as unknown as Record<string, unknown>;
     setForm({
       name: String(e.name ?? ''),
       code: String(e.code ?? ''),
       description: e.description != null ? String(e.description) : '',
       order: typeof e.order === 'number' ? e.order : 0,
-      status: type === 'exam' ? String((e as ExamNode).status) : undefined,
-      examQuestionCount: type === 'topic' && e.examQuestionCount != null ? e.examQuestionCount : '',
+      status: type === 'exam' ? String(e.status ?? '') : '',
+      examQuestionCount: type === 'topic' ? (typeof e.examQuestionCount === 'number' ? e.examQuestionCount : '') : '',
     });
     setActionError(null);
   };

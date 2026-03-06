@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { USER_ROLES, HTTP_STATUS, ERROR_MESSAGES, EXAM_STATUS } from '@/config/constants';
 
@@ -37,11 +38,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
   try {
     const body = await req.json();
-    const data: { name?: string; code?: string; description?: string | null; status?: string } = {};
+    const data: Prisma.ExamUpdateInput = {};
     if (typeof body.name === 'string') data.name = body.name.trim();
     if (typeof body.code === 'string') data.code = body.code.trim().toUpperCase();
     if (body.description !== undefined) data.description = body.description ? String(body.description).trim() : null;
-    if (body.status === EXAM_STATUS.ACTIVE || body.status === EXAM_STATUS.INACTIVE || body.status === EXAM_STATUS.ARCHIVED) data.status = body.status;
+    if (body.status === EXAM_STATUS.ACTIVE || body.status === EXAM_STATUS.INACTIVE || body.status === EXAM_STATUS.ARCHIVED) {
+      data.status = body.status as 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
+    }
     const exam = await prisma.exam.update({ where: { id }, data });
     return NextResponse.json({ success: true, data: exam });
   } catch (e: unknown) {
