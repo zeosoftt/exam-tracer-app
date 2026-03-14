@@ -5,10 +5,12 @@
 
 import Link from 'next/link';
 import { getBaseUrl } from '@/lib/seo/baseUrl';
+import { getSettingBoolean, SITE_KEYS } from '@/lib/siteSettings';
 import { BookOpen, Users, ArrowRight, CheckCircle, Target, BarChart3, GraduationCap, Library, FileCheck, ClipboardCheck, Sparkles, TrendingUp, Award, UserPlus, ListChecks, MessageCircle, HelpCircle, Instagram, Linkedin, Youtube, Facebook } from 'lucide-react';
 
-export default function LandingPage() {
+export default async function LandingPage() {
   const baseUrl = getBaseUrl();
+  const showPartners = await getSettingBoolean(SITE_KEYS.LANDING_SHOW_PARTNERS);
   const jsonLd = {
     '@context': 'https://schema.org',
     '@graph': [
@@ -433,48 +435,50 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Partners */}
-      <section className="py-16 sm:py-24 lg:py-32 bg-stone-50">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10 sm:mb-16">
-            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-900 mb-3 sm:mb-4">
-              Birlikte Çalıştığımız Kurumlar
-            </h2>
-            <p className="text-lg sm:text-xl text-stone-600 max-w-2xl mx-auto">
-              Türkiye&apos;nin önde gelen kurumları sınav takiplerini The Goal Lab ile yönetiyor
+      {/* Partners - admin panelden açılıp kapatılabilir */}
+      {showPartners && (
+        <section className="py-16 sm:py-24 lg:py-32 bg-stone-50">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-10 sm:mb-16">
+              <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-900 mb-3 sm:mb-4">
+                Birlikte Çalıştığımız Kurumlar
+              </h2>
+              <p className="text-lg sm:text-xl text-stone-600 max-w-2xl mx-auto">
+                Türkiye&apos;nin önde gelen kurumları sınav takiplerini The Goal Lab ile yönetiyor
+              </p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+              {[
+                { name: 'Milli Eğitim Bakanlığı', initials: 'MEB' },
+                { name: 'Yükseköğretim Kurulu', initials: 'YÖK' },
+                { name: 'ÖSYM', initials: 'ÖSYM' },
+                { name: 'Kamu Personeli Seçme Kurumu', initials: 'KPSS' },
+                { name: 'Adalet Bakanlığı', initials: 'ADL' },
+                { name: 'Sağlık Bakanlığı', initials: 'SB' },
+                { name: 'İçişleri Bakanlığı', initials: 'İB' },
+                { name: 'Maliye Bakanlığı', initials: 'MB' },
+              ].map((institution, index) => (
+                <div
+                  key={index}
+                  className="group p-6 sm:p-8 bg-white rounded-2xl border border-stone-200 hover:border-primary-200 hover:shadow-soft transition-all duration-300"
+                >
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 mb-3 sm:mb-4 flex items-center justify-center bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl text-white font-display font-bold text-sm sm:text-lg shadow-lg shadow-primary-500/20 group-hover:scale-105 transition-transform">
+                      {institution.initials}
+                    </div>
+                    <p className="text-xs sm:text-sm font-semibold text-stone-600 group-hover:text-stone-900 transition-colors">
+                      {institution.name}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="mt-8 sm:mt-12 text-center text-stone-500 text-sm sm:text-base">
+              +100&apos;den fazla kamu kurumu ve özel eğitim kurumu The Goal Lab kullanıyor
             </p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-            {[
-              { name: 'Milli Eğitim Bakanlığı', initials: 'MEB' },
-              { name: 'Yükseköğretim Kurulu', initials: 'YÖK' },
-              { name: 'ÖSYM', initials: 'ÖSYM' },
-              { name: 'Kamu Personeli Seçme Kurumu', initials: 'KPSS' },
-              { name: 'Adalet Bakanlığı', initials: 'ADL' },
-              { name: 'Sağlık Bakanlığı', initials: 'SB' },
-              { name: 'İçişleri Bakanlığı', initials: 'İB' },
-              { name: 'Maliye Bakanlığı', initials: 'MB' },
-            ].map((institution, index) => (
-              <div
-                key={index}
-                className="group p-6 sm:p-8 bg-white rounded-2xl border border-stone-200 hover:border-primary-200 hover:shadow-soft transition-all duration-300"
-              >
-                <div className="flex flex-col items-center justify-center text-center">
-                  <div className="w-12 h-12 sm:w-16 sm:h-16 mb-3 sm:mb-4 flex items-center justify-center bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl text-white font-display font-bold text-sm sm:text-lg shadow-lg shadow-primary-500/20 group-hover:scale-105 transition-transform">
-                    {institution.initials}
-                  </div>
-                  <p className="text-xs sm:text-sm font-semibold text-stone-600 group-hover:text-stone-900 transition-colors">
-                    {institution.name}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="mt-8 sm:mt-12 text-center text-stone-500 text-sm sm:text-base">
-            +100&apos;den fazla kamu kurumu ve özel eğitim kurumu The Goal Lab kullanıyor
-          </p>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* SSS (kısa özet + link) */}
       <section className="py-12 sm:py-16 bg-white border-y border-stone-100">

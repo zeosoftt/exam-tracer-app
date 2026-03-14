@@ -502,6 +502,16 @@ model Subscription {
   @@map("subscriptions")
 }
 
+model SiteSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+  @@map("site_settings")
+}
+
 enum UserRole {
   ADMIN
   INSTITUTION_ADMIN

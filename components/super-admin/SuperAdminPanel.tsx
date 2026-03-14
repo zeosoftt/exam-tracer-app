@@ -11,7 +11,10 @@ import {
   Shield,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from 'lucide-react';
+
+const LANDING_SHOW_PARTNERS_KEY = 'landing_show_partners';
 
 interface AdminStats {
   usersCount: number;
@@ -53,6 +56,42 @@ export function SuperAdminPanel() {
   const [pagination, setPagination] = useState({ limit: 20, total: 0, totalPages: 0 });
   const [isLoadingStats, setIsLoadingStats] = useState(true);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+  const [siteSettings, setSiteSettings] = useState<Record<string, boolean> | null>(null);
+  const [siteSettingsLoading, setSiteSettingsLoading] = useState(true);
+  const [siteSettingsPatching, setSiteSettingsPatching] = useState(false);
+
+  const fetchSiteSettings = async () => {
+    try {
+      const res = await fetch('/api/super-admin/site-settings');
+      if (res.ok) {
+        const json = await res.json();
+        setSiteSettings(json.data);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setSiteSettingsLoading(false);
+    }
+  };
+
+  const toggleLandingSection = async (key: string, value: boolean) => {
+    setSiteSettingsPatching(true);
+    try {
+      const res = await fetch('/api/super-admin/site-settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(
+          key === LANDING_SHOW_PARTNERS_KEY ? { landing_show_partners: value } : {}
+        ),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setSiteSettings(json.data);
+      }
+    } finally {
+      setSiteSettingsPatching(false);
+    }
+  };
 
   const fetchStats = async () => {
     try {
@@ -87,6 +126,7 @@ export function SuperAdminPanel() {
 
   useEffect(() => {
     fetchStats();
+    fetchSiteSettings();
   }, []);
 
   useEffect(() => {
@@ -284,7 +324,58 @@ export function SuperAdminPanel() {
           )}
         </div>
 
-        {/* TODO: Yönetim alanları (altyapı hazır, içerik sonra doldurulacak) */}
+        {/* Ana sayfa bölümleri: göster/gizle */}
+        <section className="mt-10 space-y-4">
+          <h2 className="text-xl font-bold text-stone-900">Ana Sayfa Bölümleri</h2>
+          <p className="text-sm text-stone-500">
+            Ana sayfada (landing) hangi bölümlerin görüneceğini açıp kapatabilirsiniz.
+          </p>
+          {siteSettingsLoading ? (
+            <div className="flex items-center gap-2 text-stone-500">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span className="text-sm">Yükleniyor...</span>
+            </div>
+          ) : (
+            <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-5 max-w-xl">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="font-medium text-stone-900">Birlikte Çalıştığımız Kurumlar</p>
+                  <p className="text-xs text-stone-500 mt-0.5">
+                    Ana sayfada &quot;Birlikte Çalıştığımız Kurumlar&quot; bölümü gösterilsin mi?
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={siteSettings?.[LANDING_SHOW_PARTNERS_KEY] ?? true}
+                  disabled={siteSettingsPatching}
+                  onClick={() =>
+                    toggleLandingSection(
+                      LANDING_SHOW_PARTNERS_KEY,
+                      !(siteSettings?.[LANDING_SHOW_PARTNERS_KEY] ?? true)
+                    )
+                  }
+                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    siteSettings?.[LANDING_SHOW_PARTNERS_KEY] ?? true
+                      ? 'bg-primary-600'
+                      : 'bg-stone-200'
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition ${
+                      siteSettings?.[LANDING_SHOW_PARTNERS_KEY] ?? true ? 'translate-x-5' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+              <p className="mt-2 text-xs text-stone-500">
+                {siteSettings?.[LANDING_SHOW_PARTNERS_KEY] ?? true ? 'Gösteriliyor' : 'Gizli'}
+              </p>
+            </div>
+          )}
+        </section>
+
+        {/* Yönetim alanları */}
         <section className="mt-10 space-y-6">
           <h2 className="text-xl font-bold text-stone-900">Yönetim Alanları</h2>
           <p className="text-sm text-stone-500">
