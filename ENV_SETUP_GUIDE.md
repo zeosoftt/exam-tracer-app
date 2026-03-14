@@ -91,6 +91,12 @@ exam-tracker/
   ```
   DATABASE_URL=postgresql://postgres.abc123:PASSWORD@aws-0-eu-central-1.pooler.supabase.com:6543/postgres?sslmode=require
   ```
+- **Performans (Vercel / istekler yavaşsa):** Aynı URL'ye mutlaka şu parametreleri ekleyin:
+  `?pgbouncer=true&connection_limit=1`  
+  Böylece "too many connections" ve yavaş yanıtlar azalır. Örnek:
+  ```
+  DATABASE_URL=postgresql://...@...pooler.supabase.com:6543/postgres?sslmode=require&pgbouncer=true&connection_limit=1
+  ```
 
 #### `NEXTAUTH_URL`
 - **Açıklama:** Uygulamanın public URL'i

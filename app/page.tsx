@@ -4,13 +4,21 @@
  */
 
 import Link from 'next/link';
+import { unstable_cache } from 'next/cache';
 import { getBaseUrl } from '@/lib/seo/baseUrl';
 import { getSettingBoolean, SITE_KEYS } from '@/lib/siteSettings';
 import { BookOpen, Users, ArrowRight, CheckCircle, Target, BarChart3, GraduationCap, Library, FileCheck, ClipboardCheck, Sparkles, TrendingUp, Award, UserPlus, ListChecks, MessageCircle, HelpCircle, Instagram, Linkedin, Youtube, Facebook } from 'lucide-react';
 
+const getShowPartnersCached = () =>
+  unstable_cache(
+    async () => getSettingBoolean(SITE_KEYS.LANDING_SHOW_PARTNERS),
+    ['site-setting-landing_show_partners'],
+    { revalidate: 60 }
+  )();
+
 export default async function LandingPage() {
   const baseUrl = getBaseUrl();
-  const showPartners = await getSettingBoolean(SITE_KEYS.LANDING_SHOW_PARTNERS);
+  const showPartners = await getShowPartnersCached();
   const jsonLd = {
     '@context': 'https://schema.org',
     '@graph': [

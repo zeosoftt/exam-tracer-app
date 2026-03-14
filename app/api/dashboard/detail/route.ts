@@ -24,50 +24,33 @@ async function getDetailHandler(_req: NextRequest): Promise<NextResponse> {
 
     const userId = session.user.id;
 
-    // Get user info including targetScore
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        targetScore: true,
-      },
-    });
+    // Paralel: kullanıcı + aktif sınav ataması (2 round-trip yerine 1)
+    const [user, activeExamAssignment] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, targetScore: true },
+      }),
+      prisma.examAssignment.findFirst({
+        where: {
+          userId,
+          deletedAt: null,
+          exam: { status: 'ACTIVE', deletedAt: null },
+        },
+        include: {
+          exam: { select: { id: true, name: true, code: true } },
+        },
+        orderBy: { assignedAt: 'desc' },
+      }),
+    ]);
 
     if (!user) {
       throw new UnauthorizedError();
     }
 
-    // Get active exam assigned to user
-    const activeExamAssignment = await prisma.examAssignment.findFirst({
-      where: {
-        userId,
-        deletedAt: null,
-        exam: {
-          status: 'ACTIVE',
-          deletedAt: null,
-        },
-      },
-      include: {
-        exam: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-          },
-        },
-      },
-      orderBy: {
-        assignedAt: 'desc',
-      },
-    });
-
     if (!activeExamAssignment?.exam?.id) {
       return NextResponse.json({
         success: true,
-        data: {
-          exam: null,
-          sections: [],
-        },
+        data: { exam: null, sections: [] },
       });
     }
 
@@ -75,68 +58,52 @@ async function getDetailHandler(_req: NextRequest): Promise<NextResponse> {
     const examCode = activeExamAssignment.exam.code;
     const targetScore = user.targetScore ?? 0;
 
-    // Get all sections for this exam
-    const sections = await prisma.section.findMany({
-      where: {
-        examId: examId,
-        deletedAt: null,
-      },
-      include: {
-        subjects: {
-          where: {
-            deletedAt: null,
-          },
-          orderBy: {
-            order: 'asc',
-          },
-          include: {
-            topics: {
-              where: {
-                deletedAt: null,
-              },
-              orderBy: {
-                order: 'asc',
-              },
-              select: {
-                id: true,
-                code: true,
-                name: true,
-                order: true,
-                examQuestionCount: true,
+    // Paralel: sections + userProgress (2 round-trip yerine 1)
+    const [sections, userProgress] = await Promise.all([
+      prisma.section.findMany({
+        where: { examId, deletedAt: null },
+        include: {
+          subjects: {
+            where: { deletedAt: null },
+            orderBy: { order: 'asc' },
+            include: {
+              topics: {
+                where: { deletedAt: null },
+                orderBy: { order: 'asc' },
+                select: {
+                  id: true,
+                  code: true,
+                  name: true,
+                  order: true,
+                  examQuestionCount: true,
+                },
               },
             },
           },
         },
-      },
-      orderBy: {
-        order: 'asc',
-      },
-    });
-
-    // Get user progress for all topics in this exam
-    const userProgress = await prisma.userProgress.findMany({
-      where: {
-        userId,
-        topic: {
-          subject: {
-            section: {
-              examId: examId,
+        orderBy: { order: 'asc' },
+      }),
+      prisma.userProgress.findMany({
+        where: {
+          userId,
+          topic: {
+            subject: {
+              section: { examId, deletedAt: null },
               deletedAt: null,
             },
             deletedAt: null,
           },
           deletedAt: null,
         },
-        deletedAt: null,
-      },
-      select: {
-        topicId: true,
-        status: true,
-        totalQuestions: true,
-        correctAnswers: true,
-        wrongAnswers: true,
-      },
-    });
+        select: {
+          topicId: true,
+          status: true,
+          totalQuestions: true,
+          correctAnswers: true,
+          wrongAnswers: true,
+        },
+      }),
+    ]);
 
     // Create maps for quick lookup
     const progressMap = new Map(
@@ -355,7 +322,6 @@ async function getDetailHandler(_req: NextRequest): Promise<NextResponse> {
 
     logApi('GET', '/api/dashboard/detail', HTTP_STATUS.OK, undefined, { userId });
 
-    // OPTIMIZED: Use pre-calculated values instead of recalculating
     let evaluationSummary = null;
     if (evaluationConfig && requiredNet !== null && requiredSuccessRate !== null) {
       evaluationSummary = {
@@ -366,7 +332,7 @@ async function getDetailHandler(_req: NextRequest): Promise<NextResponse> {
       };
     }
 
-    return NextResponse.json({
+    const res = NextResponse.json({
       success: true,
       data: {
         exam: activeExamAssignment.exam,
@@ -374,6 +340,8 @@ async function getDetailHandler(_req: NextRequest): Promise<NextResponse> {
         evaluation: evaluationSummary,
       },
     });
+    res.headers.set('Cache-Control', 'private, max-age=5, stale-while-revalidate=15');
+    return res;
   } catch (error) {
     return handleError(error);
   }
