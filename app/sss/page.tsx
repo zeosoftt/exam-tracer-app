@@ -4,12 +4,20 @@
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { getBaseUrl } from '@/lib/seo/baseUrl';
 import { BookOpen, HelpCircle, ArrowLeft } from 'lucide-react';
 
-export const metadata: Metadata = {
-  title: 'Sıkça Sorulan Sorular | The Goal Lab',
-  description: 'The Goal Lab (thegoallab) hakkında sıkça sorulan sorular ve yanıtları.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const baseUrl = getBaseUrl();
+  const title = 'Sıkça Sorulan Sorular';
+  const description = 'The Goal Lab (thegoallab) hakkında sıkça sorulan sorular ve yanıtları. Ücretsiz mi, hangi sınavlar, güvenlik, mobil.';
+  return {
+    title,
+    description,
+    openGraph: { url: `${baseUrl}/sss`, title, description },
+    alternates: { canonical: `${baseUrl}/sss` },
+  };
+}
 
 const FAQ_ITEMS = [
   { q: 'The Goal Lab ücretsiz mi?', a: 'Evet. Ücretsiz plan ile kayıt olup sınav ve konu takibinizi yapabilirsiniz. Gelişmiş özellikler ve kurumsal kullanım için ücretli planlar sunulmaktadır.' },
@@ -21,8 +29,22 @@ const FAQ_ITEMS = [
 ];
 
 export default function SSSPage() {
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: FAQ_ITEMS.map(({ q, a }) => ({
+      '@type': 'Question',
+      name: q,
+      acceptedAnswer: { '@type': 'Answer', text: a },
+    })),
+  };
+
   return (
     <div className="min-h-screen bg-stone-50">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       <header className="border-b border-stone-100 bg-white/80 backdrop-blur-xl sticky top-0 z-50">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 sm:h-20 items-center justify-between">

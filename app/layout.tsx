@@ -7,6 +7,7 @@ import type { Metadata } from 'next';
 import Script from 'next/script';
 import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
+import { getBaseUrl } from '@/lib/seo/baseUrl';
 import './globals.css';
 import { Providers } from './providers';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -19,9 +20,28 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 const GA_MEASUREMENT_ID = 'G-6YZFCN5KML';
 
+const baseUrl = getBaseUrl();
+const defaultTitle = 'The Goal Lab - Sınav ve Hedef Takip';
+const defaultDescription = 'thegoallab - Kurumlar ve bireyler için hedef ve sınav takip platformu. KPSS, ÖABT, ALES sınav hazırlığı.';
+
 export const metadata: Metadata = {
-  title: 'The Goal Lab - Sınav ve Hedef Takip',
-  description: 'thegoallab - Kurumlar ve bireyler için hedef ve sınav takip platformu',
+  metadataBase: new URL(baseUrl),
+  title: { default: defaultTitle, template: '%s | The Goal Lab' },
+  description: defaultDescription,
+  keywords: ['sınav takip', 'hedef takip', 'KPSS', 'ÖABT', 'ALES', 'The Goal Lab', 'thegoallab', 'sınav hazırlık', 'konu takip'],
+  openGraph: {
+    type: 'website',
+    locale: 'tr_TR',
+    url: baseUrl,
+    siteName: 'The Goal Lab',
+    title: defaultTitle,
+    description: defaultDescription,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: defaultTitle,
+    description: defaultDescription,
+  },
   verification: {
     google: 'gRq38B6komUBMFH4YMw8vymDABn23I649wrmMowDUKc',
   },
@@ -34,6 +54,7 @@ export const metadata: Metadata = {
       { url: '/icon.svg', type: 'image/svg+xml' },
     ],
   },
+  alternates: { canonical: baseUrl },
 };
 
 export default function RootLayout({

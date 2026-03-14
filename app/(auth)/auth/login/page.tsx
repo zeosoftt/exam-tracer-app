@@ -6,7 +6,7 @@
 'use client';
 
 import { useState, Suspense } from 'react';
-import { signIn } from 'next-auth/react';
+import { signIn, signOut, getSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -38,6 +38,14 @@ function LoginForm() {
       setIsLoading(true);
       setError(null);
 
+      // OWASP / standart: Yeni girişte önceki oturum geçersiz kılınmalı (session replacement).
+      // Sadece mevcut oturum varken signOut çağırıyoruz; böylece farklı hesapla girişte
+      // yeni session oluşur, gereksiz signOut çağrısı yapılmaz.
+      const session = await getSession();
+      if (session?.user) {
+        await signOut({ redirect: false });
+      }
+
       const result = await signIn('credentials', {
         email: data.email,
         password: data.password,
@@ -45,7 +53,6 @@ function LoginForm() {
       });
 
       if (result?.error) {
-        // Handle different error types
         if (result.error === 'Configuration') {
           setError('Sunucu yapılandırma hatası. Lütfen yöneticiye başvurun.');
         } else if (result.error === 'CredentialsSignin') {

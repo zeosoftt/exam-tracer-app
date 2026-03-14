@@ -4,11 +4,38 @@
  */
 
 import Link from 'next/link';
+import { getBaseUrl } from '@/lib/seo/baseUrl';
 import { BookOpen, Users, ArrowRight, CheckCircle, Target, BarChart3, GraduationCap, Library, FileCheck, ClipboardCheck, Sparkles, TrendingUp, Award, UserPlus, ListChecks, MessageCircle, HelpCircle, Instagram, Linkedin, Youtube, Facebook } from 'lucide-react';
 
 export default function LandingPage() {
+  const baseUrl = getBaseUrl();
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        '@id': `${baseUrl}/#website`,
+        url: baseUrl,
+        name: 'The Goal Lab',
+        description: 'Kurumlar ve bireyler için hedef ve sınav takip platformu. KPSS, ÖABT, ALES sınav hazırlığı.',
+        inLanguage: 'tr-TR',
+      },
+      {
+        '@type': 'Organization',
+        '@id': `${baseUrl}/#organization`,
+        name: 'The Goal Lab',
+        url: baseUrl,
+        logo: { '@type': 'ImageObject', url: `${baseUrl}/icon.svg` },
+      },
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-stone-50">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Header */}
       <header className="fixed top-0 w-full bg-white/80 backdrop-blur-xl border-b border-stone-100 z-50">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
