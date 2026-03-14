@@ -540,46 +540,56 @@ export function DashboardDetailContent({
                       </div>
 
                       {/* Konular Tablosu */}
-                      <div className="rounded-xl border border-stone-200 bg-white overflow-hidden">
-                        <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                      <div className="rounded-2xl border border-stone-200 bg-white shadow-soft overflow-hidden">
+                        {selectedSubject.topics && selectedSubject.topics.length > 0 && (
+                          <div className="px-4 sm:px-5 py-3 border-b border-stone-100 bg-stone-50/50">
+                            <p className="text-sm text-stone-600">
+                              <span className="font-semibold text-stone-900">{selectedSubject.topics.length}</span> konu
+                              {selectedSubject.completedTopics > 0 && (
+                                <> · <span className="text-primary-600 font-medium">{selectedSubject.completedTopics} tamamlandı</span></>
+                              )}
+                            </p>
+                          </div>
+                        )}
+                        <div className="overflow-auto max-h-[min(70vh,600px)]">
                           {selectedSubject.topics && selectedSubject.topics.length > 0 ? (
-                          <table className="w-full min-w-[640px] sm:min-w-0">
-                            <thead>
-                              <tr className="bg-gradient-to-r from-stone-50 to-stone-100 border-b border-stone-200">
-                                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-stone-700 uppercase tracking-wider">
+                          <table className="w-full min-w-[680px]">
+                            <thead className="sticky top-0 z-10">
+                              <tr className="bg-stone-50 border-b border-stone-200 shadow-[0_1px_0_0_rgba(0,0,0,0.05)]">
+                                <th className="px-4 py-3.5 text-left text-xs font-semibold text-stone-600 uppercase tracking-wider w-[130px] sm:w-[140px]">
                                   Durum
                                 </th>
-                                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-stone-700 uppercase tracking-wider">
+                                <th className="px-4 py-3.5 text-left text-xs font-semibold text-stone-600 uppercase tracking-wider min-w-[160px]">
                                   Konu Adı
                                 </th>
-                                <th className="px-2 sm:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-stone-700 uppercase tracking-wider">
-                                  Soru Dağılımı
+                                <th className="px-3 py-3.5 text-center text-xs font-semibold text-stone-600 uppercase tracking-wider w-[90px]">
+                                  Soru
                                 </th>
-                                <th className="px-2 sm:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-stone-700 uppercase tracking-wider">
+                                <th className="px-3 py-3.5 text-center text-xs font-semibold text-stone-600 uppercase tracking-wider w-[85px]">
                                   Çözülen
                                 </th>
-                                <th className="px-2 sm:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-stone-700 uppercase tracking-wider">
+                                <th className="px-3 py-3.5 text-center text-xs font-semibold text-stone-600 uppercase tracking-wider w-[70px]">
                                   Doğru
                                 </th>
-                                <th className="px-2 sm:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-stone-700 uppercase tracking-wider">
+                                <th className="px-3 py-3.5 text-center text-xs font-semibold text-stone-600 uppercase tracking-wider w-[100px] min-w-[100px]">
                                   Yanlış
                                 </th>
                                 {detailData?.evaluation && (
                                   <>
-                                    <th className="px-2 sm:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-stone-700 uppercase tracking-wider">
+                                    <th className="px-3 py-3.5 text-center text-xs font-semibold text-stone-600 uppercase tracking-wider w-[70px]">
                                       Net
                                     </th>
-                                    <th className="px-2 sm:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-stone-700 uppercase tracking-wider">
+                                    <th className="px-3 py-3.5 text-center text-xs font-semibold text-stone-600 uppercase tracking-wider w-[80px]">
                                       Başarı
                                     </th>
-                                    <th className="px-2 sm:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-stone-700 uppercase tracking-wider">
+                                    <th className="px-3 py-3.5 text-center text-xs font-semibold text-stone-600 uppercase tracking-wider w-[120px] sticky right-0 z-10 bg-stone-50 shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.06)]">
                                       Değerlendirme
                                     </th>
                                   </>
                                 )}
                               </tr>
                             </thead>
-                            <tbody className="divide-y divide-stone-200">
+                            <tbody className="divide-y divide-stone-100">
                               {selectedSubject.topics.map((topic) => {
                                 const getStatusConfig = (status: string) => {
                                   switch (status) {
@@ -625,15 +635,15 @@ export function DashboardDetailContent({
                                 return (
                                   <tr
                                     key={topic.id}
-                                    className={`${statusConfig.bgColor} hover:bg-opacity-80 transition-colors cursor-pointer`}
+                                    className={`${statusConfig.bgColor} hover:bg-opacity-90 transition-colors ${editingTopicId === topic.id ? 'ring-1 ring-primary-200 ring-inset' : ''}`}
                                   >
-                                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                    <td className="px-4 py-3 whitespace-nowrap align-middle">
                                       <div className="relative inline-flex items-center">
                                         <select
                                           value={topic.status}
                                           onChange={(e) => updateTopicStatus(topic.id, e.target.value as 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED')}
                                           disabled={updatingTopicId === topic.id}
-                                          className={`appearance-none pr-7 pl-2 sm:pl-3 py-1.5 rounded-full text-xs font-semibold border-2 cursor-pointer transition-all hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-1 min-w-[110px] sm:min-w-[130px] ${
+                                          className={`appearance-none pr-8 pl-3 py-2 rounded-xl text-xs font-semibold border cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-primary-500/30 min-w-[120px] ${
                                             statusConfig.iconBg
                                           } ${statusConfig.color} ${statusConfig.borderColor} ${
                                             updatingTopicId === topic.id ? 'opacity-50 cursor-not-allowed' : ''
@@ -643,99 +653,100 @@ export function DashboardDetailContent({
                                           <option value="IN_PROGRESS">Devam Ediyor</option>
                                           <option value="COMPLETED">Tamamlandı</option>
                                         </select>
-                                        <ChevronDown className={`absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 ${statusConfig.color} pointer-events-none`} />
+                                        <ChevronDown className={`absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 ${statusConfig.color} pointer-events-none`} />
                                       </div>
                                     </td>
-                                    <td className="px-3 sm:px-6 py-3 sm:py-4">
-                                      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                                        <div className={`p-1.5 rounded-lg flex-shrink-0 ${statusConfig.iconBg}`}>
+                                    <td className="px-4 py-3 min-w-0">
+                                      <div className="flex items-center gap-2 min-w-0">
+                                        <div className={`p-2 rounded-xl flex-shrink-0 ${statusConfig.iconBg}`}>
                                           <Icon className={`h-4 w-4 ${statusConfig.color}`} />
                                         </div>
-                                        <span className="text-sm font-medium text-stone-900 truncate">
+                                        <span className="text-sm font-medium text-stone-900 truncate" title={topic.name}>
                                           {topic.name}
                                         </span>
                                       </div>
                                     </td>
-                                    <td className="px-2 sm:px-6 py-3 sm:py-4 text-center">
+                                    <td className="px-3 py-3 text-center align-middle">
                                       <span className="text-sm font-medium text-stone-700">
                                         {topic.examQuestionCount != null ? topic.examQuestionCount : '–'}
                                       </span>
                                     </td>
-                                    <td className="px-2 sm:px-6 py-3 sm:py-4 text-center">
+                                    <td className="px-3 py-3 text-center align-middle">
                                       {editingTopicId === topic.id && editValues ? (
-                                        <div className="flex items-center justify-center gap-2">
-                                          <input
-                                            type="number"
-                                            min="0"
-                                            value={editValues.totalQuestions}
-                                            onChange={(e) => setEditValues({
-                                              ...editValues,
-                                              totalQuestions: parseInt(e.target.value) || 0,
-                                            })}
-                                            className="w-16 px-2 py-1 text-sm text-center border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                            disabled={updatingTopicId === topic.id}
-                                          />
-                                        </div>
+                                        <input
+                                          type="number"
+                                          min="0"
+                                          value={editValues.totalQuestions === 0 ? '' : editValues.totalQuestions}
+                                          onChange={(e) => setEditValues({
+                                            ...editValues,
+                                            totalQuestions: e.target.value === '' ? 0 : parseInt(e.target.value, 10) || 0,
+                                          })}
+                                          placeholder="–"
+                                          className="w-14 px-2 py-2 text-sm text-center border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400"
+                                          disabled={updatingTopicId === topic.id}
+                                        />
                                       ) : (
-                                        <div className="flex items-center justify-center gap-2">
+                                        <div className="flex items-center justify-center gap-1.5">
                                           <span className={`text-sm font-semibold ${
-                                            topic.totalQuestions > 0 ? 'text-stone-700' : 'text-stone-400'
+                                            topic.totalQuestions > 0 ? 'text-stone-800' : 'text-stone-400'
                                           }`}>
-                                            {topic.totalQuestions > 0 ? topic.totalQuestions : '-'}
+                                            {topic.totalQuestions > 0 ? topic.totalQuestions : '–'}
                                           </span>
                                           {!editingTopicId && (
                                             <button
                                               onClick={() => startEdit(topic)}
-                                              className="p-1 hover:bg-stone-100 rounded transition-colors"
+                                              className="p-1.5 hover:bg-stone-200 rounded-lg transition-colors text-stone-500 hover:text-stone-700"
                                               title="Düzenle"
                                             >
-                                              <Edit2 className="h-3 w-3 text-stone-500" />
+                                              <Edit2 className="h-3.5 w-3.5" />
                                             </button>
                                           )}
                                         </div>
                                       )}
                                     </td>
-                                    <td className="px-2 sm:px-6 py-3 sm:py-4 text-center">
+                                    <td className="px-3 py-3 text-center align-middle">
                                       {editingTopicId === topic.id && editValues ? (
                                         <input
                                           type="number"
                                           min="0"
                                           max={editValues.totalQuestions}
-                                          value={editValues.correctAnswers}
+                                          value={editValues.correctAnswers === 0 ? '' : editValues.correctAnswers}
                                           onChange={(e) => setEditValues({
                                             ...editValues,
-                                            correctAnswers: parseInt(e.target.value) || 0,
+                                            correctAnswers: e.target.value === '' ? 0 : parseInt(e.target.value, 10) || 0,
                                           })}
-                                          className="w-12 sm:w-16 px-1 sm:px-2 py-1 text-sm text-center border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-green-600 font-semibold"
+                                          placeholder="–"
+                                          className="w-14 px-2 py-2 text-sm text-center border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/30 text-green-700 font-semibold"
                                           disabled={updatingTopicId === topic.id}
                                         />
                                       ) : (
                                         <span className={`text-sm font-semibold ${
                                           topic.correctAnswers > 0 ? 'text-green-600' : 'text-stone-400'
                                         }`}>
-                                          {topic.correctAnswers > 0 ? topic.correctAnswers : '-'}
+                                          {topic.correctAnswers > 0 ? topic.correctAnswers : '–'}
                                         </span>
                                       )}
                                     </td>
-                                    <td className="px-2 sm:px-6 py-3 sm:py-4 text-center">
+                                    <td className="px-3 py-3 text-center align-middle">
                                       {editingTopicId === topic.id && editValues ? (
-                                        <div className="flex items-center justify-center gap-2">
+                                        <div className="flex items-center justify-center gap-1 flex-nowrap min-w-0">
                                           <input
                                             type="number"
                                             min="0"
-                                            max={editValues.totalQuestions - editValues.correctAnswers}
-                                            value={editValues.wrongAnswers}
+                                            max={Math.max(0, editValues.totalQuestions - editValues.correctAnswers)}
+                                            value={editValues.wrongAnswers === 0 ? '' : editValues.wrongAnswers}
                                             onChange={(e) => setEditValues({
                                               ...editValues,
-                                              wrongAnswers: parseInt(e.target.value) || 0,
+                                              wrongAnswers: e.target.value === '' ? 0 : parseInt(e.target.value, 10) || 0,
                                             })}
-                                            className="w-16 px-2 py-1 text-sm text-center border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-red-600 font-semibold"
+                                            placeholder="–"
+                                            className="w-12 flex-shrink-0 px-1.5 py-1.5 text-sm text-center border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/30 text-red-700 font-semibold"
                                             disabled={updatingTopicId === topic.id}
                                           />
                                           <button
                                             onClick={() => updateQuestionStats(topic.id)}
                                             disabled={updatingTopicId === topic.id}
-                                            className="p-1.5 hover:bg-green-100 rounded transition-colors text-green-600 disabled:opacity-50"
+                                            className="flex-shrink-0 p-1.5 hover:bg-green-100 rounded-lg transition-colors text-green-600 disabled:opacity-50"
                                             title="Kaydet"
                                           >
                                             <Save className="h-3.5 w-3.5" />
@@ -743,7 +754,7 @@ export function DashboardDetailContent({
                                           <button
                                             onClick={cancelEdit}
                                             disabled={updatingTopicId === topic.id}
-                                            className="p-1.5 hover:bg-red-100 rounded transition-colors text-red-600 disabled:opacity-50"
+                                            className="flex-shrink-0 p-1.5 hover:bg-red-100 rounded-lg transition-colors text-red-600 disabled:opacity-50"
                                             title="İptal"
                                           >
                                             <X className="h-3.5 w-3.5" />
@@ -753,43 +764,43 @@ export function DashboardDetailContent({
                                         <span className={`text-sm font-semibold ${
                                           topic.wrongAnswers > 0 ? 'text-red-600' : 'text-stone-400'
                                         }`}>
-                                          {topic.wrongAnswers > 0 ? topic.wrongAnswers : '-'}
+                                          {topic.wrongAnswers > 0 ? topic.wrongAnswers : '–'}
                                         </span>
                                       )}
                                     </td>
                                     {detailData?.evaluation && topic.evaluation && (
                                       <>
-                                        <td className="px-2 sm:px-6 py-3 sm:py-4 text-center">
+                                        <td className="px-3 py-3 text-center align-middle">
                                           <span className="text-sm font-semibold text-primary-600">
                                             {topic.evaluation.topicNet.toFixed(2)}
                                           </span>
                                         </td>
-                                        <td className="px-2 sm:px-6 py-3 sm:py-4 text-center">
+                                        <td className="px-3 py-3 text-center align-middle">
                                           <div className="flex flex-col items-center gap-0.5">
-                                            <span className="text-sm font-semibold text-stone-700">
+                                            <span className="text-sm font-semibold text-stone-800">
                                               {(topic.evaluation.topicSuccessRate * 100).toFixed(1)}%
                                             </span>
-                                            {detailData.evaluation.requiredSuccessRate && (
-                                              <span className="text-xs text-stone-500 hidden sm:block">
+                                            {detailData.evaluation.requiredSuccessRate != null && (
+                                              <span className="text-xs text-stone-500">
                                                 Hedef: {(detailData.evaluation.requiredSuccessRate * 100).toFixed(1)}%
                                               </span>
                                             )}
                                           </div>
                                         </td>
-                                        <td className="px-2 sm:px-6 py-3 sm:py-4 text-center">
+                                        <td className={`px-3 py-3 text-center align-middle sticky right-0 z-[1] ${statusConfig.bgColor} shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.06)]`}>
                                           {topic.evaluation.isGood ? (
-                                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700 border border-green-200">
-                                              <CheckCircle className="h-3 w-3" />
+                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold bg-green-100 text-green-700 border border-green-200">
+                                              <CheckCircle className="h-3.5 w-3.5" />
                                               İYİ
                                             </span>
                                           ) : topic.evaluation.isImprovable ? (
-                                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700 border border-yellow-200">
-                                              <TrendingUp className="h-3 w-3" />
-                                              GELİŞTİRİLEBİLİR
+                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-200">
+                                              <TrendingUp className="h-3.5 w-3.5" />
+                                              GELİŞTİR
                                             </span>
                                           ) : (
-                                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-200">
-                                              <RefreshCw className="h-3 w-3" />
+                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold bg-red-100 text-red-700 border border-red-200">
+                                              <RefreshCw className="h-3.5 w-3.5" />
                                               TEKRAR
                                             </span>
                                           )}
@@ -798,15 +809,9 @@ export function DashboardDetailContent({
                                     )}
                                     {detailData?.evaluation && !topic.evaluation && (
                                       <>
-                                        <td className="px-2 sm:px-6 py-3 sm:py-4 text-center">
-                                          <span className="text-sm text-stone-400">-</span>
-                                        </td>
-                                        <td className="px-2 sm:px-6 py-3 sm:py-4 text-center">
-                                          <span className="text-sm text-stone-400">-</span>
-                                        </td>
-                                        <td className="px-2 sm:px-6 py-3 sm:py-4 text-center">
-                                          <span className="text-sm text-stone-400">-</span>
-                                        </td>
+                                        <td className="px-3 py-3 text-center align-middle"><span className="text-stone-400">–</span></td>
+                                        <td className="px-3 py-3 text-center align-middle"><span className="text-stone-400">–</span></td>
+                                        <td className={`px-3 py-3 text-center align-middle sticky right-0 z-[1] ${statusConfig.bgColor} shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.06)]`}><span className="text-stone-400">–</span></td>
                                       </>
                                     )}
                                   </tr>
@@ -815,11 +820,12 @@ export function DashboardDetailContent({
                             </tbody>
                           </table>
                           ) : (
-                          <div className="bg-white/60 rounded-lg p-8 sm:p-12 border border-stone-200 text-center">
-                            <FileText className="h-12 w-12 text-stone-400 mx-auto mb-3" />
-                            <p className="text-stone-500 text-sm font-medium">
-                              Bu ders için henüz konu bulunmuyor
-                            </p>
+                          <div className="p-10 sm:p-14 text-center">
+                            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-stone-100 text-stone-400 mb-4">
+                              <FileText className="h-7 w-7" />
+                            </div>
+                            <p className="text-stone-600 font-medium">Bu ders için henüz konu yok</p>
+                            <p className="text-stone-500 text-sm mt-1">Konu eklendiğinde burada listelenecek</p>
                           </div>
                         )}
                         </div>
