@@ -1,5 +1,5 @@
 {
-  "name": "exam-tracker",
+  "name": "thegoallab",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -44,6 +44,7 @@
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-hook-form": "^7.51.0",
+    "resend": "^6.9.3",
     "tailwind-merge": "^2.2.1",
     "winston": "^3.11.0",
     "zod": "^3.23.8"

@@ -123,14 +123,14 @@ function RegisterForm() {
             <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/25 group-hover:shadow-primary-500/40 transition-shadow">
               <BookOpen className="h-6 w-6" />
             </div>
-            <span className="font-display text-2xl font-bold text-stone-900">Exam Tracker</span>
+            <span className="font-display text-2xl font-bold text-stone-900">The Goal Lab</span>
           </Link>
         </div>
 
         <div className="bg-white rounded-3xl shadow-soft-lg p-6 sm:p-8 border border-stone-100">
           <div className="text-center mb-8">
             <h1 className="font-display text-3xl font-extrabold text-stone-900 mb-2">Hesap Oluştur</h1>
-            <p className="text-stone-600">Exam Tracker&apos;a katılın ve sınav hazırlığınıza başlayın</p>
+            <p className="text-stone-600">The Goal Lab&apos;a katılın ve hedef ve sınav takibinize başlayın</p>
             {onboardingData?.examName && (
               <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary-50 border border-primary-200 rounded-xl">
                 <CheckCircle className="h-4 w-4 text-primary-600" />

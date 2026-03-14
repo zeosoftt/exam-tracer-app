@@ -35,7 +35,7 @@ const consoleFormat = winston.format.combine(
 const logger = winston.createLogger({
   level: logLevel,
   format: logFormat,
-  defaultMeta: { service: 'exam-tracker' },
+  defaultMeta: { service: 'thegoallab' },
   transports: [
     new winston.transports.Console({
       format: isDevelopment ? consoleFormat : logFormat,

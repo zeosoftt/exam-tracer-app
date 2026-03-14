@@ -112,7 +112,7 @@ function ResetPasswordForm() {
             <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/25 group-hover:shadow-primary-500/40 transition-shadow">
               <BookOpen className="h-6 w-6" />
             </div>
-            <span className="font-display text-2xl font-bold text-stone-900">Exam Tracker</span>
+            <span className="font-display text-2xl font-bold text-stone-900">The Goal Lab</span>
           </Link>
         </div>
 

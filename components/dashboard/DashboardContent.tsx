@@ -344,7 +344,7 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
                 <BookOpen className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
               <span className="font-display text-lg sm:text-xl font-bold text-stone-900">
-                Exam Tracker
+                The Goal Lab
               </span>
             </Link>
             <div className="flex items-center gap-2 sm:gap-4">

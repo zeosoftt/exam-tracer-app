@@ -276,7 +276,7 @@ export function DashboardDetailContent({
                 <BookOpen className="relative h-5 w-5 sm:h-6 sm:w-6 text-primary-600" />
               </div>
               <span className="text-base sm:text-xl font-bold bg-gradient-to-r text-stone-900 bg-clip-text text-transparent truncate">
-                Exam Tracker
+                The Goal Lab
               </span>
             </Link>
             <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">

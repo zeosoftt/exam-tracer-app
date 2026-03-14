@@ -7,15 +7,15 @@ import Link from 'next/link';
 import { BookOpen, HelpCircle, ArrowLeft } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Sıkça Sorulan Sorular | Exam Tracker',
-  description: 'Exam Tracker hakkında sıkça sorulan sorular ve yanıtları.',
+  title: 'Sıkça Sorulan Sorular | The Goal Lab',
+  description: 'The Goal Lab (thegoallab) hakkında sıkça sorulan sorular ve yanıtları.',
 };
 
 const FAQ_ITEMS = [
-  { q: 'Exam Tracker ücretsiz mi?', a: 'Evet. Ücretsiz plan ile kayıt olup sınav ve konu takibinizi yapabilirsiniz. Gelişmiş özellikler ve kurumsal kullanım için ücretli planlar sunulmaktadır.' },
+  { q: 'The Goal Lab ücretsiz mi?', a: 'Evet. Ücretsiz plan ile kayıt olup sınav ve konu takibinizi yapabilirsiniz. Gelişmiş özellikler ve kurumsal kullanım için ücretli planlar sunulmaktadır.' },
   { q: 'Hangi sınavları destekliyorsunuz?', a: 'KPSS, ÖABT, ALES, DGS, YDS, YÖKDİL, TUS, DUS gibi tüm sınavlar için sınav yapısını siz tanımlayabilir veya hazır şablonlardan seçebilirsiniz. Platform sınavdan bağımsız çalışır.' },
   { q: 'Verilerim güvende mi?', a: 'Evet. Verileriniz şifreli ve güvenli sunucularda saklanır. Kişisel verileriniz üçüncü taraflarla paylaşılmaz.' },
-  { q: 'Mobil cihazlardan kullanabilir miyim?', a: 'Evet. Exam Tracker responsive tasarıma sahiptir; telefon ve tabletten tarayıcı üzerinden rahatça kullanabilirsiniz.' },
+  { q: 'Mobil cihazlardan kullanabilir miyim?', a: 'Evet. The Goal Lab responsive tasarıma sahiptir; telefon ve tabletten tarayıcı üzerinden rahatça kullanabilirsiniz.' },
   { q: 'Hesabımı nasıl oluştururum?', a: 'Ana sayfadaki "Başla" veya "Ücretsiz Başla" butonuna tıklayarak kayıt sayfasına gidebilirsiniz. E-posta ve şifre ile birkaç saniyede hesap oluşturabilirsiniz.' },
   { q: 'Kurumsal kullanım için ne yapmalıyım?', a: 'Kurumlar için özel plan ve yönetim paneli mevcuttur. İletişim veya kayıt sırasında kurumsal seçeneği belirleyebilirsiniz.' },
 ];
@@ -30,7 +30,7 @@ export default function SSSPage() {
               <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/25">
                 <BookOpen className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
-              <span className="font-display text-xl sm:text-2xl font-bold text-stone-900">Exam Tracker</span>
+              <span className="font-display text-xl sm:text-2xl font-bold text-stone-900">The Goal Lab</span>
             </Link>
             <div className="flex items-center gap-3 sm:gap-6">
               <Link href="/auth/login" className="text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors hidden sm:block">
@@ -85,10 +85,10 @@ export default function SSSPage() {
               <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary-500 text-white">
                 <BookOpen className="h-5 w-5" />
               </div>
-              <span className="font-display text-lg font-bold text-stone-900">Exam Tracker</span>
+              <span className="font-display text-lg font-bold text-stone-900">The Goal Lab</span>
             </Link>
             <p className="text-stone-600 text-sm">
-              © {new Date().getFullYear()} Exam Tracker. Tüm hakları saklıdır.
+              © {new Date().getFullYear()} The Goal Lab. Tüm hakları saklıdır.
             </p>
           </div>
         </div>

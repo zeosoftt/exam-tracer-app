@@ -18,7 +18,7 @@ export default function LandingPage() {
                 <BookOpen className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
               <span className="font-display text-xl sm:text-2xl font-bold text-stone-900">
-                Exam Tracker
+                The Goal Lab
               </span>
             </Link>
             <div className="flex items-center gap-3 sm:gap-6">
@@ -139,15 +139,15 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Sayılarla Exam Tracker */}
+      {/* Sayılarla The Goal Lab */}
       <section className="py-16 sm:py-20 lg:py-24 bg-white border-y border-stone-100">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10 sm:mb-14">
             <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-primary-600 mb-3 sm:mb-4">
-              Sayılarla Exam Tracker
+              Sayılarla The Goal Lab
             </h2>
             <p className="text-base sm:text-lg text-stone-600 max-w-2xl mx-auto">
-              Kurulduğu günden bu yana binlerce öğrencinin sınav hazırlığına destek olan Exam Tracker büyümeye devam ediyor.
+              Kurulduğu günden bu yana binlerce öğrencinin sınav hazırlığına destek olan The Goal Lab büyümeye devam ediyor.
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
@@ -225,7 +225,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-900 mb-3 sm:mb-4">
-              Neden Exam Tracker?
+              Neden The Goal Lab?
             </h2>
             <p className="text-lg sm:text-xl text-stone-600 max-w-2xl mx-auto">
               Modern araçlarla sınav hazırlığınızı bir üst seviyeye taşıyın
@@ -384,7 +384,7 @@ export default function LandingPage() {
               Kullanıcılarımız Ne Diyor?
             </h2>
             <p className="text-lg sm:text-xl text-stone-600 max-w-2xl mx-auto">
-              Binlerce öğrenci ve kurum sınav takibini Exam Tracker ile yapıyor
+              Binlerce öğrenci ve kurum sınav takibini The Goal Lab ile yapıyor
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
@@ -414,7 +414,7 @@ export default function LandingPage() {
               Birlikte Çalıştığımız Kurumlar
             </h2>
             <p className="text-lg sm:text-xl text-stone-600 max-w-2xl mx-auto">
-              Türkiye&apos;nin önde gelen kurumları sınav takiplerini Exam Tracker ile yönetiyor
+              Türkiye&apos;nin önde gelen kurumları sınav takiplerini The Goal Lab ile yönetiyor
             </p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
@@ -444,7 +444,7 @@ export default function LandingPage() {
             ))}
           </div>
           <p className="mt-8 sm:mt-12 text-center text-stone-500 text-sm sm:text-base">
-            +100&apos;den fazla kamu kurumu ve özel eğitim kurumu Exam Tracker kullanıyor
+            +100&apos;den fazla kamu kurumu ve özel eğitim kurumu The Goal Lab kullanıyor
           </p>
         </div>
       </section>
@@ -462,7 +462,7 @@ export default function LandingPage() {
           </div>
           <div className="space-y-4 mb-8">
             {[
-              { q: 'Exam Tracker ücretsiz mi?', a: 'Evet. Ücretsiz plan ile kayıt olup sınav ve konu takibinizi yapabilirsiniz.' },
+              { q: 'The Goal Lab ücretsiz mi?', a: 'Evet. Ücretsiz plan ile kayıt olup sınav ve konu takibinizi yapabilirsiniz.' },
               { q: 'Hangi sınavları destekliyorsunuz?', a: 'KPSS, ÖABT, ALES, DGS, YDS ve daha fazlası. Sınav yapısını siz tanımlayabilir veya hazır şablonlardan seçebilirsiniz.' },
             ].map(({ q, a }, i) => (
               <div key={i} className="p-4 sm:p-5 rounded-xl bg-stone-50 border border-stone-100">
@@ -516,7 +516,7 @@ export default function LandingPage() {
                 <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary-500 text-white">
                   <BookOpen className="h-5 w-5" />
                 </div>
-                <span className="font-display text-lg sm:text-xl font-bold text-stone-900">Exam Tracker</span>
+                <span className="font-display text-lg sm:text-xl font-bold text-stone-900">The Goal Lab</span>
               </Link>
               <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
                 <Link href="/sss" className="text-sm font-medium text-stone-600 hover:text-primary-600 transition-colors">
@@ -532,7 +532,7 @@ export default function LandingPage() {
             </div>
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-stone-100">
               <p className="text-stone-600 text-sm sm:text-base order-last sm:order-first">
-                © {new Date().getFullYear()} Exam Tracker. Tüm hakları saklıdır.
+                © {new Date().getFullYear()} The Goal Lab. Tüm hakları saklıdır.
               </p>
               <div className="flex items-center gap-2">
                 {[

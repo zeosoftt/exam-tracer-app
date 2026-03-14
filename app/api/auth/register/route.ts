@@ -13,6 +13,8 @@ import { createFreemiumPersonalOrganization } from '@/lib/billing/createFreemium
 import { logAuth, logError } from '@/lib/logger';
 import { HTTP_STATUS, ERROR_MESSAGES } from '@/config/constants';
 import { ConflictError } from '@/lib/errors/AppError';
+import { randomBytes } from 'crypto';
+import { sendVerificationEmail, buildVerificationUrl } from '@/lib/email';
 
 async function registerHandler(req: NextRequest): Promise<NextResponse> {
   try {
@@ -126,6 +128,24 @@ async function registerHandler(req: NextRequest): Promise<NextResponse> {
     }
 
     logAuth('User registered', user.id, { email: user.email, examCode: validatedData.examCode });
+
+    // E-posta doğrulama token'ı oluştur ve doğrulama linki gönder
+    const verificationToken = randomBytes(32).toString('hex');
+    const verificationExpiresAt = new Date();
+    verificationExpiresAt.setHours(verificationExpiresAt.getHours() + 24);
+    await prisma.emailVerificationToken.create({
+      data: {
+        userId: user.id,
+        token: verificationToken,
+        expiresAt: verificationExpiresAt,
+      },
+    });
+    const verifyUrl = buildVerificationUrl(verificationToken);
+    await sendVerificationEmail({
+      to: user.email,
+      firstName: user.firstName,
+      verifyUrl,
+    }).catch((err) => logError('Verification email send failed', err as Error));
 
     return NextResponse.json(
       {

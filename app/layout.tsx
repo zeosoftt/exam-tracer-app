@@ -20,8 +20,11 @@ const plusJakarta = Plus_Jakarta_Sans({
 const GA_MEASUREMENT_ID = 'G-6YZFCN5KML';
 
 export const metadata: Metadata = {
-  title: 'Exam Tracker - Sınav Takip Platformu',
-  description: 'Kurumlar ve bireyler için sınav takip platformu',
+  title: 'The Goal Lab - Sınav ve Hedef Takip',
+  description: 'thegoallab - Kurumlar ve bireyler için hedef ve sınav takip platformu',
+  verification: {
+    google: 'gRq38B6komUBMFH4YMw8vymDABn23I649wrmMowDUKc',
+  },
   icons: {
     icon: [
       { url: '/icon.svg', type: 'image/svg+xml' },

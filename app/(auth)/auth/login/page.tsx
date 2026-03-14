@@ -23,6 +23,7 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const registered = searchParams.get('registered');
   const passwordReset = searchParams.get('passwordReset');
+  const verified = searchParams.get('verified');
 
   const {
     register,
@@ -72,7 +73,7 @@ function LoginForm() {
             <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/25 group-hover:shadow-primary-500/40 transition-shadow">
               <BookOpen className="h-6 w-6" />
             </div>
-            <span className="font-display text-2xl font-bold text-stone-900">Exam Tracker</span>
+            <span className="font-display text-2xl font-bold text-stone-900">The Goal Lab</span>
           </Link>
         </div>
 
@@ -87,7 +88,18 @@ function LoginForm() {
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
                 <p className="text-sm font-medium text-green-800">
-                  Hesabınız başarıyla oluşturuldu! Giriş yapabilirsiniz.
+                  Hesabınız oluşturuldu. E-posta adresinize gönderilen doğrulama linkine tıklayın, ardından giriş yapabilirsiniz.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {verified && (
+            <div className="mb-6 rounded-xl bg-green-50 border border-green-200 p-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+                <p className="text-sm font-medium text-green-800">
+                  E-posta adresiniz doğrulandı. Giriş yapabilirsiniz.
                 </p>
               </div>
             </div>
