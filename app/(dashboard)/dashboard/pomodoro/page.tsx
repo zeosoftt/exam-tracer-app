@@ -250,18 +250,18 @@ export default function PomodoroPage() {
     : ((25 * 60 - (minutes * 60 + seconds)) / (25 * 60)) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
+    <div className="min-h-screen bg-stone-50">
       {/* Header */}
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm shadow-sm">
+      <header className="border-b border-stone-200 bg-white/80 backdrop-blur-sm shadow-sm">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <Link href="/dashboard" className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors">
+            <Link href="/dashboard" className="flex items-center gap-2 text-stone-700 hover:text-stone-900 transition-colors">
               <ArrowLeft className="h-5 w-5" />
               <span className="font-medium">Geri</span>
             </Link>
             <div className="flex items-center gap-2">
-              <Timer className="h-6 w-6 text-purple-600" />
-              <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <Timer className="h-6 w-6 text-primary-600" />
+              <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent">
                 Pomodoro Timer
               </span>
             </div>
@@ -276,10 +276,10 @@ export default function PomodoroPage() {
           {/* Timer Section */}
           <div className="lg:col-span-2">
             <div className="text-center mb-12">
-              <h1 className="text-4xl font-extrabold text-gray-900 mb-2">
+              <h1 className="text-4xl font-extrabold text-stone-900 mb-2">
                 Odaklı Çalışma Zamanlayıcısı
               </h1>
-              <p className="text-lg text-gray-600">
+              <p className="text-lg text-stone-600">
                 {isBreak ? 'Mola zamanı! 🎉' : 'Çalışma zamanı! '}
               </p>
             </div>
@@ -296,7 +296,7 @@ export default function PomodoroPage() {
                     stroke="currentColor"
                     strokeWidth="8"
                     fill="none"
-                    className="text-gray-200"
+                    className="text-stone-200"
                   />
                   <circle
                     cx="160"
@@ -307,16 +307,16 @@ export default function PomodoroPage() {
                     fill="none"
                     strokeDasharray={`${2 * Math.PI * 140}`}
                     strokeDashoffset={`${2 * Math.PI * 140 * (1 - progress / 100)}`}
-                    className={`transition-all duration-1000 ${isBreak ? 'text-pink-500' : 'text-purple-600'}`}
+                    className={`transition-all duration-1000 ${isBreak ? 'text-accent-500' : 'text-primary-600'}`}
                   />
                 </svg>
                 
                 {/* Timer Display */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <div className={`text-6xl font-bold mb-2 ${isBreak ? 'text-pink-600' : 'text-purple-600'}`}>
+                  <div className={`text-6xl font-bold mb-2 ${isBreak ? 'text-primary-600' : 'text-primary-600'}`}>
                     {formatTime(minutes, seconds)}
                   </div>
-                  <div className="text-sm text-gray-500 uppercase font-semibold">
+                  <div className="text-sm text-stone-500 uppercase font-semibold">
                     {isBreak ? 'Mola' : 'Çalışma'}
                   </div>
                 </div>
@@ -330,7 +330,7 @@ export default function PomodoroPage() {
                 className={`flex items-center gap-2 px-8 py-4 rounded-2xl font-bold text-white shadow-lg hover:shadow-xl transition-all hover:scale-105 ${
                   isBreak
                     ? 'bg-gradient-to-r from-pink-500 to-pink-600'
-                    : 'bg-gradient-to-r from-purple-500 to-purple-600'
+                    : 'bg-gradient-to-r from-primary-500 to-primary-600'
                 }`}
               >
                 {isActive ? (
@@ -347,7 +347,7 @@ export default function PomodoroPage() {
               </button>
               <button
                 onClick={handleReset}
-                className="flex items-center gap-2 px-8 py-4 bg-white border-2 border-gray-200 rounded-2xl font-bold text-gray-700 hover:bg-gray-50 transition-all hover:scale-105 shadow-lg"
+                className="flex items-center gap-2 px-8 py-4 bg-white border-2 border-stone-200 rounded-2xl font-bold text-stone-700 hover:bg-stone-50 transition-all hover:scale-105 shadow-lg"
               >
                 <RotateCcw className="h-5 w-5" />
                 Sıfırla
@@ -361,8 +361,8 @@ export default function PomodoroPage() {
                 onClick={toggleSound}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                   soundEnabled
-                    ? 'text-purple-600 hover:bg-purple-50'
-                    : 'text-gray-500 hover:bg-gray-100'
+                    ? 'text-primary-600 hover:bg-primary-50'
+                    : 'text-stone-500 hover:bg-stone-100'
                 }`}
                 title={soundEnabled ? 'Süre bitince ses çalar' : 'Ses kapalı'}
               >
@@ -382,9 +382,9 @@ export default function PomodoroPage() {
               <div className="bg-white rounded-2xl shadow-lg p-6 border border-amber-200 bg-gradient-to-br from-amber-50/50 to-orange-50/50">
                 <div className="flex items-center gap-2 mb-3">
                   <Lock className="h-5 w-5 text-amber-600" />
-                  <h2 className="text-lg font-bold text-gray-900">İstatistikler Premium&apos;da</h2>
+                  <h2 className="text-lg font-bold text-stone-900">İstatistikler Premium&apos;da</h2>
                 </div>
-                <p className="text-gray-600 text-sm mb-4">
+                <p className="text-stone-600 text-sm mb-4">
                   Pomodoro istatistikleri ve oturum geçmişi Premium plan özelliğidir. Görüntülemek için Premium&apos;a yükseltin.
                 </p>
                 <Link
@@ -397,67 +397,67 @@ export default function PomodoroPage() {
               </div>
             ) : (
               <>
-            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-stone-100">
               <div className="flex items-center gap-2 mb-4">
-                <TrendingUp className="h-5 w-5 text-purple-600" />
-                <h2 className="text-lg font-bold text-gray-900">İstatistikler</h2>
+                <TrendingUp className="h-5 w-5 text-primary-600" />
+                <h2 className="text-lg font-bold text-stone-900">İstatistikler</h2>
               </div>
               {isLoading ? (
                 <div className="space-y-4">
                   {[...Array(3)].map((_, i) => (
-                    <div key={i} className="h-16 bg-gray-100 rounded-lg animate-pulse"></div>
+                    <div key={i} className="h-16 bg-stone-100 rounded-lg animate-pulse"></div>
                   ))}
                 </div>
               ) : stats ? (
                 <div className="space-y-4">
-                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-100">
+                  <div className="bg-gradient-to-br bg-primary-50 rounded-lg p-4 border border-primary-100">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600 flex items-center gap-1">
+                      <span className="text-sm text-stone-600 flex items-center gap-1">
                         <Clock className="h-4 w-4" />
                         Bugün
                       </span>
                     </div>
-                    <div className="text-2xl font-bold text-purple-600">{stats.todaySessions}</div>
-                    <div className="text-xs text-gray-500">{stats.todayStudyHours} saat</div>
+                    <div className="text-2xl font-bold text-primary-600">{stats.todaySessions}</div>
+                    <div className="text-xs text-stone-500">{stats.todayStudyHours} saat</div>
                   </div>
                   
-                  <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-4 border border-blue-100">
+                  <div className="bg-gradient-to-br bg-primary-50 rounded-lg p-4 border border-primary-100">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600 flex items-center gap-1">
+                      <span className="text-sm text-stone-600 flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
                         Bu Hafta
                       </span>
                     </div>
-                    <div className="text-2xl font-bold text-blue-600">{stats.weekSessions}</div>
-                    <div className="text-xs text-gray-500">{stats.weekStudyHours} saat</div>
+                    <div className="text-2xl font-bold text-primary-600">{stats.weekSessions}</div>
+                    <div className="text-xs text-stone-500">{stats.weekStudyHours} saat</div>
                   </div>
                   
                   <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 border border-green-100">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600 flex items-center gap-1">
+                      <span className="text-sm text-stone-600 flex items-center gap-1">
                         <TrendingUp className="h-4 w-4" />
                         Toplam
                       </span>
                     </div>
                     <div className="text-2xl font-bold text-green-600">{stats.totalSessions}</div>
-                    <div className="text-xs text-gray-500">{stats.totalStudyHours} saat</div>
+                    <div className="text-xs text-stone-500">{stats.totalStudyHours} saat</div>
                   </div>
                 </div>
               ) : (
-                <p className="text-gray-500 text-sm">İstatistik yükleniyor...</p>
+                <p className="text-stone-500 text-sm">İstatistik yükleniyor...</p>
               )}
             </div>
 
             {/* History Section */}
-            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-stone-100">
               <div className="flex items-center gap-2 mb-4">
-                <History className="h-5 w-5 text-purple-600" />
-                <h2 className="text-lg font-bold text-gray-900">Son Oturumlar</h2>
+                <History className="h-5 w-5 text-primary-600" />
+                <h2 className="text-lg font-bold text-stone-900">Son Oturumlar</h2>
               </div>
               {isLoading ? (
                 <div className="space-y-3">
                   {[...Array(5)].map((_, i) => (
-                    <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse"></div>
+                    <div key={i} className="h-12 bg-stone-100 rounded-lg animate-pulse"></div>
                   ))}
                 </div>
               ) : history.length > 0 ? (
@@ -468,9 +468,9 @@ export default function PomodoroPage() {
                       className={`p-3 rounded-lg border ${
                         session.completed
                           ? session.isBreak
-                            ? 'bg-pink-50 border-pink-200'
-                            : 'bg-purple-50 border-purple-200'
-                          : 'bg-gray-50 border-gray-200'
+                            ? 'bg-accent-50 border-accent-200'
+                            : 'bg-primary-50 border-primary-200'
+                          : 'bg-gray-50 border-stone-200'
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -480,11 +480,11 @@ export default function PomodoroPage() {
                               session.completed
                                 ? session.isBreak
                                   ? 'bg-pink-500'
-                                  : 'bg-purple-500'
-                                : 'bg-gray-400'
+                                  : 'bg-primary-500'
+                                : 'bg-stone-400'
                             }`}
                           ></div>
-                          <span className="text-sm font-medium text-gray-900">
+                          <span className="text-sm font-medium text-stone-900">
                             {session.isBreak ? 'Mola' : 'Çalışma'} - {session.duration} dk
                           </span>
                         </div>
@@ -492,14 +492,14 @@ export default function PomodoroPage() {
                           <span className="text-xs text-green-600 font-semibold">✓ Tamamlandı</span>
                         )}
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">
+                      <div className="text-xs text-stone-500 mt-1">
                         {formatDate(session.startedAt)}
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 text-sm text-center py-4">
+                <p className="text-stone-500 text-sm text-center py-4">
                   Henüz oturum kaydı bulunmuyor
                 </p>
               )}

@@ -265,28 +265,28 @@ export function DashboardDetailContent({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-stone-50">
       {/* Header */}
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-10">
+      <header className="border-b border-stone-200 bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-10">
         <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
           <div className="flex h-14 sm:h-16 items-center justify-between gap-2">
             <Link href="/dashboard" className="flex items-center gap-1.5 sm:gap-2 group min-w-0">
               <div className="relative flex-shrink-0">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur opacity-75 group-hover:opacity-100 transition" />
-                <BookOpen className="relative h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+                <div className="absolute inset-0 bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl blur opacity-75 group-hover:opacity-100 transition" />
+                <BookOpen className="relative h-5 w-5 sm:h-6 sm:w-6 text-primary-600" />
               </div>
-              <span className="text-base sm:text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent truncate">
+              <span className="text-base sm:text-xl font-bold bg-gradient-to-r text-stone-900 bg-clip-text text-transparent truncate">
                 Exam Tracker
               </span>
             </Link>
             <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-              <div className="flex items-center gap-1.5 sm:gap-2 text-sm text-gray-600 min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-sm text-stone-600 min-w-0">
                 <User className="h-4 w-4 flex-shrink-0" />
                 <span className="font-medium truncate max-w-[100px] sm:max-w-none">{user.name}</span>
               </div>
               <button
                 onClick={() => signOut({ callbackUrl: '/' })}
-                className="p-2 sm:px-4 sm:py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors flex items-center gap-2"
+                className="p-2 sm:px-4 sm:py-2 text-sm font-medium text-stone-700 bg-stone-100 rounded-xl hover:bg-stone-200 transition-colors flex items-center gap-2"
                 title="Çıkış"
               >
                 <LogOut className="h-4 w-4" />
@@ -302,9 +302,9 @@ export function DashboardDetailContent({
         {/* Back Button */}
         <Link
           href="/dashboard"
-          className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 mb-4 sm:mb-8 transition-colors group"
+          className="inline-flex items-center gap-2 text-sm font-medium text-stone-600 hover:text-stone-900 mb-4 sm:mb-8 transition-colors group"
         >
-          <div className="p-1.5 rounded-lg bg-gray-100 group-hover:bg-gray-200 transition-colors">
+          <div className="p-1.5 rounded-lg bg-stone-100 group-hover:bg-stone-200 transition-colors">
             <ArrowLeft className="h-4 w-4" />
           </div>
           <span className="sm:inline">Özet Ekrana Dön</span>
@@ -313,40 +313,40 @@ export function DashboardDetailContent({
         {/* Bölüm Tabları */}
         {!isLoading && detailData?.sections && detailData.sections.length > 0 && (
           <div className="mb-4 sm:mb-8">
-            <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl border border-gray-100 overflow-hidden hover:shadow-2xl transition-shadow">
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl border border-stone-100 overflow-hidden hover:shadow-2xl transition-shadow">
               {/* Tab Headers */}
-              <div className="flex border-b border-gray-200 overflow-x-auto overflow-y-hidden bg-gradient-to-r from-gray-50 to-white scrollbar-thin snap-x snap-mandatory -mx-1 px-1">
+              <div className="flex border-b border-stone-200 overflow-x-auto overflow-y-hidden bg-gradient-to-r from-stone-50 to-white scrollbar-thin snap-x snap-mandatory -mx-1 px-1">
                 {detailData.sections.map((section) => (
                   <button
                     key={section.id}
                     onClick={() => setSelectedSectionId(section.id)}
                     className={`flex-shrink-0 snap-start px-4 sm:px-8 py-4 sm:py-5 font-semibold text-sm transition-all border-b-3 relative ${
                       selectedSectionId === section.id
-                        ? 'border-blue-600 text-blue-600 bg-gradient-to-b from-blue-50 to-white'
-                        : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50/50'
+                        ? 'border-primary-600 text-primary-600 bg-gradient-to-b from-primary-50 to-white'
+                        : 'border-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-50/50'
                     }`}
                   >
                     {selectedSectionId === section.id && (
-                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-600"></div>
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary-500 to-primary-600"></div>
                     )}
                     <div className="flex flex-col items-start gap-1">
                       <div className="flex items-center gap-2">
                         <span className="font-bold">{section.name}</span>
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                           selectedSectionId === section.id
-                            ? 'bg-blue-100 text-blue-700'
-                            : 'bg-gray-100 text-gray-600'
+                            ? 'bg-primary-100 text-primary-700'
+                            : 'bg-stone-100 text-stone-600'
                         }`}>
                           {section.totalTopics} konu
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${selectedSectionId === section.id ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
+                        <div className={`w-2 h-2 rounded-full ${selectedSectionId === section.id ? 'bg-primary-500' : 'bg-stone-300'}`}></div>
                         <span
                           className={`text-xs font-medium ${
                             selectedSectionId === section.id
-                              ? 'text-blue-600'
-                              : 'text-gray-500'
+                              ? 'text-primary-600'
+                              : 'text-stone-500'
                           }`}
                         >
                           %{section.progressPercentage} tamamlandı
@@ -361,35 +361,35 @@ export function DashboardDetailContent({
               {selectedSection && (
                 <div className="p-8">
                   {/* Bölüm İstatistikleri */}
-                  <div className="mb-6 p-6 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-xl border border-blue-100">
+                  <div className="mb-6 p-6 bg-gradient-to-br bg-primary-50 rounded-xl border border-primary-100">
                     <div className="flex items-center justify-between mb-4">
                       <div>
-                        <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                        <h3 className="text-2xl font-bold text-stone-900 mb-2">
                           {selectedSection.name}
                         </h3>
                         <div className="flex items-center gap-4 text-sm">
                           <div className="flex items-center gap-1">
                             <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                            <span className="text-gray-600 font-medium">
+                            <span className="text-stone-600 font-medium">
                               {selectedSection.completedTopics} Tamamlandı
                             </span>
                           </div>
                           <div className="flex items-center gap-1">
                             <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                            <span className="text-gray-600 font-medium">
+                            <span className="text-stone-600 font-medium">
                               {selectedSection.inProgressTopics} Devam Ediyor
                             </span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-                            <span className="text-gray-600 font-medium">
+                            <div className="w-2 h-2 rounded-full bg-stone-400"></div>
+                            <span className="text-stone-600 font-medium">
                               {selectedSection.notStartedTopics} Başlanmadı
                             </span>
                           </div>
                           {selectedSection.reviewedTopics > 0 && (
                             <div className="flex items-center gap-1">
-                              <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                              <span className="text-gray-600 font-medium">
+                              <div className="w-2 h-2 rounded-full bg-primary-500"></div>
+                              <span className="text-stone-600 font-medium">
                                 {selectedSection.reviewedTopics} Gözden Geçirildi
                               </span>
                             </div>
@@ -397,56 +397,56 @@ export function DashboardDetailContent({
                         </div>
                       </div>
                       <div className="text-left sm:text-right flex-shrink-0">
-                        <div className="text-3xl sm:text-4xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        <div className="text-3xl sm:text-4xl font-extrabold bg-gradient-to-r from-primary-500 to-primary-600 bg-clip-text text-transparent">
                           %{selectedSection.progressPercentage}
                         </div>
-                        <p className="text-xs text-gray-500 font-medium">Tamamlanma</p>
-                        <p className="text-xs text-gray-400 mt-1">
+                        <p className="text-xs text-stone-500 font-medium">Tamamlanma</p>
+                        <p className="text-xs text-stone-400 mt-1">
                           {selectedSection.completedTopics + selectedSection.reviewedTopics} / {selectedSection.totalTopics} konu
                         </p>
                       </div>
                     </div>
                     <div className="mt-4 w-full bg-white/60 rounded-full h-3 overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-full transition-all duration-700 ease-out"
+                        className="h-full bg-gradient-to-r from-primary-500 to-primary-600 rounded-full transition-all duration-700 ease-out"
                         style={{ width: `${selectedSection.progressPercentage}%` }}
                       ></div>
                     </div>
                   </div>
 
                   {/* Ders Tabları */}
-                  <div className="flex border-b-2 border-gray-200 mb-4 sm:mb-6 overflow-x-auto overflow-y-hidden -mx-1 px-1 scrollbar-thin snap-x snap-mandatory">
+                  <div className="flex border-b-2 border-stone-200 mb-4 sm:mb-6 overflow-x-auto overflow-y-hidden -mx-1 px-1 scrollbar-thin snap-x snap-mandatory">
                     {selectedSection.subjects.map((subject) => (
                       <button
                         key={subject.id}
                         onClick={() => setSelectedSubjectId(subject.id)}
                         className={`flex-shrink-0 snap-start px-3 sm:px-5 py-3 font-semibold text-sm transition-all border-b-3 rounded-t-lg relative ${
                           selectedSubjectId === subject.id
-                            ? 'border-purple-600 text-purple-600 bg-gradient-to-b from-purple-50 to-white shadow-sm'
-                            : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50/50'
+                            ? 'border-primary-600 text-primary-600 bg-gradient-to-b from-primary-50 to-white shadow-sm'
+                            : 'border-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-50/50'
                         }`}
                       >
                         {selectedSubjectId === subject.id && (
-                          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-pink-600"></div>
+                          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary-500 to-primary-600"></div>
                         )}
                         <div className="flex flex-col items-start gap-1">
                           <div className="flex items-center gap-2">
                             <span>{subject.name}</span>
                             <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
                               selectedSubjectId === subject.id
-                                ? 'bg-purple-100 text-purple-700'
-                                : 'bg-gray-100 text-gray-600'
+                                ? 'bg-primary-100 text-primary-700'
+                                : 'bg-stone-100 text-stone-600'
                             }`}>
                               {subject.totalTopics} konu
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className={`w-1.5 h-1.5 rounded-full ${selectedSubjectId === subject.id ? 'bg-purple-500' : 'bg-gray-300'}`}></div>
+                            <div className={`w-1.5 h-1.5 rounded-full ${selectedSubjectId === subject.id ? 'bg-primary-500' : 'bg-stone-300'}`}></div>
                             <span
                               className={`text-xs font-medium ${
                                 selectedSubjectId === subject.id
-                                  ? 'text-purple-600'
-                                  : 'text-gray-500'
+                                  ? 'text-primary-600'
+                                  : 'text-stone-500'
                               }`}
                             >
                               %{subject.progressPercentage} tamamlandı
@@ -459,18 +459,18 @@ export function DashboardDetailContent({
 
                   {/* Ders İçerikleri - Alt kısım */}
                   {selectedSubject && (
-                    <div className="min-h-[200px] sm:min-h-[300px] bg-gradient-to-br from-white to-gray-50 rounded-xl p-4 sm:p-6 lg:p-8 border-2 border-gray-100 shadow-inner">
+                    <div className="min-h-[200px] sm:min-h-[300px] bg-gradient-to-br from-white to-stone-50 rounded-xl p-4 sm:p-6 lg:p-8 border-2 border-stone-100 shadow-inner">
                       {/* Evaluation Info Card */}
                       {detailData?.evaluation && (
-                        <div className="mb-4 sm:mb-6 p-4 sm:p-5 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-xl border border-blue-200 shadow-sm">
+                        <div className="mb-4 sm:mb-6 p-4 sm:p-5 bg-gradient-to-br bg-primary-50 rounded-xl border border-primary-200 shadow-sm">
                           <div className="flex flex-col gap-4">
                             <div className="flex items-start gap-3 min-w-0">
                               <div className="p-2 bg-white rounded-lg shadow-sm flex-shrink-0">
-                                <Target className="h-5 w-5 text-blue-600" />
+                                <Target className="h-5 w-5 text-primary-600" />
                               </div>
                               <div className="min-w-0">
-                                <h5 className="text-sm font-bold text-gray-900">Hedef Puan Temelli Değerlendirme</h5>
-                                <p className="text-xs text-gray-600 mt-0.5 break-words">
+                                <h5 className="text-sm font-bold text-stone-900">Hedef Puan Temelli Değerlendirme</h5>
+                                <p className="text-xs text-stone-600 mt-0.5 break-words">
                                   Hedef: {detailData.evaluation.targetScore}/100 · Gerekli Net: {detailData.evaluation.requiredNet?.toFixed(1) || '-'} · Başarı: {detailData.evaluation.requiredSuccessRate ? (detailData.evaluation.requiredSuccessRate * 100).toFixed(1) : '-'}%
                                 </p>
                               </div>
@@ -495,91 +495,91 @@ export function DashboardDetailContent({
                       <div className="mb-4 sm:mb-6">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                           <div className="min-w-0 flex-1">
-                            <h4 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
+                            <h4 className="text-lg sm:text-xl font-bold text-stone-900 mb-2">
                               {selectedSubject.name}
                             </h4>
                             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                               <div className="flex items-center gap-1">
                                 <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                <span className="text-gray-600 font-medium">
+                                <span className="text-stone-600 font-medium">
                                   {selectedSubject.completedTopics} Tamamlandı
                                 </span>
                               </div>
                               <div className="flex items-center gap-1">
                                 <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                                <span className="text-gray-600 font-medium">
+                                <span className="text-stone-600 font-medium">
                                   {selectedSubject.inProgressTopics} Devam Ediyor
                                 </span>
                               </div>
                               <div className="flex items-center gap-1">
-                                <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-                                <span className="text-gray-600 font-medium">
+                                <div className="w-2 h-2 rounded-full bg-stone-400"></div>
+                                <span className="text-stone-600 font-medium">
                                   {selectedSubject.notStartedTopics} Başlanmadı
                                 </span>
                               </div>
                               {selectedSubject.reviewedTopics > 0 && (
                                 <div className="flex items-center gap-1">
-                                  <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                                  <span className="text-gray-600 font-medium">
+                                  <div className="w-2 h-2 rounded-full bg-primary-500"></div>
+                                  <span className="text-stone-600 font-medium">
                                     {selectedSubject.reviewedTopics} Gözden Geçirildi
                                   </span>
                                 </div>
                               )}
                             </div>
                           </div>
-                          <div className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full sm:ml-4 w-fit">
+                          <div className="px-4 py-2 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full sm:ml-4 w-fit">
                             <span className="text-white font-bold text-lg">%{selectedSubject.progressPercentage}</span>
                           </div>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
+                        <div className="w-full bg-stone-200 rounded-full h-3 overflow-hidden shadow-inner">
                           <div
-                            className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600 rounded-full transition-all duration-700 ease-out shadow-sm"
+                            className="h-full bg-gradient-to-r from-primary-500 to-primary-600 rounded-full transition-all duration-700 ease-out shadow-sm"
                             style={{ width: `${selectedSubject.progressPercentage}%` }}
                           ></div>
                         </div>
                       </div>
 
                       {/* Konular Tablosu */}
-                      <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+                      <div className="rounded-xl border border-stone-200 bg-white overflow-hidden">
                         <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
                           {selectedSubject.topics && selectedSubject.topics.length > 0 ? (
                           <table className="w-full min-w-[640px] sm:min-w-0">
                             <thead>
-                              <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-                                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                              <tr className="bg-gradient-to-r from-stone-50 to-stone-100 border-b border-stone-200">
+                                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-stone-700 uppercase tracking-wider">
                                   Durum
                                 </th>
-                                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-stone-700 uppercase tracking-wider">
                                   Konu Adı
                                 </th>
-                                <th className="px-2 sm:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <th className="px-2 sm:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-stone-700 uppercase tracking-wider">
                                   Soru Dağılımı
                                 </th>
-                                <th className="px-2 sm:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <th className="px-2 sm:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-stone-700 uppercase tracking-wider">
                                   Çözülen
                                 </th>
-                                <th className="px-2 sm:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <th className="px-2 sm:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-stone-700 uppercase tracking-wider">
                                   Doğru
                                 </th>
-                                <th className="px-2 sm:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                <th className="px-2 sm:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-stone-700 uppercase tracking-wider">
                                   Yanlış
                                 </th>
                                 {detailData?.evaluation && (
                                   <>
-                                    <th className="px-2 sm:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <th className="px-2 sm:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-stone-700 uppercase tracking-wider">
                                       Net
                                     </th>
-                                    <th className="px-2 sm:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <th className="px-2 sm:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-stone-700 uppercase tracking-wider">
                                       Başarı
                                     </th>
-                                    <th className="px-2 sm:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    <th className="px-2 sm:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-stone-700 uppercase tracking-wider">
                                       Değerlendirme
                                     </th>
                                   </>
                                 )}
                               </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-200">
+                            <tbody className="divide-y divide-stone-200">
                               {selectedSubject.topics.map((topic) => {
                                 const getStatusConfig = (status: string) => {
                                   switch (status) {
@@ -608,12 +608,12 @@ export function DashboardDetailContent({
                                     default:
                                       return {
                                         icon: Circle,
-                                        color: 'text-gray-500',
-                                        bgColor: 'bg-gray-50',
-                                        borderColor: 'border-gray-200',
+                                        color: 'text-stone-500',
+                                        bgColor: 'bg-stone-50',
+                                        borderColor: 'border-stone-200',
                                         label: 'Başlanmadı',
-                                        iconBg: 'bg-gray-100',
-                                        dotColor: 'bg-gray-400',
+                                        iconBg: 'bg-stone-100',
+                                        dotColor: 'bg-stone-400',
                                         value: 'NOT_STARTED' as const,
                                       };
                                   }
@@ -651,13 +651,13 @@ export function DashboardDetailContent({
                                         <div className={`p-1.5 rounded-lg flex-shrink-0 ${statusConfig.iconBg}`}>
                                           <Icon className={`h-4 w-4 ${statusConfig.color}`} />
                                         </div>
-                                        <span className="text-sm font-medium text-gray-900 truncate">
+                                        <span className="text-sm font-medium text-stone-900 truncate">
                                           {topic.name}
                                         </span>
                                       </div>
                                     </td>
                                     <td className="px-2 sm:px-6 py-3 sm:py-4 text-center">
-                                      <span className="text-sm font-medium text-gray-700">
+                                      <span className="text-sm font-medium text-stone-700">
                                         {topic.examQuestionCount != null ? topic.examQuestionCount : '–'}
                                       </span>
                                     </td>
@@ -672,24 +672,24 @@ export function DashboardDetailContent({
                                               ...editValues,
                                               totalQuestions: parseInt(e.target.value) || 0,
                                             })}
-                                            className="w-16 px-2 py-1 text-sm text-center border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="w-16 px-2 py-1 text-sm text-center border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                                             disabled={updatingTopicId === topic.id}
                                           />
                                         </div>
                                       ) : (
                                         <div className="flex items-center justify-center gap-2">
                                           <span className={`text-sm font-semibold ${
-                                            topic.totalQuestions > 0 ? 'text-gray-700' : 'text-gray-400'
+                                            topic.totalQuestions > 0 ? 'text-stone-700' : 'text-stone-400'
                                           }`}>
                                             {topic.totalQuestions > 0 ? topic.totalQuestions : '-'}
                                           </span>
                                           {!editingTopicId && (
                                             <button
                                               onClick={() => startEdit(topic)}
-                                              className="p-1 hover:bg-gray-100 rounded transition-colors"
+                                              className="p-1 hover:bg-stone-100 rounded transition-colors"
                                               title="Düzenle"
                                             >
-                                              <Edit2 className="h-3 w-3 text-gray-500" />
+                                              <Edit2 className="h-3 w-3 text-stone-500" />
                                             </button>
                                           )}
                                         </div>
@@ -706,12 +706,12 @@ export function DashboardDetailContent({
                                             ...editValues,
                                             correctAnswers: parseInt(e.target.value) || 0,
                                           })}
-                                          className="w-12 sm:w-16 px-1 sm:px-2 py-1 text-sm text-center border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-green-600 font-semibold"
+                                          className="w-12 sm:w-16 px-1 sm:px-2 py-1 text-sm text-center border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-green-600 font-semibold"
                                           disabled={updatingTopicId === topic.id}
                                         />
                                       ) : (
                                         <span className={`text-sm font-semibold ${
-                                          topic.correctAnswers > 0 ? 'text-green-600' : 'text-gray-400'
+                                          topic.correctAnswers > 0 ? 'text-green-600' : 'text-stone-400'
                                         }`}>
                                           {topic.correctAnswers > 0 ? topic.correctAnswers : '-'}
                                         </span>
@@ -729,7 +729,7 @@ export function DashboardDetailContent({
                                               ...editValues,
                                               wrongAnswers: parseInt(e.target.value) || 0,
                                             })}
-                                            className="w-16 px-2 py-1 text-sm text-center border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-red-600 font-semibold"
+                                            className="w-16 px-2 py-1 text-sm text-center border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-red-600 font-semibold"
                                             disabled={updatingTopicId === topic.id}
                                           />
                                           <button
@@ -751,7 +751,7 @@ export function DashboardDetailContent({
                                         </div>
                                       ) : (
                                         <span className={`text-sm font-semibold ${
-                                          topic.wrongAnswers > 0 ? 'text-red-600' : 'text-gray-400'
+                                          topic.wrongAnswers > 0 ? 'text-red-600' : 'text-stone-400'
                                         }`}>
                                           {topic.wrongAnswers > 0 ? topic.wrongAnswers : '-'}
                                         </span>
@@ -760,17 +760,17 @@ export function DashboardDetailContent({
                                     {detailData?.evaluation && topic.evaluation && (
                                       <>
                                         <td className="px-2 sm:px-6 py-3 sm:py-4 text-center">
-                                          <span className="text-sm font-semibold text-blue-600">
+                                          <span className="text-sm font-semibold text-primary-600">
                                             {topic.evaluation.topicNet.toFixed(2)}
                                           </span>
                                         </td>
                                         <td className="px-2 sm:px-6 py-3 sm:py-4 text-center">
                                           <div className="flex flex-col items-center gap-0.5">
-                                            <span className="text-sm font-semibold text-gray-700">
+                                            <span className="text-sm font-semibold text-stone-700">
                                               {(topic.evaluation.topicSuccessRate * 100).toFixed(1)}%
                                             </span>
                                             {detailData.evaluation.requiredSuccessRate && (
-                                              <span className="text-xs text-gray-500 hidden sm:block">
+                                              <span className="text-xs text-stone-500 hidden sm:block">
                                                 Hedef: {(detailData.evaluation.requiredSuccessRate * 100).toFixed(1)}%
                                               </span>
                                             )}
@@ -799,13 +799,13 @@ export function DashboardDetailContent({
                                     {detailData?.evaluation && !topic.evaluation && (
                                       <>
                                         <td className="px-2 sm:px-6 py-3 sm:py-4 text-center">
-                                          <span className="text-sm text-gray-400">-</span>
+                                          <span className="text-sm text-stone-400">-</span>
                                         </td>
                                         <td className="px-2 sm:px-6 py-3 sm:py-4 text-center">
-                                          <span className="text-sm text-gray-400">-</span>
+                                          <span className="text-sm text-stone-400">-</span>
                                         </td>
                                         <td className="px-2 sm:px-6 py-3 sm:py-4 text-center">
-                                          <span className="text-sm text-gray-400">-</span>
+                                          <span className="text-sm text-stone-400">-</span>
                                         </td>
                                       </>
                                     )}
@@ -815,9 +815,9 @@ export function DashboardDetailContent({
                             </tbody>
                           </table>
                           ) : (
-                          <div className="bg-white/60 rounded-lg p-8 sm:p-12 border border-gray-200 text-center">
-                            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                            <p className="text-gray-500 text-sm font-medium">
+                          <div className="bg-white/60 rounded-lg p-8 sm:p-12 border border-stone-200 text-center">
+                            <FileText className="h-12 w-12 text-stone-400 mx-auto mb-3" />
+                            <p className="text-stone-500 text-sm font-medium">
                               Bu ders için henüz konu bulunmuyor
                             </p>
                           </div>
@@ -833,12 +833,12 @@ export function DashboardDetailContent({
         )}
 
         {!isLoading && (!detailData?.exam || detailData.sections.length === 0) && (
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-8 sm:p-16 border border-gray-100 text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full mb-6">
-              <BookOpen className="h-10 w-10 text-blue-600" />
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-8 sm:p-16 border border-stone-100 text-center">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full mb-6">
+              <BookOpen className="h-10 w-10 text-primary-600" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Aktif sınav bulunamadı</h3>
-            <p className="text-gray-600 max-w-md mx-auto">
+            <h3 className="text-xl font-bold text-stone-900 mb-2">Aktif sınav bulunamadı</h3>
+            <p className="text-stone-600 max-w-md mx-auto">
               Detaylı istatistikler için bir sınava kayıt olmanız gerekiyor.
             </p>
           </div>

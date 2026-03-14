@@ -187,26 +187,26 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm shadow-sm">
+    <div className="min-h-screen bg-stone-50">
+      <header className="border-b border-stone-200 bg-white/80 backdrop-blur-sm shadow-sm">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <Link
               href="/dashboard"
-              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors"
+              className="flex items-center gap-2 text-stone-700 hover:text-stone-900 transition-colors"
             >
               <ArrowLeft className="h-5 w-5" />
               <span className="font-medium">Geri</span>
             </Link>
             <div className="flex items-center gap-2">
-              <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+              <span className="text-xl font-bold bg-gradient-to-r text-stone-900 bg-clip-text text-transparent">
                 Ayarlar
               </span>
             </div>
@@ -217,8 +217,8 @@ export default function SettingsPage() {
 
       <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="text-center mb-10">
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2">Ayarlar</h1>
-          <p className="text-gray-600">Hesap, hedef ve sınav tercihlerinizi yönetin</p>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-stone-900 mb-2">Ayarlar</h1>
+          <p className="text-stone-600">Hesap, hedef ve sınav tercihlerinizi yönetin</p>
         </div>
 
         {message && (
@@ -238,58 +238,58 @@ export default function SettingsPage() {
 
         <div className="space-y-6">
           {/* Hesap Ayarları */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-gray-100">
+          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-stone-100">
             <div className="flex items-center gap-3 mb-6">
-              <div className="rounded-full bg-blue-100 p-3">
-                <User className="h-6 w-6 text-blue-600" />
+              <div className="rounded-full bg-primary-100 p-3">
+                <User className="h-6 w-6 text-primary-600" />
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Hesap Ayarları</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-stone-900">Hesap Ayarları</h2>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">E-posta</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">E-posta</label>
                 <input
                   type="email"
                   value={session?.user?.email ?? settings?.user?.email ?? ''}
                   disabled
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-600"
+                  className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-stone-600"
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Ad</label>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Ad</label>
                   <input
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     placeholder="Adınız"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Soyad</label>
+                  <label className="block text-sm font-semibold text-stone-700 mb-2">Soyad</label>
                   <input
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     placeholder="Soyadınız"
                   />
                 </div>
               </div>
 
               {/* Şifre değiştir */}
-              <div className="pt-4 border-t border-gray-100">
+              <div className="pt-4 border-t border-stone-100">
                 <button
                   type="button"
                   onClick={() => setShowPasswordForm(!showPasswordForm)}
-                  className="flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700"
+                  className="flex items-center gap-2 text-sm font-semibold text-primary-600 hover:text-primary-700"
                 >
                   <Lock className="h-4 w-4" />
                   {showPasswordForm ? 'Şifre değiştirmeyi kapat' : 'Şifre değiştir'}
                 </button>
                 {showPasswordForm && (
-                  <form onSubmit={handleChangePassword} className="mt-4 space-y-4 p-4 bg-gray-50 rounded-xl">
+                  <form onSubmit={handleChangePassword} className="mt-4 space-y-4 p-4 bg-stone-50 rounded-xl">
                     {passwordMessage && (
                       <div
                         className={`flex items-center gap-2 text-sm ${
@@ -305,43 +305,43 @@ export default function SettingsPage() {
                       </div>
                     )}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Mevcut şifre</label>
+                      <label className="block text-sm font-medium text-stone-700 mb-1">Mevcut şifre</label>
                       <input
                         type="password"
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
                         required
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-primary-500"
                         placeholder="Mevcut şifreniz"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Yeni şifre</label>
+                      <label className="block text-sm font-medium text-stone-700 mb-1">Yeni şifre</label>
                       <input
                         type="password"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         required
                         minLength={8}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-primary-500"
                         placeholder="En az 8 karakter"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Yeni şifre (tekrar)</label>
+                      <label className="block text-sm font-medium text-stone-700 mb-1">Yeni şifre (tekrar)</label>
                       <input
                         type="password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-primary-500"
                         placeholder="Yeni şifreyi tekrar girin"
                       />
                     </div>
                     <button
                       type="submit"
                       disabled={changingPassword}
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
                     >
                       {changingPassword ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -357,23 +357,23 @@ export default function SettingsPage() {
           </div>
 
           {/* Plan ve Faturalandırma */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-gray-100">
+          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-stone-100">
             <div className="flex items-center gap-3 mb-6">
               <div className="rounded-full bg-emerald-100 p-3">
                 <CreditCard className="h-6 w-6 text-emerald-600" />
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Plan ve Faturalandırma</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-stone-900">Plan ve Faturalandırma</h2>
             </div>
             {planLoading ? (
-              <div className="flex items-center gap-2 text-gray-500">
+              <div className="flex items-center gap-2 text-stone-500">
                 <Loader2 className="h-5 w-5 animate-spin" />
                 <span>Plan bilgisi yükleniyor...</span>
               </div>
             ) : planInfo ? (
               <div className="space-y-4">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-semibold text-gray-900">{planInfo.planName}</span>
-                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
+                  <span className="font-semibold text-stone-900">{planInfo.planName}</span>
+                  <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600">
                     {planInfo.planType}
                   </span>
                   {planInfo.subscriptionStatus === 'ACTIVE' && (
@@ -382,13 +382,13 @@ export default function SettingsPage() {
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-stone-600">
                   {planInfo.planCode === 'FREE'
                     ? 'Sadece temel takip: sınav listesi, konu ilerlemesi ve basit dashboard.'
                     : 'Raporlar, dışa aktarma ve gelişmiş analitik dahil.'}
                 </p>
                 {planInfo.limits.length > 0 && (
-                  <ul className="text-sm text-gray-600 space-y-1">
+                  <ul className="text-sm text-stone-600 space-y-1">
                     {planInfo.limits.map((l) => (
                       <li key={l.resourceType}>
                         {l.resourceType === 'EXAMS' && `Sınav: ${l.current} / ${l.limit}`}
@@ -400,40 +400,40 @@ export default function SettingsPage() {
                 )}
               </div>
             ) : (
-              <p className="text-sm text-gray-500">Plan bilgisi alınamadı.</p>
+              <p className="text-sm text-stone-500">Plan bilgisi alınamadı.</p>
             )}
           </div>
 
           {/* Hedef ve çalışma */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-gray-100">
+          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-stone-100">
             <div className="flex items-center gap-3 mb-6">
               <div className="rounded-full bg-amber-100 p-3">
                 <Target className="h-6 w-6 text-amber-600" />
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Çalışma Hedefleri</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-stone-900">Çalışma Hedefleri</h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Hedef puan (0–100)</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Hedef puan (0–100)</label>
                 <input
                   type="number"
                   min={0}
                   max={100}
                   value={targetScore}
                   onChange={(e) => setTargetScore(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   placeholder="Örn. 96"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Günlük çalışma saati (0–24)</label>
+                <label className="block text-sm font-semibold text-stone-700 mb-2">Günlük çalışma saati (0–24)</label>
                 <input
                   type="number"
                   min={0}
                   max={24}
                   value={dailyStudyHours}
                   onChange={(e) => setDailyStudyHours(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   placeholder="Örn. 4"
                 />
               </div>
@@ -441,19 +441,19 @@ export default function SettingsPage() {
           </div>
 
           {/* Sınav / Ders seçimi */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-gray-100">
+          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-stone-100">
             <div className="flex items-center gap-3 mb-6">
-              <div className="rounded-full bg-purple-100 p-3">
-                <BookOpen className="h-6 w-6 text-purple-600" />
+              <div className="rounded-full bg-primary-100 p-3">
+                <BookOpen className="h-6 w-6 text-primary-600" />
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Sınav / Ders</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-stone-900">Sınav / Ders</h2>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Aktif sınavınız</label>
+              <label className="block text-sm font-semibold text-stone-700 mb-2">Aktif sınavınız</label>
               <select
                 value={examId}
                 onChange={(e) => setExamId(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white"
               >
                 <option value="">Sınav seçin</option>
                 {exams.map((exam) => (
@@ -462,55 +462,55 @@ export default function SettingsPage() {
                   </option>
                 ))}
               </select>
-              <p className="mt-2 text-xs text-gray-500">
+              <p className="mt-2 text-xs text-stone-500">
                 İlerleme ve konular bu sınava göre gösterilir. Değiştirdiğinizde yeni sınav aktif olur.
               </p>
             </div>
           </div>
 
           {/* Bildirimler (placeholder) */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-gray-100">
+          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-stone-100">
             <div className="flex items-center gap-3 mb-6">
               <div className="rounded-full bg-pink-100 p-3">
                 <Bell className="h-6 w-6 text-pink-600" />
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Bildirimler</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-stone-900">Bildirimler</h2>
             </div>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-semibold text-gray-900">E-posta bildirimleri</div>
-                  <div className="text-sm text-gray-600">Önemli güncellemeler için e-posta alın</div>
+                  <div className="font-semibold text-stone-900">E-posta bildirimleri</div>
+                  <div className="text-sm text-stone-600">Önemli güncellemeler için e-posta alın</div>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only peer" defaultChecked />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600" />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600" />
                 </label>
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-semibold text-gray-900">Çalışma hatırlatıcıları</div>
-                  <div className="text-sm text-gray-600">Günlük hedefler için hatırlatıcılar</div>
+                  <div className="font-semibold text-stone-900">Çalışma hatırlatıcıları</div>
+                  <div className="text-sm text-stone-600">Günlük hedefler için hatırlatıcılar</div>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only peer" defaultChecked />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600" />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600" />
                 </label>
               </div>
             </div>
           </div>
 
           {/* Görünüm */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-gray-100">
+          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-stone-100">
             <div className="flex items-center gap-3 mb-6">
-              <div className="rounded-full bg-gray-100 p-3">
-                <Palette className="h-6 w-6 text-gray-600" />
+              <div className="rounded-full bg-stone-100 p-3">
+                <Palette className="h-6 w-6 text-stone-600" />
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Görünüm</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-stone-900">Görünüm</h2>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Tema</label>
-              <select className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <label className="block text-sm font-semibold text-stone-700 mb-2">Tema</label>
+              <select className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl text-stone-900 focus:outline-none focus:ring-2 focus:ring-primary-500">
                 <option>Açık</option>
                 <option>Koyu</option>
                 <option>Sistem</option>
@@ -524,7 +524,7 @@ export default function SettingsPage() {
               type="button"
               onClick={handleSaveSettings}
               disabled={saving}
-              className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-xl hover:shadow-xl transition-all disabled:opacity-70"
+              className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-primary-600 to-primary-500 text-white font-bold rounded-xl hover:shadow-xl transition-all disabled:opacity-70"
             >
               {saving ? (
                 <Loader2 className="h-5 w-5 animate-spin" />

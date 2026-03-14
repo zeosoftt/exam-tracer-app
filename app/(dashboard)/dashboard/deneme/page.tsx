@@ -233,17 +233,17 @@ export default function DenemePage() {
     new Date(s).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm shadow-sm">
+    <div className="min-h-screen bg-stone-50">
+      <header className="border-b border-stone-200 bg-white/80 backdrop-blur-sm shadow-sm">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <Link href="/dashboard" className="flex items-center gap-2 text-gray-700 hover:text-gray-900">
+            <Link href="/dashboard" className="flex items-center gap-2 text-stone-700 hover:text-stone-900">
               <ArrowLeft className="h-5 w-5" />
               <span className="font-medium">Geri</span>
             </Link>
             <div className="flex items-center gap-2">
-              <Target className="h-6 w-6 text-blue-600" />
-              <span className="text-xl font-bold text-gray-900">Deneme Takibi</span>
+              <Target className="h-6 w-6 text-primary-600" />
+              <span className="text-xl font-bold text-stone-900">Deneme Takibi</span>
             </div>
             <div className="w-20" />
           </div>
@@ -262,11 +262,11 @@ export default function DenemePage() {
         )}
 
         <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Deneme kayıtlarım</h1>
+          <h1 className="text-2xl font-bold text-stone-900">Deneme kayıtlarım</h1>
           <button
             type="button"
             onClick={() => setShowForm(!showForm)}
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 font-medium text-white hover:bg-blue-700"
+            className="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-2.5 font-medium text-white hover:bg-primary-700"
           >
             <Plus className="h-4 w-4" />
             Yeni deneme ekle
@@ -274,19 +274,19 @@ export default function DenemePage() {
         </div>
 
         {showForm && (
-          <form onSubmit={handleSubmit} className="mb-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-gray-900">
-              <BookOpen className="h-5 w-5 text-blue-600" />
+          <form onSubmit={handleSubmit} className="mb-8 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
+            <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-stone-900">
+              <BookOpen className="h-5 w-5 text-primary-600" />
               Yeni deneme kaydı
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Sınav *</label>
+                <label className="mb-1 block text-sm font-medium text-stone-700">Sınav *</label>
                 <select
                   required
                   value={form.examId}
                   onChange={(e) => setForm((f) => ({ ...f, examId: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-stone-300 px-3 py-2 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                 >
                   <option value="">Seçiniz</option>
                   {exams.map((ex) => (
@@ -297,23 +297,23 @@ export default function DenemePage() {
                 </select>
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Deneme tarihi</label>
+                <label className="mb-1 block text-sm font-medium text-stone-700">Deneme tarihi</label>
                 <input
                   type="datetime-local"
                   value={form.attemptedAt}
                   onChange={(e) => setForm((f) => ({ ...f, attemptedAt: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-stone-300 px-3 py-2 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Süre (dakika)</label>
+                <label className="mb-1 block text-sm font-medium text-stone-700">Süre (dakika)</label>
                 <input
                   type="number"
                   min="0"
                   placeholder="Örn. 120"
                   value={form.durationMinutes}
                   onChange={(e) => setForm((f) => ({ ...f, durationMinutes: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-stone-300 px-3 py-2 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                 />
               </div>
             </div>
@@ -321,21 +321,21 @@ export default function DenemePage() {
             {form.examId && (
               <>
                 {structureLoading ? (
-                  <div className="mt-4 text-sm text-gray-500">Ders yapısı yükleniyor...</div>
+                  <div className="mt-4 text-sm text-stone-500">Ders yapısı yükleniyor...</div>
                 ) : examSubjects.length > 0 ? (
                   <div className="mt-6 overflow-x-auto">
-                    <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-700">
+                    <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-stone-700">
                       <Calculator className="h-4 w-4" />
                       Ders ders doğru / yanlış / boş (net otomatik: Doğru - Yanlış/4)
                     </h3>
                     <table className="w-full min-w-[400px] border-collapse text-sm">
                       <thead>
-                        <tr className="border-b border-gray-200 bg-gray-50">
-                          <th className="p-2 text-left font-medium text-gray-700">Ders</th>
-                          <th className="w-20 p-2 text-center font-medium text-gray-700">Doğru</th>
-                          <th className="w-20 p-2 text-center font-medium text-gray-700">Yanlış</th>
-                          <th className="w-20 p-2 text-center font-medium text-gray-700">Boş</th>
-                          <th className="w-24 p-2 text-center font-medium text-gray-700">Net</th>
+                        <tr className="border-b border-stone-200 bg-stone-50">
+                          <th className="p-2 text-left font-medium text-stone-700">Ders</th>
+                          <th className="w-20 p-2 text-center font-medium text-stone-700">Doğru</th>
+                          <th className="w-20 p-2 text-center font-medium text-stone-700">Yanlış</th>
+                          <th className="w-20 p-2 text-center font-medium text-stone-700">Boş</th>
+                          <th className="w-24 p-2 text-center font-medium text-stone-700">Net</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -343,13 +343,13 @@ export default function DenemePage() {
                           const inp = subjectInputs[s.id] ?? { right: 0, wrong: 0, empty: 0 };
                           const net = inp.right - inp.wrong / 4;
                           return (
-                            <tr key={s.id} className="border-b border-gray-100">
-                              <td className="p-2 font-medium text-gray-900">{s.name}</td>
+                            <tr key={s.id} className="border-b border-stone-100">
+                              <td className="p-2 font-medium text-stone-900">{s.name}</td>
                               <td className="p-2">
                                 <input
                                   type="number"
                                   min="0"
-                                  className="w-full rounded border border-gray-300 px-2 py-1 text-center"
+                                  className="w-full rounded border border-stone-300 px-2 py-1 text-center"
                                   value={inp.right || ''}
                                   onChange={(e) => updateSubjectInput(s.id, 'right', parseInt(e.target.value, 10) || 0)}
                                 />
@@ -358,7 +358,7 @@ export default function DenemePage() {
                                 <input
                                   type="number"
                                   min="0"
-                                  className="w-full rounded border border-gray-300 px-2 py-1 text-center"
+                                  className="w-full rounded border border-stone-300 px-2 py-1 text-center"
                                   value={inp.wrong || ''}
                                   onChange={(e) => updateSubjectInput(s.id, 'wrong', parseInt(e.target.value, 10) || 0)}
                                 />
@@ -367,32 +367,32 @@ export default function DenemePage() {
                                 <input
                                   type="number"
                                   min="0"
-                                  className="w-full rounded border border-gray-300 px-2 py-1 text-center"
+                                  className="w-full rounded border border-stone-300 px-2 py-1 text-center"
                                   value={inp.empty || ''}
                                   onChange={(e) => updateSubjectInput(s.id, 'empty', parseInt(e.target.value, 10) || 0)}
                                 />
                               </td>
-                              <td className="p-2 text-center font-medium text-blue-600">
+                              <td className="p-2 text-center font-medium text-primary-600">
                                 {net.toFixed(2)}
                               </td>
                             </tr>
                           );
                         })}
                         {calculated && (
-                          <tr className="border-t-2 border-gray-300 bg-gray-50 font-semibold">
-                            <td className="p-2 text-gray-900">Toplam</td>
+                          <tr className="border-t-2 border-stone-300 bg-stone-50 font-semibold">
+                            <td className="p-2 text-stone-900">Toplam</td>
                             <td className="p-2 text-center">{calculated.totalRight}</td>
                             <td className="p-2 text-center">{calculated.totalWrong}</td>
                             <td className="p-2 text-center">{calculated.totalEmpty}</td>
-                            <td className="p-2 text-center text-blue-700">{calculated.totalNet.toFixed(2)}</td>
+                            <td className="p-2 text-center text-primary-700">{calculated.totalNet.toFixed(2)}</td>
                           </tr>
                         )}
                       </tbody>
                     </table>
                     {calculated && (
-                      <div className="mt-3 flex flex-wrap gap-4 rounded-lg bg-blue-50 p-3">
-                        <span className="font-medium text-gray-700">Toplam net: <strong className="text-blue-700">{calculated.totalNet.toFixed(2)}</strong></span>
-                        <span className="font-medium text-gray-700">Hesaplanan puan: <strong className="text-blue-700">{calculated.calculatedScore.toFixed(2)}{maxScore !== 100 ? ` / ${maxScore}` : ''}</strong></span>
+                      <div className="mt-3 flex flex-wrap gap-4 rounded-lg bg-primary-50 p-3">
+                        <span className="font-medium text-stone-700">Toplam net: <strong className="text-primary-700">{calculated.totalNet.toFixed(2)}</strong></span>
+                        <span className="font-medium text-stone-700">Hesaplanan puan: <strong className="text-primary-700">{calculated.calculatedScore.toFixed(2)}{maxScore !== 100 ? ` / ${maxScore}` : ''}</strong></span>
                       </div>
                     )}
                   </div>
@@ -401,33 +401,33 @@ export default function DenemePage() {
                     <p className="text-sm text-amber-800">Bu sınav için ders yapısı tanımlı değil. Toplam doğru / yanlış / boş girin; net ve puan otomatik hesaplanır.</p>
                     <div className="mt-3 grid gap-3 sm:grid-cols-3">
                       <div>
-                        <label className="mb-1 block text-xs font-medium text-gray-700">Toplam Doğru</label>
+                        <label className="mb-1 block text-xs font-medium text-stone-700">Toplam Doğru</label>
                         <input
                           type="number"
                           min="0"
                           value={form.simpleRight}
                           onChange={(e) => setForm((f) => ({ ...f, simpleRight: e.target.value }))}
-                          className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                          className="w-full rounded-lg border border-stone-300 px-3 py-2"
                         />
                       </div>
                       <div>
-                        <label className="mb-1 block text-xs font-medium text-gray-700">Toplam Yanlış</label>
+                        <label className="mb-1 block text-xs font-medium text-stone-700">Toplam Yanlış</label>
                         <input
                           type="number"
                           min="0"
                           value={form.simpleWrong}
                           onChange={(e) => setForm((f) => ({ ...f, simpleWrong: e.target.value }))}
-                          className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                          className="w-full rounded-lg border border-stone-300 px-3 py-2"
                         />
                       </div>
                       <div>
-                        <label className="mb-1 block text-xs font-medium text-gray-700">Toplam Boş</label>
+                        <label className="mb-1 block text-xs font-medium text-stone-700">Toplam Boş</label>
                         <input
                           type="number"
                           min="0"
                           value={form.simpleEmpty}
                           onChange={(e) => setForm((f) => ({ ...f, simpleEmpty: e.target.value }))}
-                          className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                          className="w-full rounded-lg border border-stone-300 px-3 py-2"
                         />
                       </div>
                     </div>
@@ -437,13 +437,13 @@ export default function DenemePage() {
             )}
 
             <div className="mt-4">
-              <label className="mb-1 block text-sm font-medium text-gray-700">Not (opsiyonel)</label>
+              <label className="mb-1 block text-sm font-medium text-stone-700">Not (opsiyonel)</label>
               <textarea
                 rows={2}
                 maxLength={500}
                 value={form.notes}
                 onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-lg border border-stone-300 px-3 py-2 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                 placeholder="Örn. 1. deneme..."
               />
             </div>
@@ -451,14 +451,14 @@ export default function DenemePage() {
               <button
                 type="submit"
                 disabled={submitting || !!(form.examId && examSubjects.length > 0 && !calculated?.totalQuestions)}
-                className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                className="rounded-lg bg-primary-600 px-4 py-2 font-medium text-white hover:bg-primary-700 disabled:opacity-50"
               >
                 {submitting ? 'Kaydediliyor...' : 'Kaydet'}
               </button>
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 hover:bg-gray-50"
+                className="rounded-lg border border-stone-300 px-4 py-2 font-medium text-stone-700 hover:bg-stone-50"
               >
                 İptal
               </button>
@@ -469,49 +469,49 @@ export default function DenemePage() {
         {loading ? (
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-24 rounded-xl bg-gray-100 animate-pulse" />
+              <div key={i} className="h-24 rounded-xl bg-stone-100 animate-pulse" />
             ))}
           </div>
         ) : attempts.length === 0 ? (
-          <div className="rounded-2xl border border-gray-200 bg-white p-12 text-center">
-            <TrendingUp className="mx-auto h-12 w-12 text-gray-300" />
-            <p className="mt-4 text-gray-600">Henüz deneme kaydı yok.</p>
-            <p className="mt-1 text-sm text-gray-500">Yukarıdaki &quot;Yeni deneme ekle&quot; ile ilk kaydınızı girebilirsiniz.</p>
+          <div className="rounded-2xl border border-stone-200 bg-white p-12 text-center">
+            <TrendingUp className="mx-auto h-12 w-12 text-stone-300" />
+            <p className="mt-4 text-stone-600">Henüz deneme kaydı yok.</p>
+            <p className="mt-1 text-sm text-stone-500">Yukarıdaki &quot;Yeni deneme ekle&quot; ile ilk kaydınızı girebilirsiniz.</p>
           </div>
         ) : (
           <ul className="space-y-3">
             {attempts.map((a) => (
               <li
                 key={a.id}
-                className="flex flex-wrap items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+                className="flex flex-wrap items-center gap-4 rounded-xl border border-stone-200 bg-white p-4 shadow-sm"
               >
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-blue-600" />
-                  <span className="font-medium text-gray-900">{formatDate(a.attemptedAt)}</span>
+                  <Calendar className="h-5 w-5 text-primary-600" />
+                  <span className="font-medium text-stone-900">{formatDate(a.attemptedAt)}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <BookOpen className="h-4 w-4 text-gray-500" />
-                  <span className="text-gray-700">
+                  <BookOpen className="h-4 w-4 text-stone-500" />
+                  <span className="text-stone-700">
                     {a.exam.name} ({a.exam.code})
                   </span>
                 </div>
                 {a.totalScore != null && (
-                  <div className="flex items-center gap-1 rounded-lg bg-blue-50 px-2 py-1">
-                    <Target className="h-4 w-4 text-blue-600" />
-                    <span className="font-semibold text-blue-700">{a.totalScore} puan</span>
+                  <div className="flex items-center gap-1 rounded-lg bg-primary-50 px-2 py-1">
+                    <Target className="h-4 w-4 text-primary-600" />
+                    <span className="font-semibold text-primary-700">{a.totalScore} puan</span>
                   </div>
                 )}
                 {a.netScore != null && (
-                  <span className="text-sm text-gray-600">Net: {a.netScore}</span>
+                  <span className="text-sm text-stone-600">Net: {a.netScore}</span>
                 )}
                 {(a.rightCount != null || a.wrongCount != null) && (
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-stone-500">
                     D: {a.rightCount ?? '-'} / Y: {a.wrongCount ?? '-'}
                     {a.emptyCount != null ? ` / B: ${a.emptyCount}` : ''}
                   </span>
                 )}
                 {a.durationMinutes != null && (
-                  <span className="flex items-center gap-1 text-sm text-gray-500">
+                  <span className="flex items-center gap-1 text-sm text-stone-500">
                     <Clock className="h-4 w-4" />
                     {a.durationMinutes} dk
                   </span>

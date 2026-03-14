@@ -116,34 +116,25 @@ function RegisterForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-stone-50 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        {/* Header */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-4 group">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur opacity-75 group-hover:opacity-100 transition"></div>
-              <BookOpen className="relative h-8 w-8 text-blue-600" />
+          <Link href="/" className="inline-flex items-center gap-3 mb-4 group">
+            <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/25 group-hover:shadow-primary-500/40 transition-shadow">
+              <BookOpen className="h-6 w-6" />
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-              Exam Tracker
-            </span>
+            <span className="font-display text-2xl font-bold text-stone-900">Exam Tracker</span>
           </Link>
         </div>
 
-        {/* Registration Card */}
-        <div className="bg-white rounded-3xl shadow-2xl p-8 border border-gray-100">
+        <div className="bg-white rounded-3xl shadow-soft-lg p-6 sm:p-8 border border-stone-100">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-extrabold text-gray-900 mb-2">
-              Hesap Oluştur
-            </h1>
-            <p className="text-gray-600">
-              Exam Tracker&apos;a katılın ve sınav hazırlığınıza başlayın
-            </p>
+            <h1 className="font-display text-3xl font-extrabold text-stone-900 mb-2">Hesap Oluştur</h1>
+            <p className="text-stone-600">Exam Tracker&apos;a katılın ve sınav hazırlığınıza başlayın</p>
             {onboardingData?.examName && (
-              <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl">
-                <CheckCircle className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-900">
+              <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary-50 border border-primary-200 rounded-xl">
+                <CheckCircle className="h-4 w-4 text-primary-600" />
+                <span className="text-sm font-medium text-primary-900">
                   <strong>{onboardingData.examName}</strong> için kayıt oluyorsunuz
                 </span>
               </div>
@@ -160,7 +151,7 @@ function RegisterForm() {
             {/* Name Fields */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="firstName" className="block text-sm font-semibold text-gray-900 mb-2">
+                <label htmlFor="firstName" className="block text-sm font-semibold text-stone-900 mb-2">
                   Ad
                 </label>
                 <div className="relative">
@@ -171,7 +162,7 @@ function RegisterForm() {
                     id="firstName"
                     type="text"
                     {...register('firstName')}
-                    className="w-full pl-10 rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-colors"
+                    className="w-full pl-10 rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm placeholder:text-stone-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-colors"
                     placeholder="Adınız"
                     disabled={isLoading}
                   />
@@ -182,7 +173,7 @@ function RegisterForm() {
               </div>
 
               <div>
-                <label htmlFor="lastName" className="block text-sm font-semibold text-gray-900 mb-2">
+                <label htmlFor="lastName" className="block text-sm font-semibold text-stone-900 mb-2">
                   Soyad
                 </label>
                 <div className="relative">
@@ -193,7 +184,7 @@ function RegisterForm() {
                     id="lastName"
                     type="text"
                     {...register('lastName')}
-                    className="w-full pl-10 rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-colors"
+                    className="w-full pl-10 rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm placeholder:text-stone-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-colors"
                     placeholder="Soyadınız"
                     disabled={isLoading}
                   />
@@ -206,7 +197,7 @@ function RegisterForm() {
 
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-gray-900 mb-2">
+              <label htmlFor="email" className="block text-sm font-semibold text-stone-900 mb-2">
                 E-posta Adresi
               </label>
               <div className="relative">
@@ -217,7 +208,7 @@ function RegisterForm() {
                   id="email"
                   type="email"
                   {...register('email')}
-                  className="w-full pl-10 rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-colors"
+                  className="w-full pl-10 rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm placeholder:text-stone-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-colors"
                   placeholder="ornek@email.com"
                   autoComplete="email"
                   disabled={isLoading}
@@ -230,7 +221,7 @@ function RegisterForm() {
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-gray-900 mb-2">
+              <label htmlFor="password" className="block text-sm font-semibold text-stone-900 mb-2">
                 Şifre
               </label>
               <div className="relative">
@@ -241,7 +232,7 @@ function RegisterForm() {
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   {...register('password')}
-                  className="w-full pl-10 pr-10 rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-colors"
+                  className="w-full pl-10 pr-10 rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm placeholder:text-stone-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-colors"
                   placeholder="••••••••"
                   autoComplete="new-password"
                   disabled={isLoading}
@@ -249,7 +240,7 @@ function RegisterForm() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-stone-400 hover:text-stone-600 transition-colors"
                   tabIndex={-1}
                 >
                   {showPassword ? (
@@ -262,25 +253,24 @@ function RegisterForm() {
               {errors.password && (
                 <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
               )}
-              <p className="mt-2 text-xs text-gray-500 leading-relaxed">
+              <p className="mt-2 text-xs text-stone-500 leading-relaxed">
                 En az 8 karakter, büyük harf, küçük harf ve rakam içermelidir
               </p>
             </div>
 
-            {/* Onboarding Summary */}
             {onboardingData && (onboardingData.targetScore || onboardingData.dailyStudyHours) && (
-              <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-200">
-                <p className="text-xs font-semibold text-gray-700 mb-2">Hedefleriniz:</p>
-                <div className="space-y-1 text-xs text-gray-600">
+              <div className="bg-primary-50 rounded-xl p-4 border border-primary-200">
+                <p className="text-xs font-semibold text-stone-700 mb-2">Hedefleriniz:</p>
+                <div className="space-y-1 text-xs text-stone-600">
                   {onboardingData.targetScore && (
                     <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+                      <div className="w-1.5 h-1.5 bg-primary-600 rounded-full"></div>
                       <span>Hedef Puan: <strong>{onboardingData.targetScore}</strong></span>
                     </div>
                   )}
                   {onboardingData.dailyStudyHours && (
                     <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 bg-purple-600 rounded-full"></div>
+                      <div className="w-1.5 h-1.5 bg-accent-500 rounded-full"></div>
                       <span>Günlük Çalışma: <strong>{onboardingData.dailyStudyHours} saat</strong></span>
                     </div>
                   )}
@@ -288,11 +278,10 @@ function RegisterForm() {
               </div>
             )}
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full relative inline-flex items-center justify-center px-6 py-3.5 text-base font-bold text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/60 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="w-full relative inline-flex items-center justify-center px-6 py-3.5 text-base font-bold text-white bg-gradient-to-r from-primary-600 to-primary-500 rounded-xl hover:from-primary-700 hover:to-primary-600 transition-all shadow-lg shadow-primary-500/30 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               {isLoading ? (
                 <>
@@ -310,12 +299,9 @@ function RegisterForm() {
 
           {/* Login Link */}
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-stone-600">
               Zaten hesabınız var mı?{' '}
-              <Link
-                href="/auth/login"
-                className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
-              >
+              <Link href="/auth/login" className="font-semibold text-primary-600 hover:text-primary-700 transition-colors">
                 Giriş yapın
               </Link>
             </p>
@@ -326,7 +312,7 @@ function RegisterForm() {
         <div className="mt-6 text-center">
           <Link
             href="/"
-            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors"
+            className="inline-flex items-center text-sm text-gray-600 hover:text-stone-900 transition-colors"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
             Ana Sayfaya Dön

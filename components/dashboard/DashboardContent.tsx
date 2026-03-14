@@ -334,33 +334,32 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-stone-50">
       {/* Header */}
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm shadow-sm">
+      <header className="border-b border-stone-200 bg-white/90 backdrop-blur-xl shadow-sm">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <Link href="/dashboard" className="flex items-center gap-2 group">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur opacity-75 group-hover:opacity-100 transition"></div>
-                <BookOpen className="relative h-6 w-6 text-blue-600" />
+          <div className="flex h-14 sm:h-16 items-center justify-between">
+            <Link href="/dashboard" className="flex items-center gap-2 sm:gap-3 group">
+              <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/20 group-hover:shadow-primary-500/30 transition-shadow">
+                <BookOpen className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+              <span className="font-display text-lg sm:text-xl font-bold text-stone-900">
                 Exam Tracker
               </span>
             </Link>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               {user.role === 'ADMIN' && (
                 <Link
                   href="/dashboard/super-admin"
-                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-colors"
+                  className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-primary-700 bg-primary-50 rounded-xl hover:bg-primary-100 transition-colors"
                 >
-                  <Shield className="h-4 w-4" />
-                  <span>Super Admin</span>
+                  <Shield className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="hidden xs:inline">Super Admin</span>
                 </Link>
               )}
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <User className="h-4 w-4" />
-                <span className="font-medium">{user.name}</span>
+              <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-stone-600">
+                <User className="h-4 w-4 shrink-0" />
+                <span className="font-medium truncate max-w-[120px] sm:max-w-none">{user.name}</span>
                 {planBadge && (
                   <span
                     className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${planBadge.bgClass} ${planBadge.textClass}`}
@@ -373,9 +372,9 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
               </div>
               <button
                 onClick={() => signOut({ callbackUrl: '/' })}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors flex items-center gap-2"
+                className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium text-stone-700 bg-stone-100 rounded-xl hover:bg-stone-200 transition-colors flex items-center gap-1.5 sm:gap-2"
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 Çıkış
               </button>
             </div>
@@ -384,32 +383,32 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
       </header>
 
       {/* Main Content */}
-      <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-5xl px-4 py-8 sm:py-12 sm:px-6 lg:px-8 pb-24 sm:pb-12">
         {/* Welcome Section */}
-        <div className="mb-10 text-center">
-          <h1 className="text-4xl font-extrabold text-gray-900 mb-2">
+        <div className="mb-8 sm:mb-10 text-center">
+          <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-stone-900 mb-1 sm:mb-2">
             Hoş geldiniz, {user.name.split(' ')[0]}! 👋
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-base sm:text-lg text-stone-600">
             Sınav hazırlığınızın özeti
           </p>
         </div>
 
-        {/* 3 Kart */}
+        {/* Kartlar */}
         {isLoading ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-10">
+          <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8 sm:mb-10">
             {[...Array(4)].map((_, _i) => (
-              <div key={_i} className="bg-white rounded-2xl shadow-lg p-5 border border-gray-100 animate-pulse">
-                <div className="h-3 w-20 bg-gray-200 rounded mb-3"></div>
-                <div className="h-8 w-14 bg-gray-200 rounded mb-1.5"></div>
-                <div className="h-2.5 w-28 bg-gray-200 rounded"></div>
+              <div key={_i} className="bg-white rounded-2xl shadow-soft p-5 border border-stone-100 animate-pulse">
+                <div className="h-3 w-20 bg-stone-200 rounded mb-3"></div>
+                <div className="h-8 w-14 bg-stone-200 rounded mb-1.5"></div>
+                <div className="h-2.5 w-28 bg-stone-200 rounded"></div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-10">
-            {/* Kart 1: Konu/Ders Tamamlanma Durumları */}
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-xl p-5 text-white hover:shadow-2xl transition-all hover:scale-[1.02]">
+          <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8 sm:mb-10">
+            {/* Kart 1: İlerleme */}
+            <div className="bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl shadow-soft-lg p-5 text-white hover:shadow-glow-teal transition-all hover:scale-[1.02] active:scale-[0.99]">
               <div className="flex items-center justify-between mb-3">
                 <div className="rounded-full bg-white/20 p-2.5 backdrop-blur-sm">
                   <CheckCircle className="h-5 w-5" />
@@ -420,36 +419,36 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
               </div>
               <div className="space-y-1.5 mb-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-blue-100 text-xs">Toplam Ders</span>
+                  <span className="text-primary-100 text-xs">Toplam Ders</span>
                   <span className="text-lg font-bold">{stats?.totalSubjects || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-blue-100 text-xs">Toplam Konu</span>
+                  <span className="text-primary-100 text-xs">Toplam Konu</span>
                   <span className="text-lg font-bold">{stats?.totalTopics || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-blue-100 text-xs">Tamamlanan</span>
+                  <span className="text-primary-100 text-xs">Tamamlanan</span>
                   <span className="text-lg font-bold">{stats?.completedTopics || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-blue-100 text-xs">Devam Eden</span>
+                  <span className="text-primary-100 text-xs">Devam Eden</span>
                   <span className="text-lg font-bold">{stats?.inProgressTopics || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-blue-100 text-xs">Başlanmamış</span>
+                  <span className="text-primary-100 text-xs">Başlanmamış</span>
                   <span className="text-lg font-bold">{stats?.notStartedTopics || 0}</span>
                 </div>
               </div>
               <div className="pt-2 border-t border-white/20">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-blue-100">Tamamlanma Oranı</span>
+                  <span className="text-xs text-primary-100">Tamamlanma Oranı</span>
                   <span className="text-lg font-bold">{completionRate}%</span>
                 </div>
               </div>
             </div>
 
             {/* Kart 2: Çalışma Saati */}
-            <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl shadow-xl p-5 text-white hover:shadow-2xl transition-all hover:scale-[1.02]">
+            <div className="bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl shadow-soft-lg p-5 text-white hover:shadow-xl transition-all hover:scale-[1.02] active:scale-[0.99]">
               <div className="flex items-center justify-between mb-3">
                 <div className="rounded-full bg-white/20 p-2.5 backdrop-blur-sm">
                   <Clock className="h-5 w-5" />
@@ -460,20 +459,19 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
               </div>
               <div className="mb-2">
                 <p className="text-3xl font-bold mb-0.5">{studyHours}</p>
-                <p className="text-purple-100 text-xs">Toplam Çalışma Saati</p>
+                <p className="text-violet-100 text-xs">Toplam Çalışma Saati</p>
               </div>
               {stats?.user?.dailyStudyHours && (
                 <div className="pt-2 border-t border-white/20 mb-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-purple-100">Günlük Hedef</span>
+                    <span className="text-xs text-violet-100">Günlük Hedef</span>
                     <span className="text-sm font-bold">{stats.user.dailyStudyHours} saat/gün</span>
                   </div>
                 </div>
               )}
-              {/* Haftalık: günlük hedefe ulaşma — sabit sıra: Pzt, Sal, Çar, Per, Cum, Cmt, Paz */}
               {stats?.study && (
                 <div className="pt-2 border-t border-white/20">
-                  <p className="text-[10px] text-purple-100 mb-1">Bu hafta hedefe ulaşma</p>
+                  <p className="text-[10px] text-violet-100 mb-1">Bu hafta hedefe ulaşma</p>
                   <div className="grid grid-cols-7 gap-0.5 min-w-0">
                     {(['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'] as const).map((label) => {
                       const day = stats?.study?.weeklySummary?.find((d) => d.dayName === label);
@@ -505,7 +503,7 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
             {/* Kart: Deneme Takibi özet */}
             <Link
               href="/dashboard/deneme"
-              className="block bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl shadow-xl p-5 text-white hover:shadow-2xl transition-all hover:scale-[1.02]"
+              className="block bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl shadow-soft-lg p-5 text-white hover:shadow-glow-amber transition-all hover:scale-[1.02] active:scale-[0.99]"
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="rounded-full bg-white/20 p-2.5 backdrop-blur-sm">
@@ -538,8 +536,8 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
               </div>
             </Link>
 
-            {/* Kart 3: Aktif Sınav ve Hedef Puan */}
-            <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-xl p-5 text-white hover:shadow-2xl transition-all hover:scale-[1.02]">
+            {/* Kart 4: Aktif Sınav ve Hedef Puan */}
+            <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-soft-lg p-5 text-white hover:shadow-xl transition-all hover:scale-[1.02] active:scale-[0.99]">
               <div className="flex items-center justify-between mb-3">
                 <div className="rounded-full bg-white/20 p-2.5 backdrop-blur-sm">
                   <Target className="h-5 w-5" />
@@ -572,23 +570,21 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
 
         {/* Evaluation Summary Card */}
         {stats?.evaluation && (
-          <div className="mb-10 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 rounded-2xl shadow-xl p-8 border-2 border-indigo-200">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-white rounded-xl shadow-sm">
-                  <Target className="h-6 w-6 text-indigo-600" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Hedef Puan Değerlendirmesi</h2>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Hedef: {stats.evaluation.targetScore}/100 | 
-                    Gerekli Net: {stats.evaluation.requiredNet.toFixed(1)} | 
-                    Gerekli Başarı: {(stats.evaluation.requiredSuccessRate * 100).toFixed(1)}%
-                  </p>
-                </div>
+          <div className="mb-8 sm:mb-10 bg-white rounded-2xl shadow-soft p-6 sm:p-8 border border-stone-200">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6">
+              <div className="p-3 bg-primary-50 rounded-xl">
+                <Target className="h-6 w-6 text-primary-600" />
+              </div>
+              <div>
+                <h2 className="font-display text-xl sm:text-2xl font-bold text-stone-900">Hedef Puan Değerlendirmesi</h2>
+                <p className="text-sm text-stone-600 mt-1">
+                  Hedef: {stats.evaluation.targetScore}/100 | 
+                  Gerekli Net: {stats.evaluation.requiredNet.toFixed(1)} | 
+                  Gerekli Başarı: {(stats.evaluation.requiredSuccessRate * 100).toFixed(1)}%
+                </p>
               </div>
             </div>
-            
+
             <div className="grid gap-4 md:grid-cols-4 mb-6">
               <button
                 type="button"
@@ -668,12 +664,12 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
                 )}
               </button>
 
-              <div className="bg-white rounded-xl p-5 border border-blue-200 shadow-sm">
+              <div className="bg-white rounded-xl p-5 border border-primary-200 shadow-sm">
                 <div className="flex items-center gap-2 mb-2">
-                  <BarChart3 className="h-5 w-5 text-blue-600" />
+                  <BarChart3 className="h-5 w-5 text-primary-600" />
                   <span className="text-sm font-semibold text-gray-700">ORTALAMA</span>
                 </div>
-                <div className="text-2xl font-bold text-blue-600 mb-1">
+                <div className="text-2xl font-bold text-primary-600 mb-1">
                   {(stats.evaluation.averageSuccessRate * 100).toFixed(1)}%
                 </div>
                 <div className="text-xs text-gray-500">
@@ -682,8 +678,8 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
               </div>
             </div>
 
-            <div className="bg-white/60 rounded-xl p-4 border border-gray-200">
-              <div className="flex items-center gap-4 text-xs text-gray-600">
+            <div className="bg-stone-50 rounded-xl p-4 border border-stone-200">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs text-stone-600">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-green-500"></div>
                   <span>İYİ: Başarı oranı hedefin ≥%95&apos;i</span>
@@ -845,41 +841,34 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
         )}
 
         {/* Hızlı erişim butonları */}
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-          {/* Detay Görüntüle */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           <Link
             href="/dashboard/detail"
-            className="group bg-white rounded-xl shadow-md p-4 border border-gray-200 hover:shadow-lg hover:border-blue-300 transition-all flex items-center justify-center gap-3"
+            className="group bg-white rounded-2xl shadow-soft p-4 border border-stone-200 hover:shadow-soft-lg hover:border-primary-200 transition-all flex items-center justify-center gap-2 sm:gap-3"
           >
-            <BarChart3 className="h-5 w-5 text-blue-600 group-hover:text-blue-700 transition-colors" />
-            <span className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">Detay Görüntüle</span>
+            <BarChart3 className="h-5 w-5 text-primary-600 group-hover:text-primary-700 transition-colors shrink-0" />
+            <span className="font-semibold text-stone-900 group-hover:text-primary-600 transition-colors text-sm sm:text-base">Detay Görüntüle</span>
           </Link>
-
-          {/* Deneme Takibi */}
           <Link
             href="/dashboard/deneme"
-            className="group bg-white rounded-xl shadow-md p-4 border border-gray-200 hover:shadow-lg hover:border-amber-300 transition-all flex items-center justify-center gap-3"
+            className="group bg-white rounded-2xl shadow-soft p-4 border border-stone-200 hover:shadow-soft-lg hover:border-amber-300 transition-all flex items-center justify-center gap-2 sm:gap-3"
           >
-            <ClipboardList className="h-5 w-5 text-amber-600 group-hover:text-amber-700 transition-colors" />
-            <span className="font-semibold text-gray-900 group-hover:text-amber-600 transition-colors">Deneme Takibi</span>
+            <ClipboardList className="h-5 w-5 text-amber-600 group-hover:text-amber-700 transition-colors shrink-0" />
+            <span className="font-semibold text-stone-900 group-hover:text-amber-600 transition-colors text-sm sm:text-base">Deneme Takibi</span>
           </Link>
-
-          {/* Pomodoro Sayacı */}
           <Link
             href="/dashboard/pomodoro"
-            className="group bg-white rounded-xl shadow-md p-4 border border-gray-200 hover:shadow-lg hover:border-purple-300 transition-all flex items-center justify-center gap-3"
+            className="group bg-white rounded-2xl shadow-soft p-4 border border-stone-200 hover:shadow-soft-lg hover:border-violet-300 transition-all flex items-center justify-center gap-2 sm:gap-3"
           >
-            <Timer className="h-5 w-5 text-purple-600 group-hover:text-purple-700 transition-colors" />
-            <span className="font-semibold text-gray-900 group-hover:text-purple-600 transition-colors">Pomodoro</span>
+            <Timer className="h-5 w-5 text-violet-600 group-hover:text-violet-700 transition-colors shrink-0" />
+            <span className="font-semibold text-stone-900 group-hover:text-violet-600 transition-colors text-sm sm:text-base">Pomodoro</span>
           </Link>
-
-          {/* Ayarlar */}
           <Link
             href="/dashboard/settings"
-            className="group bg-white rounded-xl shadow-md p-4 border border-gray-200 hover:shadow-lg hover:border-gray-400 transition-all flex items-center justify-center gap-3"
+            className="group bg-white rounded-2xl shadow-soft p-4 border border-stone-200 hover:shadow-soft-lg hover:border-stone-300 transition-all flex items-center justify-center gap-2 sm:gap-3"
           >
-            <Settings className="h-5 w-5 text-gray-600 group-hover:text-gray-700 transition-colors" />
-            <span className="font-semibold text-gray-900 group-hover:text-gray-700 transition-colors">Ayarlar</span>
+            <Settings className="h-5 w-5 text-stone-600 group-hover:text-stone-700 transition-colors shrink-0" />
+            <span className="font-semibold text-stone-900 group-hover:text-stone-700 transition-colors text-sm sm:text-base">Ayarlar</span>
           </Link>
         </div>
       </main>

@@ -14,6 +14,7 @@ import {
   FileText,
   FolderOpen,
   Loader2,
+  GripVertical,
 } from 'lucide-react';
 
 interface TopicNode {
@@ -75,6 +76,8 @@ export function ExamContentManager() {
   const [saving, setSaving] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [draggedTopicId, setDraggedTopicId] = useState<string | null>(null);
+  const [reorderingSubjectId, setReorderingSubjectId] = useState<string | null>(null);
 
   const fetchTree = async () => {
     setLoading(true);
@@ -245,6 +248,62 @@ export function ExamContentManager() {
     }
   };
 
+  function reorderTopics<T>(arr: T[], fromIndex: number, toIndex: number): T[] {
+    if (fromIndex === toIndex) return arr;
+    const out = [...arr];
+    const [item] = out.splice(fromIndex, 1);
+    out.splice(toIndex, 0, item);
+    return out;
+  }
+
+  const handleTopicDragStart = (e: React.DragEvent, topicId: string) => {
+    setDraggedTopicId(topicId);
+    e.dataTransfer.setData('text/plain', topicId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleTopicDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleTopicDrop = async (e: React.DragEvent, subject: SubjectNode, dropTargetTopicId: string) => {
+    e.preventDefault();
+    setDraggedTopicId(null);
+    const draggedId = e.dataTransfer.getData('text/plain');
+    if (!draggedId || draggedId === dropTargetTopicId) return;
+    const fromIndex = subject.topics.findIndex((t) => t.id === draggedId);
+    const toIndex = subject.topics.findIndex((t) => t.id === dropTargetTopicId);
+    if (fromIndex === -1 || toIndex === -1) return;
+    const reordered = reorderTopics(subject.topics, fromIndex, toIndex);
+    setReorderingSubjectId(subject.id);
+    setActionError(null);
+    try {
+      for (let i = 0; i < reordered.length; i++) {
+        const topic = reordered[i] as TopicNode;
+        if (topic.order === i) continue;
+        const res = await fetch(`/api/super-admin/exam-content/topics/${topic.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order: i }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || 'Sıra güncellenemedi');
+        }
+      }
+      await fetchTree();
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Sıra güncellenemedi.');
+    } finally {
+      setReorderingSubjectId(null);
+    }
+  };
+
+  const handleTopicDragEnd = () => {
+    setDraggedTopicId(null);
+  };
+
   const renderModal = () => {
     if (!modal) return null;
     const title =
@@ -254,44 +313,44 @@ export function ExamContentManager() {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={closeModal}>
         <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-          <h3 className="text-lg font-bold text-gray-900 mb-4">{title}</h3>
+          <h3 className="text-lg font-bold text-stone-900 mb-4">{title}</h3>
           {actionError && <p className="text-sm text-red-600 mb-2">{actionError}</p>}
           <div className="space-y-3">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Ad</label>
+              <label className="block text-xs font-medium text-stone-600 mb-1">Ad</label>
               <input
                 type="text"
                 value={String(form.name ?? '')}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Kod</label>
+              <label className="block text-xs font-medium text-stone-600 mb-1">Kod</label>
               <input
                 type="text"
                 value={String(form.code ?? '')}
                 onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
                 placeholder={modal.type === 'exam' ? 'KPSS' : 'örn: MAT'}
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Açıklama (opsiyonel)</label>
+              <label className="block text-xs font-medium text-stone-600 mb-1">Açıklama (opsiyonel)</label>
               <input
                 type="text"
                 value={String(form.description ?? '')}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
               />
             </div>
             {modal.type === 'exam' && (
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Durum</label>
+                <label className="block text-xs font-medium text-stone-600 mb-1">Durum</label>
                 <select
                   value={String(form.status ?? 'ACTIVE')}
                   onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
                 >
                   <option value="ACTIVE">Aktif</option>
                   <option value="INACTIVE">Pasif</option>
@@ -301,35 +360,35 @@ export function ExamContentManager() {
             )}
             {(modal.type === 'section' || modal.type === 'subject' || modal.type === 'topic') && (
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Sıra</label>
+                <label className="block text-xs font-medium text-stone-600 mb-1">Sıra</label>
                 <input
                   type="number"
                   min={0}
                   value={Number(form.order ?? 0)}
                   onChange={(e) => setForm((f) => ({ ...f, order: parseInt(e.target.value, 10) || 0 }))}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
                 />
               </div>
             )}
             {modal.type === 'topic' && (
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Soru dağılımı (sınavda kaç soru)</label>
+                <label className="block text-xs font-medium text-stone-600 mb-1">Soru dağılımı (sınavda kaç soru)</label>
                 <input
                   type="number"
                   min={0}
                   value={form.examQuestionCount === '' || form.examQuestionCount == null ? '' : form.examQuestionCount}
                   onChange={(e) => setForm((f) => ({ ...f, examQuestionCount: e.target.value === '' ? '' : parseInt(e.target.value, 10) }))}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
                   placeholder="Boş bırakılabilir"
                 />
               </div>
             )}
           </div>
           <div className="mt-6 flex gap-2 justify-end">
-            <button type="button" onClick={closeModal} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <button type="button" onClick={closeModal} className="rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50">
               İptal
             </button>
-            <button type="button" onClick={save} disabled={saving} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-1">
+            <button type="button" onClick={save} disabled={saving} className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50 flex items-center gap-1">
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
               {modal.edit ? 'Kaydet' : 'Ekle'}
             </button>
@@ -340,15 +399,15 @@ export function ExamContentManager() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50">
-      <header className="border-b border-gray-200 bg-white/90 backdrop-blur-sm shadow-sm">
+    <div className="min-h-screen bg-gradient-to-br bg-stone-50">
+      <header className="border-b border-stone-200 bg-white/90 backdrop-blur-sm shadow-sm">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <Link href="/dashboard/super-admin" className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
+            <Link href="/dashboard/super-admin" className="flex items-center gap-2 text-stone-600 hover:text-stone-900 transition-colors">
               <ArrowLeft className="h-5 w-5" />
               <span className="font-medium">Super Admin</span>
             </Link>
-            <h1 className="text-lg font-semibold text-gray-900">Sınav & İçerik Yönetimi</h1>
+            <h1 className="text-lg font-semibold text-stone-900">Sınav & İçerik Yönetimi</h1>
             <div className="w-28" />
           </div>
         </div>
@@ -363,11 +422,11 @@ export function ExamContentManager() {
         )}
 
         <div className="mb-6 flex items-center justify-between">
-          <p className="text-sm text-gray-600">Sınav → Bölüm → Ders → Konu ağacını buradan yönetin.</p>
+          <p className="text-sm text-stone-600">Sınav → Bölüm → Ders → Konu ağacını buradan yönetin.</p>
           <button
             type="button"
             onClick={() => openAdd('exam')}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary-600 px-3 py-2 text-sm font-medium text-white hover:bg-primary-700"
           >
             <Plus className="h-4 w-4" />
             Yeni sınav
@@ -376,85 +435,95 @@ export function ExamContentManager() {
 
         {loading ? (
           <div className="flex justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+            <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
           </div>
         ) : error ? (
           <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">{error}</div>
         ) : exams.length === 0 ? (
-          <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-500">
+          <div className="rounded-xl border border-stone-200 bg-white p-8 text-center text-stone-500">
             Henüz sınav yok. &quot;Yeni sınav&quot; ile ekleyin.
           </div>
         ) : (
-          <div className="space-y-1 rounded-xl border border-gray-200 bg-white overflow-hidden">
+          <div className="space-y-1 rounded-xl border border-stone-200 bg-white overflow-hidden">
             {exams.map((exam) => (
-              <div key={exam.id} className="border-b border-gray-100 last:border-b-0">
-                <div className="flex items-center gap-2 bg-gray-50/80 px-4 py-3">
-                  <button type="button" onClick={() => toggleExam(exam.id)} className="p-0.5 hover:bg-gray-200 rounded">
-                    {expandedExam.has(exam.id) ? <ChevronDown className="h-4 w-4 text-gray-600" /> : <ChevronRight className="h-4 w-4 text-gray-600" />}
+              <div key={exam.id} className="border-b border-stone-100 last:border-b-0">
+                <div className="flex items-center gap-2 bg-stone-50/80 px-4 py-3">
+                  <button type="button" onClick={() => toggleExam(exam.id)} className="p-0.5 hover:bg-stone-200 rounded">
+                    {expandedExam.has(exam.id) ? <ChevronDown className="h-4 w-4 text-stone-600" /> : <ChevronRight className="h-4 w-4 text-stone-600" />}
                   </button>
-                  <BookOpen className="h-4 w-4 text-indigo-600" />
-                  <span className="font-semibold text-gray-900">{exam.name}</span>
-                  <span className="text-xs text-gray-500">({exam.code})</span>
-                  <span className={`text-xs px-1.5 py-0.5 rounded ${exam.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>{exam.status}</span>
+                  <BookOpen className="h-4 w-4 text-primary-600" />
+                  <span className="font-semibold text-stone-900">{exam.name}</span>
+                  <span className="text-xs text-stone-500">({exam.code})</span>
+                  <span className={`text-xs px-1.5 py-0.5 rounded ${exam.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-stone-100 text-stone-600'}`}>{exam.status}</span>
                   <div className="ml-auto flex items-center gap-1">
-                    <button type="button" onClick={() => openEdit('exam', exam)} className="p-1.5 rounded hover:bg-gray-200 text-gray-600" title="Düzenle"><Pencil className="h-3.5 w-3.5" /></button>
+                    <button type="button" onClick={() => openEdit('exam', exam)} className="p-1.5 rounded hover:bg-stone-200 text-stone-600" title="Düzenle"><Pencil className="h-3.5 w-3.5" /></button>
                     <button type="button" onClick={() => remove('exam', exam.id)} disabled={deletingId === exam.id} className="p-1.5 rounded hover:bg-red-100 text-red-600 disabled:opacity-50" title="Sil"><Trash2 className="h-3.5 w-3.5" /></button>
-                    <button type="button" onClick={() => openAdd('section', exam.id)} className="p-1.5 rounded hover:bg-indigo-100 text-indigo-600" title="Bölüm ekle"><Plus className="h-3.5 w-3.5" /></button>
+                    <button type="button" onClick={() => openAdd('section', exam.id)} className="p-1.5 rounded hover:bg-primary-100 text-primary-600" title="Bölüm ekle"><Plus className="h-3.5 w-3.5" /></button>
                   </div>
                 </div>
                 {expandedExam.has(exam.id) && (
                   <div className="pl-8 pr-4 pb-2">
                     {exam.sections.length === 0 ? (
-                      <p className="text-xs text-gray-500 py-2">Bölüm yok. + ile ekleyin.</p>
+                      <p className="text-xs text-stone-500 py-2">Bölüm yok. + ile ekleyin.</p>
                     ) : (
                       exam.sections.map((section) => (
-                        <div key={section.id} className="mt-2 rounded-lg border border-gray-200 bg-white">
+                        <div key={section.id} className="mt-2 rounded-lg border border-stone-200 bg-white">
                           <div className="flex items-center gap-2 px-3 py-2">
-                            <button type="button" onClick={() => toggleSection(section.id)} className="p-0.5 hover:bg-gray-100 rounded">
-                              {expandedSection.has(section.id) ? <ChevronDown className="h-3.5 w-3.5 text-gray-500" /> : <ChevronRight className="h-3.5 w-3.5 text-gray-500" />}
+                            <button type="button" onClick={() => toggleSection(section.id)} className="p-0.5 hover:bg-stone-100 rounded">
+                              {expandedSection.has(section.id) ? <ChevronDown className="h-3.5 w-3.5 text-stone-500" /> : <ChevronRight className="h-3.5 w-3.5 text-stone-500" />}
                             </button>
                             <Layers className="h-3.5 w-3.5 text-amber-600" />
-                            <span className="text-sm font-medium text-gray-800">{section.name}</span>
-                            <span className="text-xs text-gray-400">({section.code})</span>
+                            <span className="text-sm font-medium text-stone-800">{section.name}</span>
+                            <span className="text-xs text-stone-400">({section.code})</span>
                             <div className="ml-auto flex items-center gap-1">
-                              <button type="button" onClick={() => openEdit('section', section)} className="p-1 rounded hover:bg-gray-100 text-gray-500" title="Düzenle"><Pencil className="h-3 w-3" /></button>
+                              <button type="button" onClick={() => openEdit('section', section)} className="p-1 rounded hover:bg-stone-100 text-stone-500" title="Düzenle"><Pencil className="h-3 w-3" /></button>
                               <button type="button" onClick={() => remove('section', section.id)} disabled={deletingId === section.id} className="p-1 rounded hover:bg-red-100 text-red-500" title="Sil"><Trash2 className="h-3 w-3" /></button>
-                              <button type="button" onClick={() => openAdd('subject', section.id)} className="p-1 rounded hover:bg-indigo-100 text-indigo-600" title="Ders ekle"><Plus className="h-3 w-3" /></button>
+                              <button type="button" onClick={() => openAdd('subject', section.id)} className="p-1 rounded hover:bg-primary-100 text-primary-600" title="Ders ekle"><Plus className="h-3 w-3" /></button>
                             </div>
                           </div>
                           {expandedSection.has(section.id) && (
                             <div className="pl-6 pr-2 pb-2">
                               {section.subjects.length === 0 ? (
-                                <p className="text-xs text-gray-500 py-1">Ders yok. + ile ekleyin.</p>
+                                <p className="text-xs text-stone-500 py-1">Ders yok. + ile ekleyin.</p>
                               ) : (
                                 section.subjects.map((subject) => (
-                                  <div key={subject.id} className="mt-1 rounded border border-gray-100 bg-gray-50/50">
+                                  <div key={subject.id} className="mt-1 rounded border border-stone-100 bg-stone-50/50">
                                     <div className="flex items-center gap-2 px-2 py-1.5">
-                                      <button type="button" onClick={() => toggleSubject(subject.id)} className="p-0.5 hover:bg-gray-200 rounded">
-                                        {expandedSubject.has(subject.id) ? <ChevronDown className="h-3 w-3 text-gray-500" /> : <ChevronRight className="h-3 w-3 text-gray-500" />}
+                                      <button type="button" onClick={() => toggleSubject(subject.id)} className="p-0.5 hover:bg-stone-200 rounded">
+                                        {expandedSubject.has(subject.id) ? <ChevronDown className="h-3 w-3 text-stone-500" /> : <ChevronRight className="h-3 w-3 text-stone-500" />}
                                       </button>
                                       <FileText className="h-3 w-3 text-green-600" />
-                                      <span className="text-xs font-medium text-gray-700">{subject.name}</span>
-                                      <span className="text-xs text-gray-400">({subject.code})</span>
+                                      <span className="text-xs font-medium text-stone-700">{subject.name}</span>
+                                      <span className="text-xs text-stone-400">({subject.code})</span>
                                       <div className="ml-auto flex items-center gap-0.5">
-                                        <button type="button" onClick={() => openEdit('subject', subject)} className="p-1 rounded hover:bg-gray-200 text-gray-500" title="Düzenle"><Pencil className="h-3 w-3" /></button>
+                                        <button type="button" onClick={() => openEdit('subject', subject)} className="p-1 rounded hover:bg-stone-200 text-stone-500" title="Düzenle"><Pencil className="h-3 w-3" /></button>
                                         <button type="button" onClick={() => remove('subject', subject.id)} disabled={deletingId === subject.id} className="p-1 rounded hover:bg-red-100 text-red-500" title="Sil"><Trash2 className="h-3 w-3" /></button>
-                                        <button type="button" onClick={() => openAdd('topic', subject.id)} className="p-1 rounded hover:bg-indigo-100 text-indigo-600" title="Konu ekle"><Plus className="h-3 w-3" /></button>
+                                        <button type="button" onClick={() => openAdd('topic', subject.id)} className="p-1 rounded hover:bg-primary-100 text-primary-600" title="Konu ekle"><Plus className="h-3 w-3" /></button>
                                       </div>
                                     </div>
                                     {expandedSubject.has(subject.id) && (
                                       <div className="pl-5 pr-2 pb-1">
                                         {subject.topics.length === 0 ? (
-                                          <p className="text-xs text-gray-400 py-1">Konu yok. + ile ekleyin.</p>
+                                          <p className="text-xs text-stone-400 py-1">Konu yok. + ile ekleyin.</p>
                                         ) : (
                                           subject.topics.map((topic) => (
-                                            <div key={topic.id} className="flex items-center gap-2 py-1 px-2 rounded hover:bg-gray-100/80">
-                                              <FolderOpen className="h-3 w-3 text-gray-400" />
-                                              <span className="text-xs text-gray-700">{topic.name}</span>
-                                              <span className="text-xs text-gray-400">({topic.code})</span>
-                                              {topic.examQuestionCount != null && <span className="text-xs text-indigo-600">{topic.examQuestionCount} soru</span>}
+                                            <div
+                                              key={topic.id}
+                                              data-topic-id={topic.id}
+                                              draggable
+                                              onDragStart={(e) => handleTopicDragStart(e, topic.id)}
+                                              onDragOver={handleTopicDragOver}
+                                              onDrop={(e) => handleTopicDrop(e, subject, topic.id)}
+                                              onDragEnd={handleTopicDragEnd}
+                                              className={`flex items-center gap-2 py-1 px-2 rounded hover:bg-stone-100/80 cursor-grab active:cursor-grabbing ${draggedTopicId === topic.id ? 'opacity-50' : ''} ${reorderingSubjectId === subject.id ? 'pointer-events-none' : ''}`}
+                                            >
+                                              <GripVertical className="h-3.5 w-3.5 text-stone-400 shrink-0" aria-hidden />
+                                              <FolderOpen className="h-3 w-3 text-stone-400 shrink-0" />
+                                              <span className="text-xs text-stone-700">{topic.name}</span>
+                                              <span className="text-xs text-stone-400">({topic.code})</span>
+                                              {topic.examQuestionCount != null && <span className="text-xs text-primary-600">{topic.examQuestionCount} soru</span>}
                                               <div className="ml-auto flex items-center gap-0.5">
-                                                <button type="button" onClick={() => openEdit('topic', topic)} className="p-0.5 rounded hover:bg-gray-200 text-gray-500" title="Düzenle"><Pencil className="h-3 w-3" /></button>
+                                                <button type="button" onClick={() => openEdit('topic', topic)} className="p-0.5 rounded hover:bg-stone-200 text-stone-500" title="Düzenle"><Pencil className="h-3 w-3" /></button>
                                                 <button type="button" onClick={() => remove('topic', topic.id)} disabled={deletingId === topic.id} className="p-0.5 rounded hover:bg-red-100 text-red-500" title="Sil"><Trash2 className="h-3 w-3" /></button>
                                               </div>
                                             </div>
