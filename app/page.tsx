@@ -576,7 +576,7 @@ export default async function LandingPage() {
               <div className="flex items-center gap-2">
                 {[
                   { href: 'https://x.com', icon: ({ className }: { className?: string }) => <span className={`inline-flex items-center justify-center text-sm font-bold ${className ?? ''}`}>𝕏</span>, label: 'X' },
-                  { href: 'https://instagram.com', icon: Instagram, label: 'Instagram' },
+                  { href: 'https://instagram.com/zeosoft.io', icon: Instagram, label: 'Instagram' },
                   { href: 'https://linkedin.com', icon: Linkedin, label: 'LinkedIn' },
                   { href: 'https://youtube.com', icon: Youtube, label: 'YouTube' },
                   { href: 'https://facebook.com', icon: Facebook, label: 'Facebook' },
