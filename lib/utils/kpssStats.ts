@@ -3,6 +3,7 @@
  */
 
 import type { PrismaClient } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { standardDeviation } from './denemeScore';
 
 type BreakdownItem = { subjectId: string; right: number; wrong: number; empty?: number; net?: number };
@@ -45,7 +46,7 @@ export async function getKpssPopulationStats(
   const gkSet = new Set(sectionIds.GK);
 
   const attempts = await prisma.examAttempt.findMany({
-    where: { examId, deletedAt: null, breakdown: { not: null } },
+    where: { examId, deletedAt: null, breakdown: { not: Prisma.DbNull } },
     select: { breakdown: true },
   });
 

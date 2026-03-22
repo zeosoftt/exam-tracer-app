@@ -37,6 +37,20 @@ export default async function LandingPage() {
         url: baseUrl,
         logo: { '@type': 'ImageObject', url: `${baseUrl}/icon.svg` },
       },
+      {
+        '@type': 'SoftwareApplication',
+        '@id': `${baseUrl}/#software`,
+        name: 'The Goal Lab',
+        applicationCategory: 'EducationalApplication',
+        operatingSystem: 'Web',
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'TRY',
+        },
+        description:
+          'Sınav ve konu takibi, hedef puan, deneme takibi. KPSS, ÖABT, ALES ve diğer sınavlar için kurumsal ve bireysel kullanım.',
+      },
     ],
   };
 
