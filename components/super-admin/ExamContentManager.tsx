@@ -53,6 +53,7 @@ interface ExamNode {
   code: string;
   description: string | null;
   status: string;
+  startDate: string | null;
   sections: SectionNode[];
 }
 
@@ -128,7 +129,7 @@ export function ExamContentManager() {
 
   const openAdd = (type: EntityType, parentId?: string, parentExamId?: string, parentSectionId?: string) => {
     setModal({ type, parentId, parentExamId, parentSectionId });
-    setForm(type === 'exam' ? { name: '', code: '', description: '', status: 'ACTIVE' } : { name: '', code: '', description: '', order: 0 });
+    setForm(type === 'exam' ? { name: '', code: '', description: '', status: 'ACTIVE', startDate: '' } : { name: '', code: '', description: '', order: 0 });
     if (type === 'topic') setForm((f) => ({ ...f, examQuestionCount: '' }));
     setActionError(null);
   };
@@ -136,12 +137,14 @@ export function ExamContentManager() {
   const openEdit = (type: EntityType, entity: ExamNode | SectionNode | SubjectNode | TopicNode, parentId?: string) => {
     setModal({ type, parentId, edit: entity });
     const e = entity as unknown as Record<string, unknown>;
+    const startDateVal = e.startDate != null ? (typeof e.startDate === 'string' ? e.startDate.slice(0, 10) : new Date(e.startDate as Date).toISOString().slice(0, 10)) : '';
     setForm({
       name: String(e.name ?? ''),
       code: String(e.code ?? ''),
       description: e.description != null ? String(e.description) : '',
       order: typeof e.order === 'number' ? e.order : 0,
       status: type === 'exam' ? String(e.status ?? '') : '',
+      startDate: type === 'exam' ? startDateVal : '',
       examQuestionCount: type === 'topic' ? (typeof e.examQuestionCount === 'number' ? e.examQuestionCount : '') : '',
     });
     setActionError(null);
@@ -174,6 +177,7 @@ export function ExamContentManager() {
           body.code = form.code;
           body.description = form.description || null;
           if (form.status) body.status = form.status;
+          body.startDate = form.startDate && String(form.startDate).trim() ? String(form.startDate).trim() : null;
         } else {
           body.name = form.name;
           body.code = form.code;
@@ -203,6 +207,7 @@ export function ExamContentManager() {
         };
         if (modal.type === 'exam') {
           body.status = form.status || 'ACTIVE';
+          body.startDate = form.startDate && String(form.startDate).trim() ? String(form.startDate).trim() : null;
         } else if (modal.type === 'section') {
           body.examId = modal.parentId;
         } else if (modal.type === 'subject') {
@@ -345,18 +350,30 @@ export function ExamContentManager() {
               />
             </div>
             {modal.type === 'exam' && (
-              <div>
-                <label className="block text-xs font-medium text-stone-600 mb-1">Durum</label>
-                <select
-                  value={String(form.status ?? 'ACTIVE')}
-                  onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
-                >
-                  <option value="ACTIVE">Aktif</option>
-                  <option value="INACTIVE">Pasif</option>
-                  <option value="ARCHIVED">Arşiv</option>
-                </select>
-              </div>
+              <>
+                <div>
+                  <label className="block text-xs font-medium text-stone-600 mb-1">Sınav tarihi</label>
+                  <input
+                    type="date"
+                    value={String(form.startDate ?? '')}
+                    onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value || '' }))}
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                  />
+                  <p className="text-xs text-stone-500 mt-0.5">Dashboard hedef kartında &quot;Sınava X gün kaldı&quot; gösterilir.</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-stone-600 mb-1">Durum</label>
+                  <select
+                    value={String(form.status ?? 'ACTIVE')}
+                    onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                  >
+                    <option value="ACTIVE">Aktif</option>
+                    <option value="INACTIVE">Pasif</option>
+                    <option value="ARCHIVED">Arşiv</option>
+                  </select>
+                </div>
+              </>
             )}
             {(modal.type === 'section' || modal.type === 'subject' || modal.type === 'topic') && (
               <div>
@@ -454,6 +471,13 @@ export function ExamContentManager() {
                   <BookOpen className="h-4 w-4 text-primary-600" />
                   <span className="font-semibold text-stone-900">{exam.name}</span>
                   <span className="text-xs text-stone-500">({exam.code})</span>
+                  {exam.startDate ? (
+                    <span className="text-xs text-primary-600 font-medium">
+                      Sınav: {new Date(exam.startDate).toLocaleDateString('tr-TR')}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-stone-400">Tarih yok</span>
+                  )}
                   <span className={`text-xs px-1.5 py-0.5 rounded ${exam.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-stone-100 text-stone-600'}`}>{exam.status}</span>
                   <div className="ml-auto flex items-center gap-1">
                     <button type="button" onClick={() => openEdit('exam', exam)} className="p-1.5 rounded hover:bg-stone-200 text-stone-600" title="Düzenle"><Pencil className="h-3.5 w-3.5" /></button>

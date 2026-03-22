@@ -29,7 +29,18 @@ export default withAuth(
     callbacks: {
       authorized: ({ token, req }) => {
         // Public routes that don't require authentication
-        const publicPaths = ['/', '/auth/login', '/auth/register', '/onboarding', '/api/auth', '/api/health', '/api/exams/available'];
+        const publicPaths = [
+          '/',
+          '/auth/login',
+          '/auth/register',
+          '/auth/verify-email',
+          '/auth/forgot-password',
+          '/auth/reset-password',
+          '/onboarding',
+          '/api/auth',
+          '/api/health',
+          '/api/exams/available',
+        ];
         const path = req.nextUrl.pathname;
 
         if (publicPaths.some((p) => path === p || path.startsWith(p))) {

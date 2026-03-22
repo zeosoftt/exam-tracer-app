@@ -101,3 +101,8 @@ export const ERROR_MESSAGES = {
   RATE_LIMIT_EXCEEDED: 'Too many requests, please try again later',
   DATABASE_UNAVAILABLE: 'Veritabanına şu an ulaşılamıyor. Lütfen kısa süre sonra tekrar deneyin.',
 } as const;
+
+/** NextAuth credentials: authorize içinde throw edilir; client `result.error` ile eşleşir */
+export const AUTH_ERROR_CODES = {
+  EMAIL_NOT_VERIFIED: 'EMAIL_NOT_VERIFIED',
+} as const;

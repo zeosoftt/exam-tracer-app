@@ -23,6 +23,12 @@ type PrismaWithExamAttempt = typeof prisma & {
       netScore: unknown;
       exam: { name: string; code: string };
     } | null>;
+    findMany: (args: {
+      where: { userId: string; deletedAt: null };
+      orderBy: { attemptedAt: 'desc' };
+      take: number;
+      select: { attemptedAt: true; totalScore: true; netScore: true };
+    }) => Promise<Array<{ attemptedAt: Date; totalScore: unknown; netScore: unknown }>>;
   };
 };
 const db = prisma as PrismaWithExamAttempt;
@@ -78,6 +84,7 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
       studyHoursStats,
       denemeCount,
       lastDeneme,
+      recentAttemptsRaw,
     ] = await Promise.all([
       prisma.exam.count({ where: examWhere }),
       prisma.exam.count({ where: { ...examWhere, status: 'ACTIVE' } }),
@@ -87,7 +94,7 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
           deletedAt: null,
           exam: { status: 'ACTIVE', deletedAt: null },
         },
-        include: { exam: { select: { id: true, name: true, code: true } } },
+        include: { exam: { select: { id: true, name: true, code: true, startDate: true } } },
         orderBy: { assignedAt: 'desc' },
       }),
       prisma.pomodoroSession.aggregate({
@@ -111,18 +118,34 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
           exam: { select: { name: true, code: true } },
         },
       }),
+      db.examAttempt.findMany({
+        where: { userId, deletedAt: null },
+        orderBy: { attemptedAt: 'desc' },
+        take: 10,
+        select: {
+          attemptedAt: true,
+          totalScore: true,
+          netScore: true,
+        },
+      }),
     ]);
 
     const totalStudyHours = studyHoursStats._sum.duration
       ? Math.round((studyHoursStats._sum.duration / 60) * 10) / 10
       : 0;
     const totalPomodoroSessions = studyHoursStats._count || 0;
+    const recentAttemptsList = (recentAttemptsRaw ?? []) as Array<{ attemptedAt: Date; totalScore: unknown; netScore: unknown }>;
     const denemeSummary = {
       totalAttempts: denemeCount,
       lastAttemptAt: lastDeneme?.attemptedAt?.toISOString() ?? null,
       lastAttemptScore: lastDeneme?.totalScore != null ? Number(lastDeneme.totalScore) : null,
       lastAttemptNet: lastDeneme?.netScore != null ? Number(lastDeneme.netScore) : null,
       lastAttemptExamName: lastDeneme?.exam?.name ?? null,
+      recentAttempts: recentAttemptsList.map((a) => ({
+        attemptedAt: a.attemptedAt.toISOString(),
+        totalScore: a.totalScore != null ? Number(a.totalScore) : null,
+        netScore: a.netScore != null ? Number(a.netScore) : null,
+      })),
     };
 
     // 3) Aktif sınava göre konu / ilerleme sayıları

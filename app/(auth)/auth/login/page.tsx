@@ -13,14 +13,18 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema } from '@/lib/validation/schemas';
 import type { z } from 'zod';
-import { BookOpen, Mail, Lock, Loader2, ArrowLeft, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { AUTH_ERROR_CODES } from '@/config/constants';
+import { BookOpen, Mail, Lock, Loader2, ArrowLeft, CheckCircle, Eye, EyeOff, Send } from 'lucide-react';
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [pendingVerifyEmail, setPendingVerifyEmail] = useState<string | null>(null);
   const registered = searchParams.get('registered');
   const passwordReset = searchParams.get('passwordReset');
   const verified = searchParams.get('verified');
@@ -28,15 +32,43 @@ function LoginForm() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
   });
 
+  const emailValue = watch('email');
+
+  const handleResendVerification = async () => {
+    const email = pendingVerifyEmail || emailValue?.trim();
+    if (!email) {
+      setResendMessage('Önce e-posta adresinizi girin.');
+      return;
+    }
+    setResendLoading(true);
+    setResendMessage(null);
+    try {
+      const res = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json().catch(() => ({}));
+      setResendMessage(data.message || 'İstek alındı.');
+    } catch {
+      setResendMessage('İstek gönderilemedi. Daha sonra tekrar deneyin.');
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
   const onSubmit = async (data: z.infer<typeof loginSchema>) => {
     try {
       setIsLoading(true);
       setError(null);
+      setPendingVerifyEmail(null);
+      setResendMessage(null);
 
       // OWASP / standart: Yeni girişte önceki oturum geçersiz kılınmalı (session replacement).
       // Sadece mevcut oturum varken signOut çağırıyoruz; böylece farklı hesapla girişte
@@ -53,6 +85,13 @@ function LoginForm() {
       });
 
       if (result?.error) {
+        if (result.error === AUTH_ERROR_CODES.EMAIL_NOT_VERIFIED) {
+          setPendingVerifyEmail(data.email.toLowerCase().trim());
+          setError(
+            'E-posta adresiniz henüz doğrulanmadı. Kayıt sırasında gönderilen bağlantıya tıklayın veya aşağıdan yeni doğrulama e-postası isteyin.'
+          );
+          return;
+        }
         if (result.error === 'Configuration') {
           setError('Sunucu yapılandırma hatası. Lütfen yöneticiye başvurun.');
         } else if (result.error === 'CredentialsSignin') {
@@ -124,8 +163,28 @@ function LoginForm() {
           )}
 
           {error && (
-            <div className="mb-6 rounded-xl bg-red-50 border border-red-200 p-4">
+            <div className="mb-6 rounded-xl bg-red-50 border border-red-200 p-4 space-y-3">
               <p className="text-sm font-medium text-red-800">{error}</p>
+              {pendingVerifyEmail && (
+                <div className="pt-2 border-t border-red-100">
+                  <button
+                    type="button"
+                    onClick={handleResendVerification}
+                    disabled={resendLoading}
+                    className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-medium text-primary-700 border border-primary-200 hover:bg-primary-50 disabled:opacity-50"
+                  >
+                    {resendLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                    Doğrulama e-postasını tekrar gönder
+                  </button>
+                  {resendMessage && (
+                    <p className="mt-2 text-xs text-stone-600">{resendMessage}</p>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

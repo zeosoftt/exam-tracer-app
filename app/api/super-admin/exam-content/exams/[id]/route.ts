@@ -45,6 +45,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (body.status === EXAM_STATUS.ACTIVE || body.status === EXAM_STATUS.INACTIVE || body.status === EXAM_STATUS.ARCHIVED) {
       data.status = body.status as 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
     }
+    if (body.startDate !== undefined) {
+      data.startDate = body.startDate === null || body.startDate === '' ? null : new Date(body.startDate);
+    }
+    if (body.endDate !== undefined) {
+      data.endDate = body.endDate === null || body.endDate === '' ? null : new Date(body.endDate);
+    }
     const exam = await prisma.exam.update({ where: { id }, data });
     return NextResponse.json({ success: true, data: exam });
   } catch (e: unknown) {

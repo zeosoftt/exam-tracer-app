@@ -54,6 +54,7 @@ interface DashboardStats {
     id: string;
     name: string;
     code: string;
+    startDate: string | null;
   } | null;
   user?: {
     targetScore: number | null;
@@ -69,6 +70,11 @@ interface DashboardStats {
     lastAttemptScore: number | null;
     lastAttemptNet: number | null;
     lastAttemptExamName: string | null;
+    recentAttempts: Array<{
+      attemptedAt: string;
+      totalScore: number | null;
+      netScore: number | null;
+    }>;
   };
   evaluation?: {
     totalTopics: number;
@@ -500,7 +506,7 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
               )}
             </div>
 
-            {/* Kart: Deneme Takibi özet */}
+            {/* Kart: Deneme Takibi özet + grafik */}
             <Link
               href="/dashboard/deneme"
               className="block bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl shadow-soft-lg p-5 text-white hover:shadow-glow-amber transition-all hover:scale-[1.02] active:scale-[0.99]"
@@ -516,20 +522,48 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
               <div>
                 <p className="text-sm font-semibold text-amber-100 mb-1">Deneme Takibi</p>
                 {stats?.deneme && stats.deneme.totalAttempts > 0 ? (
-                  <div className="space-y-1 text-xs text-amber-100/95">
-                    <p className="font-medium text-white">{stats.deneme.totalAttempts} deneme</p>
-                    {stats.deneme.lastAttemptAt && (
-                      <>
-                        <p>Son: {new Date(stats.deneme.lastAttemptAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-                        {stats.deneme.lastAttemptExamName && (
-                          <p className="truncate" title={stats.deneme.lastAttemptExamName}>{stats.deneme.lastAttemptExamName}</p>
-                        )}
-                        {stats.deneme.lastAttemptScore != null && (
-                          <p className="font-semibold text-white">{stats.deneme.lastAttemptScore} puan</p>
-                        )}
-                      </>
-                    )}
-                  </div>
+                  <>
+                    <div className="space-y-1 text-xs text-amber-100/95 mb-2">
+                      <p className="font-medium text-white">{stats.deneme.totalAttempts} deneme</p>
+                      {stats.deneme.lastAttemptAt && (
+                        <>
+                          <p>Son: {new Date(stats.deneme.lastAttemptAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                          {stats.deneme.lastAttemptExamName && (
+                            <p className="truncate" title={stats.deneme.lastAttemptExamName}>{stats.deneme.lastAttemptExamName}</p>
+                          )}
+                          {stats.deneme.lastAttemptScore != null && (
+                            <p className="font-semibold text-white">{stats.deneme.lastAttemptScore} puan</p>
+                          )}
+                        </>
+                      )}
+                    </div>
+                    {stats.deneme.recentAttempts?.length > 0 && (() => {
+                      const slice = [...stats.deneme.recentAttempts].reverse().slice(0, 8);
+                      const nets = slice.map((a) => a.netScore ?? 0);
+                      const minNet = Math.min(...nets);
+                      const maxNet = Math.max(...nets);
+                      const range = maxNet - minNet || 1;
+                      return (
+                        <div className="mt-2 pt-2 border-t border-white/20">
+                          <p className="text-[10px] text-amber-100/80 mb-1.5">Son denemeler (net)</p>
+                          <div className="flex items-end gap-0.5 h-8" aria-hidden>
+                            {slice.map((a, i) => {
+                              const net = a.netScore ?? 0;
+                              const h = Math.max(4, ((net - minNet) / range) * 100);
+                              return (
+                                <div
+                                  key={`${a.attemptedAt}-${i}`}
+                                  className="flex-1 min-w-0 rounded-t bg-white/30 hover:bg-white/50 transition-colors"
+                                  style={{ height: `${Math.min(100, h)}%` }}
+                                  title={`${new Date(a.attemptedAt).toLocaleDateString('tr-TR')}: ${net} net`}
+                                />
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </>
                 ) : (
                   <p className="text-xs text-amber-100/90">Henüz deneme kaydı yok.</p>
                 )}
@@ -551,6 +585,25 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
                   <>
                     <p className="text-xs font-semibold text-green-100 mb-0.5">Aktif Sınav</p>
                     <p className="text-lg font-bold mb-2 truncate" title={stats.activeExam.name}>{stats.activeExam.name}</p>
+                    {stats.activeExam.startDate ? (() => {
+                      const examDate = new Date(stats.activeExam.startDate);
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      examDate.setHours(0, 0, 0, 0);
+                      const diffMs = examDate.getTime() - today.getTime();
+                      const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+                      if (daysLeft > 0) {
+                        return (
+                          <p className="text-sm text-green-100 mb-2">
+                            Sınava <span className="font-bold text-white">{daysLeft}</span> gün kaldı
+                          </p>
+                        );
+                      }
+                      if (daysLeft === 0) return <p className="text-sm font-semibold text-amber-200 mb-2">Sınav bugün</p>;
+                      return <p className="text-xs text-green-100/80 mb-2">Sınav tarihi geçti</p>;
+                    })() : (
+                      <p className="text-xs text-green-100/80 mb-2">Sınav tarihi belirlenmedi</p>
+                    )}
                   </>
                 ) : (
                   <p className="text-sm text-green-100 mb-2">Aktif sınav bulunamadı</p>

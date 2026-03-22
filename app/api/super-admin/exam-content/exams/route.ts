@@ -35,12 +35,14 @@ export async function POST(req: NextRequest) {
       );
     }
     const statusVal = status === EXAM_STATUS.INACTIVE || status === EXAM_STATUS.ARCHIVED ? status : EXAM_STATUS.ACTIVE;
+    const startDate = body?.startDate && String(body.startDate).trim() ? new Date(String(body.startDate).trim()) : null;
     const exam = await prisma.exam.create({
       data: {
         name: String(name).trim(),
         code: String(code).trim().toUpperCase(),
         description: description ? String(description).trim() : null,
         status: statusVal,
+        startDate,
       },
     });
     return NextResponse.json({ success: true, data: exam });

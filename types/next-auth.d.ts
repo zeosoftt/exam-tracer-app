@@ -16,6 +16,7 @@ declare module 'next-auth' {
       institutionId?: string | null;
       // NEW: Multi-tenant support
       activeOrganizationId?: string | null;
+      emailVerified?: boolean;
     };
   }
 
@@ -23,6 +24,7 @@ declare module 'next-auth' {
     id: string;
     email: string;
     name: string;
+    emailVerified?: boolean;
     // DEPRECATED: Legacy fields (kept for backward compatibility)
     role?: string;
     institutionId?: string | null;
@@ -35,6 +37,7 @@ declare module 'next-auth/jwt' {
   interface JWT {
     id: string;
     email?: string;
+    emailVerified?: boolean;
     // DEPRECATED: Legacy fields (kept for backward compatibility)
     role?: string;
     institutionId?: string | null;

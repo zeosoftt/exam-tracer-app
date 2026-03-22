@@ -11,7 +11,8 @@ import { prisma } from '@/lib/db/prisma';
 import { asyncHandler } from '@/lib/errors/errorHandler';
 import { HTTP_STATUS } from '@/config/constants';
 import { UnauthorizedError } from '@/lib/errors/AppError';
-import { calculateFromBreakdown } from '@/lib/utils/denemeScore';
+import { calculateFromBreakdown, calculateKpssFromBreakdown } from '@/lib/utils/denemeScore';
+import { getKpssPopulationStats, getKpssSectionSubjectIds } from '@/lib/utils/kpssStats';
 import { getMaxScoreForExam } from '@/lib/constants/examScoreRanges';
 import { z } from 'zod';
 
@@ -153,11 +154,29 @@ async function postDenemeHandler(req: NextRequest): Promise<NextResponse> {
   if (breakdown && breakdown.length > 0) {
     const calculated = calculateFromBreakdown(breakdown, { maxScore });
     breakdownJson = calculated.breakdownWithNet;
-    finalTotalScore = finalTotalScore ?? calculated.calculatedScore;
-    finalNetScore = finalNetScore ?? calculated.totalNet;
     finalRightCount = finalRightCount ?? calculated.totalRight;
     finalWrongCount = finalWrongCount ?? calculated.totalWrong;
     finalEmptyCount = finalEmptyCount ?? calculated.totalEmpty;
+
+    if (exam.code === 'KPSS') {
+      const sectionIds = await getKpssSectionSubjectIds(prisma, examId);
+      const stats = sectionIds ? await getKpssPopulationStats(prisma, examId) : null;
+      if (sectionIds) {
+        const kpss = calculateKpssFromBreakdown({
+          breakdownWithNet: calculated.breakdownWithNet,
+          sectionSubjectIds: sectionIds,
+          stats,
+        });
+        finalTotalScore = finalTotalScore ?? kpss.P3;
+        finalNetScore = finalNetScore ?? kpss.totalNet;
+      } else {
+        finalTotalScore = finalTotalScore ?? calculated.calculatedScore;
+        finalNetScore = finalNetScore ?? calculated.totalNet;
+      }
+    } else {
+      finalTotalScore = finalTotalScore ?? calculated.calculatedScore;
+      finalNetScore = finalNetScore ?? calculated.totalNet;
+    }
   } else if (
     (finalRightCount ?? 0) + (finalWrongCount ?? 0) + (finalEmptyCount ?? 0) > 0
   ) {

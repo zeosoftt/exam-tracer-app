@@ -8,7 +8,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { prisma } from '@/lib/db/prisma';
 import { comparePassword } from '@/lib/auth/password';
 import { logAuth, logError } from '@/lib/logger';
-import { ERROR_MESSAGES } from '@/config/constants';
+import { ERROR_MESSAGES, AUTH_ERROR_CODES } from '@/config/constants';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -45,12 +45,17 @@ export const authOptions: NextAuthOptions = {
             throw new Error('Account is inactive');
           }
 
-          // Verify password
+          // Önce şifre (e-posta doğrulanmamış hesapların varlığını sızdırmamak için)
           const isPasswordValid = await comparePassword(credentials.password, user.passwordHash);
 
           if (!isPasswordValid) {
             logAuth('Login failed: Invalid password', user.id, { email: credentials.email });
             throw new Error(ERROR_MESSAGES.INVALID_CREDENTIALS);
+          }
+
+          if (!user.emailVerified) {
+            logAuth('Login failed: Email not verified', user.id, { email: credentials.email });
+            throw new Error(AUTH_ERROR_CODES.EMAIL_NOT_VERIFIED);
           }
 
           // Update last login
@@ -99,6 +104,7 @@ export const authOptions: NextAuthOptions = {
             id: user.id,
             email: user.email,
             name: `${user.firstName} ${user.lastName}`,
+            emailVerified: user.emailVerified,
             role: user.role ?? undefined, // DEPRECATED: kept for backward compatibility
             institutionId: user.institutionId ?? undefined, // DEPRECATED: kept for backward compatibility
             activeOrganizationId, // NEW: Active organization ID (null if not migrated yet)
@@ -137,10 +143,12 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.email = user.email;
         const userWithAuth = user as {
+          emailVerified?: boolean;
           role?: string;
           institutionId?: string | null;
           activeOrganizationId?: string | null;
         };
+        token.emailVerified = userWithAuth.emailVerified === true;
         
         // DEPRECATED: Legacy fields (kept for backward compatibility)
         token.role = userWithAuth.role;
@@ -183,6 +191,7 @@ export const authOptions: NextAuthOptions = {
             ? String(token.activeOrganizationId)
             : null;
         }
+        session.user.emailVerified = token.emailVerified === true;
       }
       return session;
     },

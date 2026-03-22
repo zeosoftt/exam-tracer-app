@@ -6,8 +6,9 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, BookOpen, Plus, TrendingUp, Calendar, Clock, Target, Calculator } from 'lucide-react';
-import { calculateFromBreakdown } from '@/lib/utils/denemeScore';
+import { ArrowLeft, BookOpen, Plus, TrendingUp, Calendar, Clock, Target, Calculator, BarChart3, TrendingDown, Minus } from 'lucide-react';
+import { calculateFromBreakdown, calculateKpssFromBreakdown } from '@/lib/utils/denemeScore';
+import type { KpssPopulationStats } from '@/lib/utils/denemeScore';
 import { getMaxScoreForExam } from '@/lib/constants/examScoreRanges';
 
 interface ExamOption {
@@ -52,6 +53,8 @@ export default function DenemePage() {
   const [examSubjects, setExamSubjects] = useState<SubjectRow[]>([]);
   const [subjectInputs, setSubjectInputs] = useState<Record<string, SubjectInput>>({});
   const [structureLoading, setStructureLoading] = useState(false);
+  const [sections, setSections] = useState<Array<{ id: string; code: string; subjects: { id: string }[] }>>([]);
+  const [kpssStats, setKpssStats] = useState<KpssPopulationStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -115,11 +118,14 @@ export default function DenemePage() {
       return;
     }
     setStructureLoading(true);
+    setSections([]);
+    setKpssStats(null);
     fetch(`/api/exams/${form.examId}/structure`)
       .then((r) => r.json())
       .then((json) => {
         if (json.success && json.data?.subjects?.length) {
           setExamSubjects(json.data.subjects);
+          setSections(json.data.sections ?? []);
           const initial: Record<string, SubjectInput> = {};
           json.data.subjects.forEach((s: SubjectRow) => {
             initial[s.id] = { right: 0, wrong: 0, empty: 0 };
@@ -127,15 +133,30 @@ export default function DenemePage() {
           setSubjectInputs(initial);
         } else {
           setExamSubjects([]);
+          setSections([]);
           setSubjectInputs({});
         }
       })
       .catch(() => {
         setExamSubjects([]);
+        setSections([]);
         setSubjectInputs({});
       })
       .finally(() => setStructureLoading(false));
   }, [form.examId]);
+
+  const selectedExamCode = exams.find((e) => e.id === form.examId)?.code ?? '';
+
+  // KPSS seçiliyse GY/GK ortalama ve standart sapma al
+  useEffect(() => {
+    if (selectedExamCode !== 'KPSS' || sections.length === 0) return;
+    fetch('/api/deneme/kpss-stats')
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.success && json.data) setKpssStats(json.data);
+      })
+      .catch(() => {});
+  }, [selectedExamCode, sections.length]);
 
   const updateSubjectInput = (subjectId: string, field: 'right' | 'wrong' | 'empty', value: number) => {
     setSubjectInputs((prev) => ({
@@ -157,13 +178,31 @@ export default function DenemePage() {
     }));
   }, [examSubjects, subjectInputs]);
 
-  const selectedExamCode = exams.find((e) => e.id === form.examId)?.code ?? '';
   const maxScore = getMaxScoreForExam(selectedExamCode);
 
   const calculated = useMemo(() => {
     if (breakdownForSubmit.length === 0) return null;
     return calculateFromBreakdown(breakdownForSubmit, { maxScore });
   }, [breakdownForSubmit, maxScore]);
+
+  const sectionSubjectIds = useMemo(() => {
+    const gy = sections.find((s) => s.code === 'GENEL_YETENEK');
+    const gk = sections.find((s) => s.code === 'GENEL_KULTUR');
+    if (!gy || !gk) return null;
+    return {
+      GY: gy.subjects.map((s) => s.id),
+      GK: gk.subjects.map((s) => s.id),
+    };
+  }, [sections]);
+
+  const kpssCalculated = useMemo(() => {
+    if (selectedExamCode !== 'KPSS' || !calculated || !sectionSubjectIds) return null;
+    return calculateKpssFromBreakdown({
+      breakdownWithNet: calculated.breakdownWithNet,
+      sectionSubjectIds,
+      stats: kpssStats,
+    });
+  }, [selectedExamCode, calculated, sectionSubjectIds, kpssStats]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -232,6 +271,52 @@ export default function DenemePage() {
   const formatDate = (s: string) =>
     new Date(s).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
+  // Analiz: attempts üzerinden hesaplanan özet ve grafik verisi
+  const analysis = useMemo(() => {
+    const withNet = attempts.filter((a) => a.netScore != null) as Array<DenemeItem & { netScore: number }>;
+    if (withNet.length === 0) {
+      return null;
+    }
+    const nets = withNet.map((a) => a.netScore);
+    const sum = nets.reduce((s, n) => s + n, 0);
+    const avg = sum / nets.length;
+    const max = Math.max(...nets);
+    const min = Math.min(...nets);
+    const sortedByDate = [...withNet].sort(
+      (a, b) => new Date(a.attemptedAt).getTime() - new Date(b.attemptedAt).getTime()
+    );
+    const last5 = sortedByDate.slice(-5);
+    const prev5 = sortedByDate.slice(-10, -5);
+    const avgLast5 = last5.length ? last5.reduce((s, a) => s + a.netScore, 0) / last5.length : null;
+    const avgPrev5 = prev5.length ? prev5.reduce((s, a) => s + a.netScore, 0) / prev5.length : null;
+    let trend: 'up' | 'down' | 'stable' = 'stable';
+    if (avgLast5 != null && avgPrev5 != null) {
+      const diff = avgLast5 - avgPrev5;
+      if (diff > 0.5) trend = 'up';
+      else if (diff < -0.5) trend = 'down';
+    }
+    const chartData = sortedByDate.slice(-20).map((a) => ({
+      attemptedAt: a.attemptedAt,
+      netScore: a.netScore,
+      examName: a.exam.name,
+    }));
+    const chartMin = Math.min(...chartData.map((d) => d.netScore));
+    const chartMax = Math.max(...chartData.map((d) => d.netScore));
+    const chartRange = chartMax - chartMin || 1;
+    return {
+      total: withNet.length,
+      avg,
+      max,
+      min,
+      avgLast5,
+      avgPrev5,
+      trend,
+      chartData,
+      chartMin,
+      chartRange,
+    };
+  }, [attempts]);
+
   return (
     <div className="min-h-screen bg-stone-50">
       <header className="border-b border-stone-200 bg-white/80 backdrop-blur-sm shadow-sm">
@@ -272,6 +357,82 @@ export default function DenemePage() {
             Yeni deneme ekle
           </button>
         </div>
+
+        {!loading && analysis && (
+          <section className="mb-8 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
+            <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-stone-900">
+              <BarChart3 className="h-5 w-5 text-primary-600" />
+              Deneme analizi
+            </h2>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+              <div className="rounded-xl border border-stone-100 bg-stone-50 p-4">
+                <p className="text-xs font-medium uppercase tracking-wide text-stone-500">Toplam deneme</p>
+                <p className="mt-1 text-2xl font-bold text-stone-900">{analysis.total}</p>
+              </div>
+              <div className="rounded-xl border border-stone-100 bg-primary-50 p-4">
+                <p className="text-xs font-medium uppercase tracking-wide text-primary-700">Ortalama net</p>
+                <p className="mt-1 text-2xl font-bold text-primary-800">{analysis.avg.toFixed(2)}</p>
+              </div>
+              <div className="rounded-xl border border-stone-100 bg-emerald-50 p-4">
+                <p className="text-xs font-medium uppercase tracking-wide text-emerald-700">En yüksek net</p>
+                <p className="mt-1 text-2xl font-bold text-emerald-800">{analysis.max.toFixed(2)}</p>
+              </div>
+              <div className="rounded-xl border border-stone-100 bg-amber-50 p-4">
+                <p className="text-xs font-medium uppercase tracking-wide text-amber-700">En düşük net</p>
+                <p className="mt-1 text-2xl font-bold text-amber-800">{analysis.min.toFixed(2)}</p>
+              </div>
+            </div>
+            {analysis.avgLast5 != null && analysis.avgPrev5 != null && (
+              <div className="mb-6 flex flex-wrap items-center gap-2 rounded-xl border border-stone-100 bg-stone-50 px-4 py-3">
+                <span className="text-sm text-stone-600">Trend:</span>
+                <span className="text-sm font-medium text-stone-700">
+                  Son 5 deneme ort. <strong>{analysis.avgLast5.toFixed(2)}</strong> net
+                </span>
+                <span className="text-stone-400">·</span>
+                <span className="text-sm text-stone-600">Önceki 5 deneme ort. {analysis.avgPrev5.toFixed(2)} net</span>
+                {analysis.trend === 'up' && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-sm font-medium text-emerald-800">
+                    <TrendingUp className="h-4 w-4" /> Artış
+                  </span>
+                )}
+                {analysis.trend === 'down' && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-sm font-medium text-amber-800">
+                    <TrendingDown className="h-4 w-4" /> Düşüş
+                  </span>
+                )}
+                {analysis.trend === 'stable' && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-stone-200 px-2.5 py-0.5 text-sm font-medium text-stone-700">
+                    <Minus className="h-4 w-4" /> Benzer seviye
+                  </span>
+                )}
+              </div>
+            )}
+            {analysis.chartData.length > 0 && (
+              <div>
+                <p className="mb-2 text-sm font-medium text-stone-700">Net puan grafiği (son {analysis.chartData.length} deneme)</p>
+                <div className="flex items-end gap-1 h-40">
+                  {analysis.chartData.map((d, i) => {
+                    const h = Math.max(8, ((d.netScore - analysis.chartMin) / analysis.chartRange) * 100);
+                    return (
+                      <div
+                        key={`${d.attemptedAt}-${i}`}
+                        className="flex-1 min-w-0 rounded-t bg-primary-200 hover:bg-primary-400 transition-colors flex flex-col justify-end"
+                        style={{ height: `${Math.min(100, h)}%` }}
+                        title={`${new Date(d.attemptedAt).toLocaleDateString('tr-TR')} · ${d.examName}: ${d.netScore.toFixed(2)} net`}
+                      >
+                        <span className="sr-only">{new Date(d.attemptedAt).toLocaleDateString('tr-TR')} {d.netScore.toFixed(2)} net</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="mt-2 flex justify-between text-[10px] text-stone-500">
+                  <span>{analysis.chartData.length > 0 ? new Date(analysis.chartData[0].attemptedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }) : ''}</span>
+                  <span>{analysis.chartData.length > 0 ? new Date(analysis.chartData[analysis.chartData.length - 1].attemptedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }) : ''}</span>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
 
         {showForm && (
           <form onSubmit={handleSubmit} className="mb-8 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
@@ -389,7 +550,27 @@ export default function DenemePage() {
                         )}
                       </tbody>
                     </table>
-                    {calculated && (
+                    {kpssCalculated ? (
+                      <div className="mt-3 space-y-2 rounded-lg border border-primary-200 bg-primary-50 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-primary-800">KPSS puan hesaplama (net → z → SP → P1/P2/P3)</p>
+                        <div className="grid gap-2 text-sm sm:grid-cols-2">
+                          <div className="flex flex-wrap gap-x-4 gap-y-1">
+                            <span className="text-stone-600">GY net: <strong className="text-stone-900">{kpssCalculated.gyNet.toFixed(2)}</strong></span>
+                            <span className="text-stone-600">GK net: <strong className="text-stone-900">{kpssCalculated.gkNet.toFixed(2)}</strong></span>
+                          </div>
+                          <div className="flex flex-wrap gap-x-4 gap-y-1">
+                            <span className="text-stone-600">GY SP: <strong className="text-primary-700">{kpssCalculated.gySP.toFixed(2)}</strong></span>
+                            <span className="text-stone-600">GK SP: <strong className="text-primary-700">{kpssCalculated.gkSP.toFixed(2)}</strong></span>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-3 pt-1">
+                          <span className="font-medium text-stone-700">P1 (70% GY + 30% GK): <strong className="text-primary-800">{kpssCalculated.P1.toFixed(2)}</strong></span>
+                          <span className="font-medium text-stone-700">P2 (60% GY + 40% GK): <strong className="text-primary-800">{kpssCalculated.P2.toFixed(2)}</strong></span>
+                          <span className="font-medium text-stone-700">P3 (50% GY + 50% GK): <strong className="text-primary-800">{kpssCalculated.P3.toFixed(2)}</strong></span>
+                        </div>
+                        <p className="text-xs text-stone-500">Kayıtta toplam puan olarak P3 kullanılır. Ortalama ve σ veritabanındaki tüm KPSS denemelerinden hesaplanır.</p>
+                      </div>
+                    ) : calculated && (
                       <div className="mt-3 flex flex-wrap gap-4 rounded-lg bg-primary-50 p-3">
                         <span className="font-medium text-stone-700">Toplam net: <strong className="text-primary-700">{calculated.totalNet.toFixed(2)}</strong></span>
                         <span className="font-medium text-stone-700">Hesaplanan puan: <strong className="text-primary-700">{calculated.calculatedScore.toFixed(2)}{maxScore !== 100 ? ` / ${maxScore}` : ''}</strong></span>
