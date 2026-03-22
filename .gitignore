@@ -24,14 +24,14 @@ yarn-error.log*
 
 # Local env files (GIT'e commit edilmemeli)
 .env
+.env.example
 .env*.local
 .env.development.local
 .env.test.local
 .env.production.local
 .env.production
 
-# Template dosyalar GIT'e commit edilir:
-# .env.example
+# Şablonları repoda tutmak isterseniz .env.example satırını kaldırın.
 # .env.development.example
 # .env.production.example
 
