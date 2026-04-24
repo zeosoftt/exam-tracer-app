@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { signOut } from 'next-auth/react';
 import Link from 'next/link';
 import {
@@ -110,32 +110,40 @@ export function DashboardDetailContent({
     correctAnswers: number;
     wrongAnswers: number;
   } | null>(null);
+  const lastDetailFetchAtRef = useRef(0);
+  const detailFetchInFlightRef = useRef(false);
+
+  const fetchDetailData = useCallback(async (options?: { force?: boolean }) => {
+    const now = Date.now();
+    if (!options?.force && now - lastDetailFetchAtRef.current < 10000) return;
+    if (detailFetchInFlightRef.current) return;
+
+    detailFetchInFlightRef.current = true;
+    try {
+      const response = await fetch(options?.force ? '/api/dashboard/detail?fresh=1' : '/api/dashboard/detail');
+      if (!response.ok) return;
+      const data = await response.json();
+      setDetailData(data.data);
+      lastDetailFetchAtRef.current = Date.now();
+
+      if (data.data?.sections?.length > 0 && !selectedSectionId) {
+        const firstSection = data.data.sections[0];
+        setSelectedSectionId(firstSection.id);
+        if (firstSection.subjects?.length > 0) {
+          setSelectedSubjectId(firstSection.subjects[0].id);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+    } finally {
+      detailFetchInFlightRef.current = false;
+      setIsLoading(false);
+    }
+  }, [selectedSectionId]);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await fetch('/api/dashboard/detail');
-        if (response.ok) {
-          const data = await response.json();
-          setDetailData(data.data);
-          // İlk bölümü ve ilk dersi otomatik seç
-          if (data.data?.sections?.length > 0) {
-            const firstSection = data.data.sections[0];
-            setSelectedSectionId(firstSection.id);
-            if (firstSection.subjects?.length > 0) {
-              setSelectedSubjectId(firstSection.subjects[0].id);
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchData();
-  }, []);
+    fetchDetailData();
+  }, [fetchDetailData]);
 
   const selectedSection = detailData?.sections.find((s) => s.id === selectedSectionId) || null;
   const selectedSubject = selectedSection?.subjects.find((s) => s.id === selectedSubjectId) || null;
@@ -164,21 +172,7 @@ export function DashboardDetailContent({
 
       if (response.ok) {
         // Verileri yeniden yükle
-        const detailResponse = await fetch('/api/dashboard/detail');
-        if (detailResponse.ok) {
-          const data = await detailResponse.json();
-          setDetailData(data.data);
-          // Seçili bölüm ve dersi koru
-          if (data.data?.sections) {
-            const updatedSection = data.data.sections.find((s: Section) => s.id === selectedSectionId);
-            if (updatedSection) {
-              const updatedSubject = updatedSection.subjects.find((s: Subject) => s.id === selectedSubjectId);
-              if (updatedSubject) {
-                setSelectedSubjectId(updatedSubject.id);
-              }
-            }
-          }
-        }
+        await fetchDetailData({ force: true });
       } else {
         const error = await response.json();
         console.error('Failed to update topic status:', error);
@@ -219,21 +213,7 @@ export function DashboardDetailContent({
 
       if (response.ok) {
         // Verileri yeniden yükle
-        const detailResponse = await fetch('/api/dashboard/detail');
-        if (detailResponse.ok) {
-          const data = await detailResponse.json();
-          setDetailData(data.data);
-          // Seçili bölüm ve dersi koru
-          if (data.data?.sections) {
-            const updatedSection = data.data.sections.find((s: Section) => s.id === selectedSectionId);
-            if (updatedSection) {
-              const updatedSubject = updatedSection.subjects.find((s: Subject) => s.id === selectedSubjectId);
-              if (updatedSubject) {
-                setSelectedSubjectId(updatedSubject.id);
-              }
-            }
-          }
-        }
+        await fetchDetailData({ force: true });
         setEditingTopicId(null);
         setEditValues(null);
       } else {
@@ -640,20 +620,20 @@ export function DashboardDetailContent({
                                     className={`${statusConfig.bgColor} hover:bg-opacity-90 transition-colors ${editingTopicId === topic.id ? 'ring-1 ring-primary-200 ring-inset' : ''}`}
                                   >
                                     <td className="px-4 py-3 whitespace-nowrap align-middle">
-                                      <div className="relative inline-flex items-center">
+                                      <div className="relative z-20 inline-flex items-center">
                                         <select
                                           value={topic.status}
                                           onChange={(e) => updateTopicStatus(topic.id, e.target.value as 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED')}
                                           disabled={updatingTopicId === topic.id}
-                                          className={`appearance-none pr-8 pl-3 py-2 rounded-xl text-xs font-semibold border cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-primary-500/30 min-w-[120px] ${
+                                          className={`appearance-none min-w-[120px] cursor-pointer rounded-xl border px-3 py-2 pr-8 text-xs font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:z-30 ${
                                             statusConfig.iconBg
                                           } ${statusConfig.color} ${statusConfig.borderColor} ${
                                             updatingTopicId === topic.id ? 'opacity-50 cursor-not-allowed' : ''
                                           }`}
                                         >
-                                          <option value="NOT_STARTED">Başlanmadı</option>
-                                          <option value="IN_PROGRESS">Devam Ediyor</option>
-                                          <option value="COMPLETED">Tamamlandı</option>
+                                          <option className="bg-stone-100 text-stone-900 dark:bg-stone-800 dark:text-stone-100" value="NOT_STARTED">Başlanmadı</option>
+                                          <option className="bg-stone-100 text-stone-900 dark:bg-stone-800 dark:text-stone-100" value="IN_PROGRESS">Devam Ediyor</option>
+                                          <option className="bg-stone-100 text-stone-900 dark:bg-stone-800 dark:text-stone-100" value="COMPLETED">Tamamlandı</option>
                                         </select>
                                         <ChevronDown className={`absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 ${statusConfig.color} pointer-events-none`} />
                                       </div>

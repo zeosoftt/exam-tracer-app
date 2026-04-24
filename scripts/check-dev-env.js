@@ -56,6 +56,7 @@ const requiredVars = {
 };
 
 let allPresent = true;
+let dbUrlLooksReachable = true;
 console.log('\n📋 Environment Variables Kontrolü:');
 for (const [key, description] of Object.entries(requiredVars)) {
   if (envVars[key]) {
@@ -69,6 +70,24 @@ for (const [key, description] of Object.entries(requiredVars)) {
   } else {
     console.log(`   ❌ ${key}: Eksik - ${description}`);
     allPresent = false;
+  }
+}
+
+// Validate Supabase connection style for local IPv4 compatibility
+if (envVars.DATABASE_URL) {
+  const dbUrl = envVars.DATABASE_URL;
+  const usesDirectSupabaseHost = /@db\.[^:/]+\.supabase\.co:5432\b/i.test(dbUrl);
+  const usesPoolerHost = /pooler\.supabase\.com/i.test(dbUrl);
+  const usesPoolerPort = /:6543\b/.test(dbUrl);
+
+  if (usesDirectSupabaseHost || !usesPoolerHost || !usesPoolerPort) {
+    dbUrlLooksReachable = false;
+    allPresent = false;
+    console.log('\n   ⚠️  DATABASE_URL yapılandırması local için riskli görünüyor.');
+    console.log('      - Beklenen: pooler.supabase.com + port 6543 (Session/Transaction pooler)');
+    console.log('      - Mevcut bağlantı: direct host/5432 veya pooler olmayan format');
+    console.log('      💡 Supabase > Settings > Database > Connection string bölümünden');
+    console.log('         pooler bağlantısını alıp .env.local içindeki DATABASE_URL değerini güncelleyin.');
   }
 }
 
@@ -101,6 +120,9 @@ if (allPresent) {
   process.exit(0);
 } else {
   console.log('❌ Development ortamı eksik!');
+  if (!dbUrlLooksReachable) {
+    console.log('\n🔧 En kritik düzeltme: DATABASE_URL değerini pooler (6543) formatına çevirin.');
+  }
   console.log('\n📖 Detaylar için DEVELOPMENT_SETUP.md dosyasına bakın\n');
   process.exit(1);
 }

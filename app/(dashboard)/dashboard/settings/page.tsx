@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import {
@@ -72,48 +72,52 @@ export default function SettingsPage() {
 
   const [planInfo, setPlanInfo] = useState<PlanInfo | null>(null);
   const [planLoading, setPlanLoading] = useState(true);
+  const initialFetchDoneRef = useRef(false);
+
+  const fetchSettingsPageData = useCallback(async () => {
+    if (initialFetchDoneRef.current) return;
+    initialFetchDoneRef.current = true;
+    try {
+      const [settingsRes, examsRes, planRes] = await Promise.all([
+        fetch('/api/user/settings'),
+        fetch('/api/exams/available'),
+        fetch('/api/billing/plan'),
+      ]);
+      if (settingsRes.ok) {
+        const data = await settingsRes.json();
+        if (data.success && data.data) {
+          setSettings(data.data);
+          setFirstName(data.data.user?.firstName ?? '');
+          setLastName(data.data.user?.lastName ?? '');
+          setTargetScore(data.data.user?.targetScore != null ? String(data.data.user.targetScore) : '');
+          setDailyStudyHours(data.data.user?.dailyStudyHours != null ? String(data.data.user.dailyStudyHours) : '');
+          setExamId(data.data.activeExam?.id ?? '');
+        }
+      }
+      if (examsRes.ok) {
+        const examsData = await examsRes.json();
+        if (examsData.success && Array.isArray(examsData.data)) {
+          setExams(examsData.data);
+        }
+      }
+      if (planRes.ok) {
+        const planData = await planRes.json();
+        if (planData.success && planData.data) {
+          setPlanInfo(planData.data);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+      setMessage({ type: 'error', text: 'Ayarlar yüklenemedi.' });
+    } finally {
+      setLoading(false);
+      setPlanLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const [settingsRes, examsRes] = await Promise.all([
-          fetch('/api/user/settings'),
-          fetch('/api/exams/available'),
-        ]);
-        if (settingsRes.ok) {
-          const data = await settingsRes.json();
-          if (data.success && data.data) {
-            setSettings(data.data);
-            setFirstName(data.data.user?.firstName ?? '');
-            setLastName(data.data.user?.lastName ?? '');
-            setTargetScore(data.data.user?.targetScore != null ? String(data.data.user.targetScore) : '');
-            setDailyStudyHours(data.data.user?.dailyStudyHours != null ? String(data.data.user.dailyStudyHours) : '');
-            setExamId(data.data.activeExam?.id ?? '');
-          }
-        }
-        if (examsRes.ok) {
-          const examsData = await examsRes.json();
-          if (examsData.success && Array.isArray(examsData.data)) {
-            setExams(examsData.data);
-          }
-        }
-        const planRes = await fetch('/api/billing/plan');
-        if (planRes.ok) {
-          const planData = await planRes.json();
-          if (planData.success && planData.data) {
-            setPlanInfo(planData.data);
-          }
-        }
-      } catch (e) {
-        console.error(e);
-        setMessage({ type: 'error', text: 'Ayarlar yüklenemedi.' });
-      } finally {
-        setLoading(false);
-        setPlanLoading(false);
-      }
-    }
-    fetchData();
-  }, []);
+    void fetchSettingsPageData();
+  }, [fetchSettingsPageData]);
 
   const handleSaveSettings = async () => {
     setMessage(null);

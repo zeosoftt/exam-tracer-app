@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { signOut } from 'next-auth/react';
 import Link from 'next/link';
 import {
@@ -141,26 +141,56 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
   const [reviewAckTopicId, setReviewAckTopicId] = useState<string | null>(null);
   const [statsRefreshing, setStatsRefreshing] = useState(false);
   const [statsUpdatedAt, setStatsUpdatedAt] = useState<Date | null>(null);
+  const lastLiteStatsFetchAtRef = useRef(0);
+  const lastFullStatsFetchAtRef = useRef(0);
+  const statsFetchInFlightRef = useRef(false);
 
-  const fetchStats = async (options?: { manual?: boolean }) => {
+  const fetchStats = async (options?: { manual?: boolean; force?: boolean; lite?: boolean }) => {
+    const lite = options?.lite ?? true;
+    const now = Date.now();
+    const lastFetchAt = lite ? lastLiteStatsFetchAtRef.current : lastFullStatsFetchAtRef.current;
+    if (!options?.force && !options?.manual && now - lastFetchAt < 10000) {
+      return;
+    }
+    if (statsFetchInFlightRef.current) return;
+    statsFetchInFlightRef.current = true;
     if (options?.manual) setStatsRefreshing(true);
     try {
-      const response = await fetch('/api/dashboard/stats');
+      const params = new URLSearchParams();
+      params.set('scope', lite ? 'core' : 'full');
+      if (options?.force || options?.manual) params.set('fresh', '1');
+      const url = params.size > 0 ? `/api/dashboard/stats?${params.toString()}` : '/api/dashboard/stats';
+      const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
-        setStats(data.data);
+        setStats((prev) => {
+          if (lite && prev?.evaluation && !data.data?.evaluation) {
+            return { ...data.data, evaluation: prev.evaluation };
+          }
+          return data.data;
+        });
         setStatsUpdatedAt(new Date());
+        if (lite) {
+          lastLiteStatsFetchAtRef.current = Date.now();
+        } else {
+          lastFullStatsFetchAtRef.current = Date.now();
+        }
       }
     } catch (error) {
       console.error('Failed to fetch stats:', error);
     } finally {
+      statsFetchInFlightRef.current = false;
       setIsLoading(false);
       if (options?.manual) setStatsRefreshing(false);
     }
   };
 
   useEffect(() => {
-    fetchStats();
+    const load = async () => {
+      await fetchStats({ lite: true });
+      void fetchStats({ force: true, lite: false });
+    };
+    void load();
   }, []);
 
   // Kullanıcının planını yükle (FREE / PRO / ENTERPRISE) ve header'da rozet olarak göster
@@ -225,12 +255,12 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
   // Sayfaya odaklanıldığında veya görünür olduğunda verileri yenile
   useEffect(() => {
     const handleFocus = () => {
-      fetchStats();
+      fetchStats({ lite: true });
     };
 
     const handleVisibilityChange = () => {
       if (!document.hidden) {
-        fetchStats();
+        fetchStats({ lite: true });
       }
     };
 
@@ -278,7 +308,7 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
 
       if (response.ok) {
         // Verileri yeniden yükle
-        await fetchStats();
+        await fetchStats({ force: true, lite: false });
         setEditingTopicId(null);
         setEditValues(null);
       } else {
@@ -398,7 +428,10 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
               <ThemeToggleCompact />
               <button
                 type="button"
-                onClick={() => fetchStats({ manual: true })}
+                onClick={async () => {
+                  await fetchStats({ manual: true, force: true, lite: true });
+                  void fetchStats({ force: true, lite: false });
+                }}
                 disabled={statsRefreshing || isLoading}
                 className="btn btn-secondary !px-2.5 !py-2 sm:!px-3"
                 title="Verileri yenile"
@@ -850,7 +883,7 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ reviewCompleted: true }),
                               });
-                              if (res.ok) await fetchStats();
+                              if (res.ok) await fetchStats({ force: true, lite: false });
                             } finally {
                               setReviewAckTopicId(null);
                             }

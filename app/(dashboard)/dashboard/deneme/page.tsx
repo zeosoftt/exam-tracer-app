@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, BookOpen, Plus, TrendingUp, Calendar, Clock, Target, Calculator, BarChart3, TrendingDown, Minus } from 'lucide-react';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
@@ -60,6 +60,11 @@ export default function DenemePage() {
   const [submitting, setSubmitting] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const attemptsFetchInFlightRef = useRef(false);
+  const lastAttemptsFetchAtRef = useRef(0);
+  const structureCacheRef = useRef(
+    new Map<string, { subjects: SubjectRow[]; sections: Array<{ id: string; code: string; subjects: { id: string }[] }> }>()
+  );
 
   const [form, setForm] = useState({
     examId: '',
@@ -71,16 +76,22 @@ export default function DenemePage() {
     simpleEmpty: '',
   });
 
-  const fetchAttempts = useCallback(async () => {
+  const fetchAttempts = useCallback(async (force = false) => {
+    const now = Date.now();
+    if (!force && now - lastAttemptsFetchAtRef.current < 10000) return;
+    if (attemptsFetchInFlightRef.current) return;
+    attemptsFetchInFlightRef.current = true;
     try {
       const res = await fetch('/api/deneme?limit=50');
       if (res.ok) {
         const json = await res.json();
         setAttempts(json.data ?? []);
+        lastAttemptsFetchAtRef.current = Date.now();
       }
     } catch (e) {
       console.error(e);
     } finally {
+      attemptsFetchInFlightRef.current = false;
       setLoading(false);
     }
   }, []);
@@ -118,6 +129,17 @@ export default function DenemePage() {
       setSubjectInputs({});
       return;
     }
+    const cached = structureCacheRef.current.get(form.examId);
+    if (cached) {
+      setExamSubjects(cached.subjects);
+      setSections(cached.sections);
+      const initial: Record<string, SubjectInput> = {};
+      cached.subjects.forEach((s: SubjectRow) => {
+        initial[s.id] = { right: 0, wrong: 0, empty: 0 };
+      });
+      setSubjectInputs(initial);
+      return;
+    }
     setStructureLoading(true);
     setSections([]);
     setKpssStats(null);
@@ -127,6 +149,10 @@ export default function DenemePage() {
         if (json.success && json.data?.subjects?.length) {
           setExamSubjects(json.data.subjects);
           setSections(json.data.sections ?? []);
+          structureCacheRef.current.set(form.examId, {
+            subjects: json.data.subjects,
+            sections: json.data.sections ?? [],
+          });
           const initial: Record<string, SubjectInput> = {};
           json.data.subjects.forEach((s: SubjectRow) => {
             initial[s.id] = { right: 0, wrong: 0, empty: 0 };
@@ -253,7 +279,7 @@ export default function DenemePage() {
         setExamSubjects([]);
         setSubjectInputs({});
         setShowForm(false);
-        fetchAttempts();
+        fetchAttempts(true);
       } else {
         const errMsg = typeof data.error === 'string'
           ? data.error

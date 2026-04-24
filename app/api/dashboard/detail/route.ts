@@ -15,7 +15,19 @@ import { UnauthorizedError } from '@/lib/errors/AppError';
 import { evaluateTopics, calculateRequiredSuccessRate } from '@/lib/services/targetScoreEvaluation';
 import { getRequiredNet } from '@/config/targetScoreMaps';
 
-async function getDetailHandler(_req: NextRequest): Promise<NextResponse> {
+type DetailApiPayload = {
+  success: true;
+  data: {
+    exam: unknown;
+    sections: unknown[];
+    evaluation: unknown;
+  };
+};
+
+const DETAIL_CACHE_TTL_MS = 10_000;
+const detailCache = new Map<string, { expiresAt: number; payload: DetailApiPayload }>();
+
+async function getDetailHandler(req: NextRequest): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
@@ -23,6 +35,16 @@ async function getDetailHandler(_req: NextRequest): Promise<NextResponse> {
     }
 
     const userId = session.user.id;
+    const forceRefresh = req.nextUrl.searchParams.get('fresh') === '1';
+    if (!forceRefresh) {
+      const cached = detailCache.get(userId);
+      if (cached && cached.expiresAt > Date.now()) {
+        const res = NextResponse.json(cached.payload);
+        res.headers.set('Cache-Control', 'private, max-age=10, stale-while-revalidate=30');
+        res.headers.set('X-Detail-Cache', 'HIT');
+        return res;
+      }
+    }
 
     // Paralel: kullanıcı + aktif sınav ataması (2 round-trip yerine 1)
     const [user, activeExamAssignment] = await Promise.all([
@@ -332,15 +354,22 @@ async function getDetailHandler(_req: NextRequest): Promise<NextResponse> {
       };
     }
 
-    const res = NextResponse.json({
+    const payload: DetailApiPayload = {
       success: true,
       data: {
         exam: activeExamAssignment.exam,
         sections: sectionsWithProgress,
         evaluation: evaluationSummary,
       },
+    };
+    detailCache.set(userId, {
+      expiresAt: Date.now() + DETAIL_CACHE_TTL_MS,
+      payload,
     });
-    res.headers.set('Cache-Control', 'private, max-age=5, stale-while-revalidate=15');
+
+    const res = NextResponse.json(payload);
+    res.headers.set('Cache-Control', 'private, max-age=10, stale-while-revalidate=30');
+    res.headers.set('X-Detail-Cache', 'MISS');
     return res;
   } catch (error) {
     return handleError(error);

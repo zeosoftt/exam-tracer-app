@@ -50,6 +50,14 @@ type ReviewProgressRow = {
   };
 };
 
+type StatsApiPayload = {
+  success: true;
+  data: unknown;
+};
+
+const STATS_CACHE_TTL_MS = 10_000;
+const statsCache = new Map<string, { expiresAt: number; payload: StatsApiPayload }>();
+
 /** Eski Prisma client (generate öncesi) veya DB’de sütun yoksa yedek sorgu. */
 async function fetchReviewProgressList(userId: string, examId: string): Promise<ReviewProgressRow[]> {
   const topicScope = {
@@ -127,7 +135,7 @@ async function fetchReviewProgressList(userId: string, examId: string): Promise<
   }
 }
 
-async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
+async function getStatsHandler(req: NextRequest): Promise<NextResponse> {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
@@ -137,6 +145,20 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
     const userId = session.user.id;
     const userRole = session.user.role;
     const institutionId = session.user.institutionId;
+    const forceRefresh = req.nextUrl.searchParams.get('fresh') === '1';
+    const scope = req.nextUrl.searchParams.get('scope') ?? (req.nextUrl.searchParams.get('lite') === '1' ? 'core' : 'full');
+    const isCoreScope = scope === 'core';
+    const cacheKey = `${userId}:${isCoreScope ? 'core' : 'full'}`;
+
+    if (!forceRefresh) {
+      const cached = statsCache.get(cacheKey);
+      if (cached && cached.expiresAt > Date.now()) {
+        const res = NextResponse.json(cached.payload);
+        res.headers.set('Cache-Control', 'private, max-age=10, stale-while-revalidate=30');
+        res.headers.set('X-Stats-Cache', 'HIT');
+        return res;
+      }
+    }
 
     // 1) Kullanıcı (hedef ve günlük saat için gerekli)
     const user = await prisma.user.findUnique({
@@ -207,16 +229,18 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
           exam: { select: { name: true, code: true } },
         },
       }),
-      db.examAttempt.findMany({
-        where: { userId, deletedAt: null },
-        orderBy: { attemptedAt: 'desc' },
-        take: 10,
-        select: {
-          attemptedAt: true,
-          totalScore: true,
-          netScore: true,
-        },
-      }),
+      isCoreScope
+        ? Promise.resolve([])
+        : db.examAttempt.findMany({
+            where: { userId, deletedAt: null },
+            orderBy: { attemptedAt: 'desc' },
+            take: 10,
+            select: {
+              attemptedAt: true,
+              totalScore: true,
+              netScore: true,
+            },
+          }),
     ]);
 
     const totalStudyHours = studyHoursStats._sum.duration
@@ -292,7 +316,7 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
         }),
       ]);
 
-      const reviewProgressList = await fetchReviewProgressList(userId, examId);
+      const reviewProgressList = isCoreScope ? [] : await fetchReviewProgressList(userId, examId);
 
       totalTopics = topicsCount;
       totalSubjects = subjectsCount;
@@ -339,7 +363,7 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
         },
         scheduleExplanation:
           'Unutma eğrisine göre tekrar aralıkları: 1 → 3 → 7 → 14 → 30 → 60 → 120 gün. Konuyu tamamlayınca ilk tekrar 1 gün sonrasına planlanır; her “Tekrar ettim” ile sonraki aralık uzar.',
-        items: scheduleItems.slice(0, 20),
+        items: isCoreScope ? [] : scheduleItems.slice(0, 20),
       };
     }
 
@@ -376,7 +400,7 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
         dayIndex: i,
       });
     }
-    if (dailyGoalMinutes > 0) {
+    if (!isCoreScope && dailyGoalMinutes > 0) {
       const firstDay = new Date(weeklyStudySummary[0].date + 'T00:00:00.000Z');
       const lastDayEnd = new Date(weeklyStudySummary[6].date + 'T23:59:59.999Z');
       const sessions = await prisma.pomodoroSession.findMany({
@@ -404,8 +428,9 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
     }
 
     // Calculate evaluation summary if targetScore is set and there's an active exam
+    // Optional lite mode: skip this heavy block for fast first paint.
     let evaluationSummary = null;
-    if (user?.targetScore && user.targetScore > 0 && activeExamAssignment?.exam?.id) {
+    if (!isCoreScope && user?.targetScore && user.targetScore > 0 && activeExamAssignment?.exam?.id) {
       const examId = activeExamAssignment.exam.id;
       const examCode = activeExamAssignment.exam.code;
       const targetScore = user.targetScore;
@@ -565,12 +590,19 @@ async function getStatsHandler(_req: NextRequest): Promise<NextResponse> {
 
     logApi('GET', '/api/dashboard/stats', HTTP_STATUS.OK, undefined, { userId });
 
-    const res = NextResponse.json({
+    const payload: StatsApiPayload = {
       success: true,
       data: stats,
+    };
+    statsCache.set(cacheKey, {
+      expiresAt: Date.now() + STATS_CACHE_TTL_MS,
+      payload,
     });
+
+    const res = NextResponse.json(payload);
     // Kısa önbellek: tekrar ziyarette 10 sn cache, sonra arka planda yenile
     res.headers.set('Cache-Control', 'private, max-age=10, stale-while-revalidate=30');
+    res.headers.set('X-Stats-Cache', 'MISS');
     return res;
   } catch (error) {
     return handleError(error);

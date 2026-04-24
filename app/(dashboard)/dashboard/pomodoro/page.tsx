@@ -65,6 +65,8 @@ export default function PomodoroPage() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const denemeIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const historyFetchInFlightRef = useRef(false);
+  const lastHistoryFetchAtRef = useRef(0);
 
   /** Kendi denemesi için geri sayım (Pomodoro’dan bağımsız) */
   const [denemeInitialSeconds, setDenemeInitialSeconds] = useState(90 * 60);
@@ -129,7 +131,11 @@ export default function PomodoroPage() {
   }, []);
 
   // Fetch history and stats (Premium gerekli; freemium'da 403 döner)
-  const fetchHistory = useCallback(async () => {
+  const fetchHistory = useCallback(async (force = false) => {
+    const now = Date.now();
+    if (!force && now - lastHistoryFetchAtRef.current < 10000) return;
+    if (historyFetchInFlightRef.current) return;
+    historyFetchInFlightRef.current = true;
     try {
       const response = await fetch('/api/pomodoro?limit=10&page=1');
       if (response.ok) {
@@ -137,6 +143,7 @@ export default function PomodoroPage() {
         setHistory(data.data.sessions || []);
         setStats(data.data.stats || null);
         setStatsPremiumRequired(false);
+        lastHistoryFetchAtRef.current = Date.now();
       } else if (response.status === 403) {
         const body = await response.json().catch(() => ({}));
         if (body.code === 'PREMIUM_REQUIRED') {
@@ -148,6 +155,7 @@ export default function PomodoroPage() {
     } catch (error) {
       console.error('Failed to fetch pomodoro history:', error);
     } finally {
+      historyFetchInFlightRef.current = false;
       setIsLoading(false);
     }
   }, []);
@@ -173,7 +181,7 @@ export default function PomodoroPage() {
     }
 
     // Refresh history
-    await fetchHistory();
+    await fetchHistory(true);
 
     if (!isBreak) {
       setIsBreak(true);
