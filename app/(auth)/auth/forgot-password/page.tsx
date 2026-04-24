@@ -59,33 +59,33 @@ function ForgotPasswordForm() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 flex items-center justify-center px-4 py-12">
+    <div className="flex min-h-screen items-center justify-center bg-stone-50 px-4 py-12 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-3 mb-4 group">
-            <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/25 group-hover:shadow-primary-500/40 transition-shadow">
+        <div className="mb-8 text-center">
+          <Link href="/" className="group mb-4 inline-flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/25 transition-shadow group-hover:shadow-primary-500/40">
               <BookOpen className="h-6 w-6" />
             </div>
-            <span className="font-display text-2xl font-bold text-stone-900">The Goal Lab</span>
+            <span className="font-display text-2xl font-bold text-stone-900 dark:text-stone-100">The Goal Lab</span>
           </Link>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-soft-lg p-6 sm:p-8 border border-stone-100">
-          <div className="text-center mb-8">
-            <h1 className="font-display text-3xl font-extrabold text-stone-900 mb-2">Şifremi Unuttum</h1>
-            <p className="text-stone-600">E-posta adresinize şifre sıfırlama bağlantısı göndereceğiz</p>
+        <div className="rounded-3xl border border-stone-200 bg-white p-6 shadow-soft-lg dark:border-stone-800 dark:bg-stone-900/90 sm:p-8">
+          <div className="mb-8 text-center">
+            <h1 className="mb-2 font-display text-3xl font-extrabold text-stone-900 dark:text-stone-100">Şifremi Unuttum</h1>
+            <p className="text-stone-600 dark:text-stone-400">E-posta adresinize şifre sıfırlama bağlantısı göndereceğiz</p>
           </div>
 
           {success ? (
             <div className="space-y-6">
-              <div className="rounded-xl bg-green-50 border border-green-200 p-6">
+              <div className="rounded-xl border border-green-200 bg-green-50 p-6 dark:border-green-900/50 dark:bg-green-950/40">
                 <div className="flex flex-col items-center gap-3">
-                  <CheckCircle className="h-12 w-12 text-green-600" />
+                  <CheckCircle className="h-12 w-12 text-green-600 dark:text-green-400" />
                   <div className="text-center">
-                    <p className="text-base font-semibold text-green-800 mb-2">
+                    <p className="mb-2 text-base font-semibold text-green-800 dark:text-green-200">
                       E-posta Gönderildi!
                     </p>
-                    <p className="text-sm text-green-700">
+                    <p className="text-sm text-green-700 dark:text-green-300/90">
                       Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.
                       Lütfen e-posta kutunuzu kontrol edin.
                     </p>
@@ -106,7 +106,7 @@ function ForgotPasswordForm() {
                     setSuccess(false);
                     setError(null);
                   }}
-                  className="w-full text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors"
+                  className="w-full text-sm font-medium text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
                 >
                   Başka bir e-posta adresi dene
                 </button>
@@ -115,26 +115,26 @@ function ForgotPasswordForm() {
           ) : (
             <>
               {error && (
-                <div className="mb-6 rounded-xl bg-red-50 border border-red-200 p-4">
-                  <p className="text-sm font-medium text-red-800">{error}</p>
+                <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-900/50 dark:bg-red-950/40">
+                  <p className="text-sm font-medium text-red-800 dark:text-red-200">{error}</p>
                 </div>
               )}
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                 {/* Email Field */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-semibold text-stone-900 mb-2">
+                  <label htmlFor="email" className="mb-2 block text-sm font-semibold text-stone-900 dark:text-stone-100">
                     E-posta Adresi
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                       <Mail className="h-5 w-5 text-stone-400" />
                     </div>
                     <input
                       id="email"
                       type="email"
                       {...register('email')}
-                      className="w-full pl-10 rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm placeholder:text-stone-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-colors"
+                      className="input w-full pl-10"
                       placeholder="ornek@email.com"
                       autoComplete="email"
                       disabled={isLoading}
@@ -164,9 +164,12 @@ function ForgotPasswordForm() {
 
               {/* Login Link */}
               <div className="mt-6 text-center">
-                <p className="text-sm text-stone-600">
+                <p className="text-sm text-stone-600 dark:text-stone-400">
                   Şifrenizi hatırladınız mı?{' '}
-                  <Link href="/auth/login" className="font-semibold text-primary-600 hover:text-primary-700 transition-colors">
+                  <Link
+                    href="/auth/login"
+                    className="font-semibold text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+                  >
                     Giriş yapın
                   </Link>
                 </p>
@@ -179,7 +182,7 @@ function ForgotPasswordForm() {
         <div className="mt-6 text-center">
           <Link
             href="/"
-            className="inline-flex items-center text-sm text-stone-600 hover:text-stone-900 transition-colors"
+            className="inline-flex items-center text-sm text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
             Ana Sayfaya Dön
@@ -192,7 +195,13 @@ function ForgotPasswordForm() {
 
 export default function ForgotPasswordPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Yükleniyor...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-stone-50 text-stone-600 dark:bg-stone-950 dark:text-stone-400">
+          Yükleniyor...
+        </div>
+      }
+    >
       <ForgotPasswordForm />
     </Suspense>
   );

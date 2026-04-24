@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, BookOpen, Plus, TrendingUp, Calendar, Clock, Target, Calculator, BarChart3, TrendingDown, Minus } from 'lucide-react';
+import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
 import { calculateFromBreakdown, calculateKpssFromBreakdown } from '@/lib/utils/denemeScore';
 import type { KpssPopulationStats } from '@/lib/utils/denemeScore';
 import { getMaxScoreForExam } from '@/lib/constants/examScoreRanges';
@@ -318,19 +319,24 @@ export default function DenemePage() {
   }, [attempts]);
 
   return (
-    <div className="min-h-screen bg-stone-50">
-      <header className="border-b border-stone-200 bg-white/80 backdrop-blur-sm shadow-sm">
+    <div className="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
+      <header className="border-b border-stone-200 bg-white/80 shadow-sm backdrop-blur-sm dark:border-stone-800 dark:bg-stone-950/90">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <Link href="/dashboard" className="flex items-center gap-2 text-stone-700 hover:text-stone-900">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-2 text-stone-700 transition-colors hover:text-stone-900 dark:text-stone-300 dark:hover:text-stone-100"
+            >
               <ArrowLeft className="h-5 w-5" />
               <span className="font-medium">Geri</span>
             </Link>
             <div className="flex items-center gap-2">
-              <Target className="h-6 w-6 text-primary-600" />
-              <span className="text-xl font-bold text-stone-900">Deneme Takibi</span>
+              <Target className="h-6 w-6 text-primary-600 dark:text-primary-400" />
+              <span className="text-xl font-bold text-stone-900 dark:text-stone-100">Deneme Takibi</span>
             </div>
-            <div className="w-20" />
+            <div className="flex w-20 justify-end">
+              <ThemeToggleCompact />
+            </div>
           </div>
         </div>
       </header>
@@ -338,8 +344,10 @@ export default function DenemePage() {
       <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         {message && (
           <div
-            className={`mb-6 rounded-xl px-4 py-3 ${
-              message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+            className={`mb-6 rounded-xl border px-4 py-3 ${
+              message.type === 'success'
+                ? 'border-green-200 bg-green-50 text-green-800 dark:border-green-900/50 dark:bg-green-950/40 dark:text-green-200'
+                : 'border-red-200 bg-red-50 text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200'
             }`}
           >
             {message.text}
@@ -347,7 +355,7 @@ export default function DenemePage() {
         )}
 
         <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-stone-900">Deneme kayıtlarım</h1>
+          <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100">Deneme kayıtlarım</h1>
           <button
             type="button"
             onClick={() => setShowForm(!showForm)}
@@ -359,49 +367,49 @@ export default function DenemePage() {
         </div>
 
         {!loading && analysis && (
-          <section className="mb-8 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
-            <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-stone-900">
-              <BarChart3 className="h-5 w-5 text-primary-600" />
+          <section className="mb-8 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900/90">
+            <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-stone-900 dark:text-stone-100">
+              <BarChart3 className="h-5 w-5 text-primary-600 dark:text-primary-400" />
               Deneme analizi
             </h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-              <div className="rounded-xl border border-stone-100 bg-stone-50 p-4">
-                <p className="text-xs font-medium uppercase tracking-wide text-stone-500">Toplam deneme</p>
-                <p className="mt-1 text-2xl font-bold text-stone-900">{analysis.total}</p>
+            <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-xl border border-stone-100 bg-stone-50 p-4 dark:border-stone-700 dark:bg-stone-800/60">
+                <p className="text-xs font-medium uppercase tracking-wide text-stone-500 dark:text-stone-400">Toplam deneme</p>
+                <p className="mt-1 text-2xl font-bold text-stone-900 dark:text-stone-100">{analysis.total}</p>
               </div>
-              <div className="rounded-xl border border-stone-100 bg-primary-50 p-4">
-                <p className="text-xs font-medium uppercase tracking-wide text-primary-700">Ortalama net</p>
-                <p className="mt-1 text-2xl font-bold text-primary-800">{analysis.avg.toFixed(2)}</p>
+              <div className="rounded-xl border border-stone-100 bg-primary-50 p-4 dark:border-primary-900/40 dark:bg-primary-950/30">
+                <p className="text-xs font-medium uppercase tracking-wide text-primary-700 dark:text-primary-300">Ortalama net</p>
+                <p className="mt-1 text-2xl font-bold text-primary-800 dark:text-primary-200">{analysis.avg.toFixed(2)}</p>
               </div>
-              <div className="rounded-xl border border-stone-100 bg-emerald-50 p-4">
-                <p className="text-xs font-medium uppercase tracking-wide text-emerald-700">En yüksek net</p>
-                <p className="mt-1 text-2xl font-bold text-emerald-800">{analysis.max.toFixed(2)}</p>
+              <div className="rounded-xl border border-stone-100 bg-emerald-50 p-4 dark:border-emerald-900/40 dark:bg-emerald-950/30">
+                <p className="text-xs font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-300">En yüksek net</p>
+                <p className="mt-1 text-2xl font-bold text-emerald-800 dark:text-emerald-200">{analysis.max.toFixed(2)}</p>
               </div>
-              <div className="rounded-xl border border-stone-100 bg-amber-50 p-4">
-                <p className="text-xs font-medium uppercase tracking-wide text-amber-700">En düşük net</p>
-                <p className="mt-1 text-2xl font-bold text-amber-800">{analysis.min.toFixed(2)}</p>
+              <div className="rounded-xl border border-stone-100 bg-amber-50 p-4 dark:border-amber-900/40 dark:bg-amber-950/30">
+                <p className="text-xs font-medium uppercase tracking-wide text-amber-700 dark:text-amber-300">En düşük net</p>
+                <p className="mt-1 text-2xl font-bold text-amber-800 dark:text-amber-200">{analysis.min.toFixed(2)}</p>
               </div>
             </div>
             {analysis.avgLast5 != null && analysis.avgPrev5 != null && (
-              <div className="mb-6 flex flex-wrap items-center gap-2 rounded-xl border border-stone-100 bg-stone-50 px-4 py-3">
-                <span className="text-sm text-stone-600">Trend:</span>
-                <span className="text-sm font-medium text-stone-700">
+              <div className="mb-6 flex flex-wrap items-center gap-2 rounded-xl border border-stone-100 bg-stone-50 px-4 py-3 dark:border-stone-700 dark:bg-stone-800/60">
+                <span className="text-sm text-stone-600 dark:text-stone-400">Trend:</span>
+                <span className="text-sm font-medium text-stone-700 dark:text-stone-200">
                   Son 5 deneme ort. <strong>{analysis.avgLast5.toFixed(2)}</strong> net
                 </span>
-                <span className="text-stone-400">·</span>
-                <span className="text-sm text-stone-600">Önceki 5 deneme ort. {analysis.avgPrev5.toFixed(2)} net</span>
+                <span className="text-stone-400 dark:text-stone-600">·</span>
+                <span className="text-sm text-stone-600 dark:text-stone-400">Önceki 5 deneme ort. {analysis.avgPrev5.toFixed(2)} net</span>
                 {analysis.trend === 'up' && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-sm font-medium text-emerald-800">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-sm font-medium text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200">
                     <TrendingUp className="h-4 w-4" /> Artış
                   </span>
                 )}
                 {analysis.trend === 'down' && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-sm font-medium text-amber-800">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-sm font-medium text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
                     <TrendingDown className="h-4 w-4" /> Düşüş
                   </span>
                 )}
                 {analysis.trend === 'stable' && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-stone-200 px-2.5 py-0.5 text-sm font-medium text-stone-700">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-stone-200 px-2.5 py-0.5 text-sm font-medium text-stone-700 dark:bg-stone-700 dark:text-stone-200">
                     <Minus className="h-4 w-4" /> Benzer seviye
                   </span>
                 )}
@@ -409,14 +417,14 @@ export default function DenemePage() {
             )}
             {analysis.chartData.length > 0 && (
               <div>
-                <p className="mb-2 text-sm font-medium text-stone-700">Net puan grafiği (son {analysis.chartData.length} deneme)</p>
-                <div className="flex items-end gap-1 h-40">
+                <p className="mb-2 text-sm font-medium text-stone-700 dark:text-stone-300">Net puan grafiği (son {analysis.chartData.length} deneme)</p>
+                <div className="flex h-40 items-end gap-1">
                   {analysis.chartData.map((d, i) => {
                     const h = Math.max(8, ((d.netScore - analysis.chartMin) / analysis.chartRange) * 100);
                     return (
                       <div
                         key={`${d.attemptedAt}-${i}`}
-                        className="flex-1 min-w-0 rounded-t bg-primary-200 hover:bg-primary-400 transition-colors flex flex-col justify-end"
+                        className="flex min-w-0 flex-1 flex-col justify-end rounded-t bg-primary-200 transition-colors hover:bg-primary-400 dark:bg-primary-800 dark:hover:bg-primary-600"
                         style={{ height: `${Math.min(100, h)}%` }}
                         title={`${new Date(d.attemptedAt).toLocaleDateString('tr-TR')} · ${d.examName}: ${d.netScore.toFixed(2)} net`}
                       >
@@ -425,7 +433,7 @@ export default function DenemePage() {
                     );
                   })}
                 </div>
-                <div className="mt-2 flex justify-between text-[10px] text-stone-500">
+                <div className="mt-2 flex justify-between text-[10px] text-stone-500 dark:text-stone-400">
                   <span>{analysis.chartData.length > 0 ? new Date(analysis.chartData[0].attemptedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }) : ''}</span>
                   <span>{analysis.chartData.length > 0 ? new Date(analysis.chartData[analysis.chartData.length - 1].attemptedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }) : ''}</span>
                 </div>
@@ -435,19 +443,19 @@ export default function DenemePage() {
         )}
 
         {showForm && (
-          <form onSubmit={handleSubmit} className="mb-8 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
-            <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-stone-900">
-              <BookOpen className="h-5 w-5 text-primary-600" />
+          <form onSubmit={handleSubmit} className="mb-8 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900/90">
+            <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-stone-900 dark:text-stone-100">
+              <BookOpen className="h-5 w-5 text-primary-600 dark:text-primary-400" />
               Yeni deneme kaydı
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium text-stone-700">Sınav *</label>
+                <label className="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Sınav *</label>
                 <select
                   required
                   value={form.examId}
                   onChange={(e) => setForm((f) => ({ ...f, examId: e.target.value }))}
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                  className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-stone-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100"
                 >
                   <option value="">Seçiniz</option>
                   {exams.map((ex) => (
@@ -458,23 +466,23 @@ export default function DenemePage() {
                 </select>
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-stone-700">Deneme tarihi</label>
+                <label className="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Deneme tarihi</label>
                 <input
                   type="datetime-local"
                   value={form.attemptedAt}
                   onChange={(e) => setForm((f) => ({ ...f, attemptedAt: e.target.value }))}
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                  className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-stone-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-stone-700">Süre (dakika)</label>
+                <label className="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Süre (dakika)</label>
                 <input
                   type="number"
                   min="0"
                   placeholder="Örn. 120"
                   value={form.durationMinutes}
                   onChange={(e) => setForm((f) => ({ ...f, durationMinutes: e.target.value }))}
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                  className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-stone-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100"
                 />
               </div>
             </div>
@@ -482,21 +490,21 @@ export default function DenemePage() {
             {form.examId && (
               <>
                 {structureLoading ? (
-                  <div className="mt-4 text-sm text-stone-500">Ders yapısı yükleniyor...</div>
+                  <div className="mt-4 text-sm text-stone-500 dark:text-stone-400">Ders yapısı yükleniyor...</div>
                 ) : examSubjects.length > 0 ? (
                   <div className="mt-6 overflow-x-auto">
-                    <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-stone-700">
+                    <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-stone-700 dark:text-stone-300">
                       <Calculator className="h-4 w-4" />
                       Ders ders doğru / yanlış / boş (net otomatik: Doğru - Yanlış/4)
                     </h3>
                     <table className="w-full min-w-[400px] border-collapse text-sm">
                       <thead>
-                        <tr className="border-b border-stone-200 bg-stone-50">
-                          <th className="p-2 text-left font-medium text-stone-700">Ders</th>
-                          <th className="w-20 p-2 text-center font-medium text-stone-700">Doğru</th>
-                          <th className="w-20 p-2 text-center font-medium text-stone-700">Yanlış</th>
-                          <th className="w-20 p-2 text-center font-medium text-stone-700">Boş</th>
-                          <th className="w-24 p-2 text-center font-medium text-stone-700">Net</th>
+                        <tr className="border-b border-stone-200 bg-stone-50 dark:border-stone-700 dark:bg-stone-800/80">
+                          <th className="p-2 text-left font-medium text-stone-700 dark:text-stone-300">Ders</th>
+                          <th className="w-20 p-2 text-center font-medium text-stone-700 dark:text-stone-300">Doğru</th>
+                          <th className="w-20 p-2 text-center font-medium text-stone-700 dark:text-stone-300">Yanlış</th>
+                          <th className="w-20 p-2 text-center font-medium text-stone-700 dark:text-stone-300">Boş</th>
+                          <th className="w-24 p-2 text-center font-medium text-stone-700 dark:text-stone-300">Net</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -504,13 +512,13 @@ export default function DenemePage() {
                           const inp = subjectInputs[s.id] ?? { right: 0, wrong: 0, empty: 0 };
                           const net = inp.right - inp.wrong / 4;
                           return (
-                            <tr key={s.id} className="border-b border-stone-100">
-                              <td className="p-2 font-medium text-stone-900">{s.name}</td>
+                            <tr key={s.id} className="border-b border-stone-100 dark:border-stone-800">
+                              <td className="p-2 font-medium text-stone-900 dark:text-stone-100">{s.name}</td>
                               <td className="p-2">
                                 <input
                                   type="number"
                                   min="0"
-                                  className="w-full rounded border border-stone-300 px-2 py-1 text-center"
+                                  className="w-full rounded border border-stone-300 bg-white px-2 py-1 text-center text-stone-900 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100"
                                   value={inp.right || ''}
                                   onChange={(e) => updateSubjectInput(s.id, 'right', parseInt(e.target.value, 10) || 0)}
                                 />
@@ -519,7 +527,7 @@ export default function DenemePage() {
                                 <input
                                   type="number"
                                   min="0"
-                                  className="w-full rounded border border-stone-300 px-2 py-1 text-center"
+                                  className="w-full rounded border border-stone-300 bg-white px-2 py-1 text-center text-stone-900 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100"
                                   value={inp.wrong || ''}
                                   onChange={(e) => updateSubjectInput(s.id, 'wrong', parseInt(e.target.value, 10) || 0)}
                                 />
@@ -528,7 +536,7 @@ export default function DenemePage() {
                                 <input
                                   type="number"
                                   min="0"
-                                  className="w-full rounded border border-stone-300 px-2 py-1 text-center"
+                                  className="w-full rounded border border-stone-300 bg-white px-2 py-1 text-center text-stone-900 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100"
                                   value={inp.empty || ''}
                                   onChange={(e) => updateSubjectInput(s.id, 'empty', parseInt(e.target.value, 10) || 0)}
                                 />
@@ -540,8 +548,8 @@ export default function DenemePage() {
                           );
                         })}
                         {calculated && (
-                          <tr className="border-t-2 border-stone-300 bg-stone-50 font-semibold">
-                            <td className="p-2 text-stone-900">Toplam</td>
+                          <tr className="border-t-2 border-stone-300 bg-stone-50 font-semibold dark:border-stone-600 dark:bg-stone-800/80">
+                            <td className="p-2 text-stone-900 dark:text-stone-100">Toplam</td>
                             <td className="p-2 text-center">{calculated.totalRight}</td>
                             <td className="p-2 text-center">{calculated.totalWrong}</td>
                             <td className="p-2 text-center">{calculated.totalEmpty}</td>
@@ -551,64 +559,64 @@ export default function DenemePage() {
                       </tbody>
                     </table>
                     {kpssCalculated ? (
-                      <div className="mt-3 space-y-2 rounded-lg border border-primary-200 bg-primary-50 p-4">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-primary-800">KPSS puan hesaplama (net → z → SP → P1/P2/P3)</p>
+                      <div className="mt-3 space-y-2 rounded-lg border border-primary-200 bg-primary-50 p-4 dark:border-primary-900/40 dark:bg-primary-950/30">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-primary-800 dark:text-primary-200">KPSS puan hesaplama (net → z → SP → P1/P2/P3)</p>
                         <div className="grid gap-2 text-sm sm:grid-cols-2">
                           <div className="flex flex-wrap gap-x-4 gap-y-1">
-                            <span className="text-stone-600">GY net: <strong className="text-stone-900">{kpssCalculated.gyNet.toFixed(2)}</strong></span>
-                            <span className="text-stone-600">GK net: <strong className="text-stone-900">{kpssCalculated.gkNet.toFixed(2)}</strong></span>
+                            <span className="text-stone-600 dark:text-stone-400">GY net: <strong className="text-stone-900 dark:text-stone-100">{kpssCalculated.gyNet.toFixed(2)}</strong></span>
+                            <span className="text-stone-600 dark:text-stone-400">GK net: <strong className="text-stone-900 dark:text-stone-100">{kpssCalculated.gkNet.toFixed(2)}</strong></span>
                           </div>
                           <div className="flex flex-wrap gap-x-4 gap-y-1">
-                            <span className="text-stone-600">GY SP: <strong className="text-primary-700">{kpssCalculated.gySP.toFixed(2)}</strong></span>
-                            <span className="text-stone-600">GK SP: <strong className="text-primary-700">{kpssCalculated.gkSP.toFixed(2)}</strong></span>
+                            <span className="text-stone-600 dark:text-stone-400">GY SP: <strong className="text-primary-700 dark:text-primary-300">{kpssCalculated.gySP.toFixed(2)}</strong></span>
+                            <span className="text-stone-600 dark:text-stone-400">GK SP: <strong className="text-primary-700 dark:text-primary-300">{kpssCalculated.gkSP.toFixed(2)}</strong></span>
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-3 pt-1">
-                          <span className="font-medium text-stone-700">P1 (70% GY + 30% GK): <strong className="text-primary-800">{kpssCalculated.P1.toFixed(2)}</strong></span>
-                          <span className="font-medium text-stone-700">P2 (60% GY + 40% GK): <strong className="text-primary-800">{kpssCalculated.P2.toFixed(2)}</strong></span>
-                          <span className="font-medium text-stone-700">P3 (50% GY + 50% GK): <strong className="text-primary-800">{kpssCalculated.P3.toFixed(2)}</strong></span>
+                          <span className="font-medium text-stone-700 dark:text-stone-300">P1 (70% GY + 30% GK): <strong className="text-primary-800 dark:text-primary-200">{kpssCalculated.P1.toFixed(2)}</strong></span>
+                          <span className="font-medium text-stone-700 dark:text-stone-300">P2 (60% GY + 40% GK): <strong className="text-primary-800 dark:text-primary-200">{kpssCalculated.P2.toFixed(2)}</strong></span>
+                          <span className="font-medium text-stone-700 dark:text-stone-300">P3 (50% GY + 50% GK): <strong className="text-primary-800 dark:text-primary-200">{kpssCalculated.P3.toFixed(2)}</strong></span>
                         </div>
-                        <p className="text-xs text-stone-500">Kayıtta toplam puan olarak P3 kullanılır. Ortalama ve σ veritabanındaki tüm KPSS denemelerinden hesaplanır.</p>
+                        <p className="text-xs text-stone-500 dark:text-stone-400">Kayıtta toplam puan olarak P3 kullanılır. Ortalama ve σ veritabanındaki tüm KPSS denemelerinden hesaplanır.</p>
                       </div>
                     ) : calculated && (
-                      <div className="mt-3 flex flex-wrap gap-4 rounded-lg bg-primary-50 p-3">
-                        <span className="font-medium text-stone-700">Toplam net: <strong className="text-primary-700">{calculated.totalNet.toFixed(2)}</strong></span>
-                        <span className="font-medium text-stone-700">Hesaplanan puan: <strong className="text-primary-700">{calculated.calculatedScore.toFixed(2)}{maxScore !== 100 ? ` / ${maxScore}` : ''}</strong></span>
+                      <div className="mt-3 flex flex-wrap gap-4 rounded-lg bg-primary-50 p-3 dark:bg-primary-950/30">
+                        <span className="font-medium text-stone-700 dark:text-stone-300">Toplam net: <strong className="text-primary-700 dark:text-primary-300">{calculated.totalNet.toFixed(2)}</strong></span>
+                        <span className="font-medium text-stone-700 dark:text-stone-300">Hesaplanan puan: <strong className="text-primary-700 dark:text-primary-300">{calculated.calculatedScore.toFixed(2)}{maxScore !== 100 ? ` / ${maxScore}` : ''}</strong></span>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
-                    <p className="text-sm text-amber-800">Bu sınav için ders yapısı tanımlı değil. Toplam doğru / yanlış / boş girin; net ve puan otomatik hesaplanır.</p>
+                  <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/40 dark:bg-amber-950/30">
+                    <p className="text-sm text-amber-800 dark:text-amber-200">Bu sınav için ders yapısı tanımlı değil. Toplam doğru / yanlış / boş girin; net ve puan otomatik hesaplanır.</p>
                     <div className="mt-3 grid gap-3 sm:grid-cols-3">
                       <div>
-                        <label className="mb-1 block text-xs font-medium text-stone-700">Toplam Doğru</label>
+                        <label className="mb-1 block text-xs font-medium text-stone-700 dark:text-stone-300">Toplam Doğru</label>
                         <input
                           type="number"
                           min="0"
                           value={form.simpleRight}
                           onChange={(e) => setForm((f) => ({ ...f, simpleRight: e.target.value }))}
-                          className="w-full rounded-lg border border-stone-300 px-3 py-2"
+                          className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-stone-900 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100"
                         />
                       </div>
                       <div>
-                        <label className="mb-1 block text-xs font-medium text-stone-700">Toplam Yanlış</label>
+                        <label className="mb-1 block text-xs font-medium text-stone-700 dark:text-stone-300">Toplam Yanlış</label>
                         <input
                           type="number"
                           min="0"
                           value={form.simpleWrong}
                           onChange={(e) => setForm((f) => ({ ...f, simpleWrong: e.target.value }))}
-                          className="w-full rounded-lg border border-stone-300 px-3 py-2"
+                          className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-stone-900 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100"
                         />
                       </div>
                       <div>
-                        <label className="mb-1 block text-xs font-medium text-stone-700">Toplam Boş</label>
+                        <label className="mb-1 block text-xs font-medium text-stone-700 dark:text-stone-300">Toplam Boş</label>
                         <input
                           type="number"
                           min="0"
                           value={form.simpleEmpty}
                           onChange={(e) => setForm((f) => ({ ...f, simpleEmpty: e.target.value }))}
-                          className="w-full rounded-lg border border-stone-300 px-3 py-2"
+                          className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-stone-900 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100"
                         />
                       </div>
                     </div>
@@ -618,13 +626,13 @@ export default function DenemePage() {
             )}
 
             <div className="mt-4">
-              <label className="mb-1 block text-sm font-medium text-stone-700">Not (opsiyonel)</label>
+              <label className="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Not (opsiyonel)</label>
               <textarea
                 rows={2}
                 maxLength={500}
                 value={form.notes}
                 onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-                className="w-full rounded-lg border border-stone-300 px-3 py-2 focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-stone-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100"
                 placeholder="Örn. 1. deneme..."
               />
             </div>
@@ -639,7 +647,7 @@ export default function DenemePage() {
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="rounded-lg border border-stone-300 px-4 py-2 font-medium text-stone-700 hover:bg-stone-50"
+                className="rounded-lg border border-stone-300 px-4 py-2 font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-600 dark:text-stone-200 dark:hover:bg-stone-800"
               >
                 İptal
               </button>
@@ -650,43 +658,43 @@ export default function DenemePage() {
         {loading ? (
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-24 rounded-xl bg-stone-100 animate-pulse" />
+              <div key={i} className="h-24 animate-pulse rounded-xl bg-stone-100 dark:bg-stone-800" />
             ))}
           </div>
         ) : attempts.length === 0 ? (
-          <div className="rounded-2xl border border-stone-200 bg-white p-12 text-center">
-            <TrendingUp className="mx-auto h-12 w-12 text-stone-300" />
-            <p className="mt-4 text-stone-600">Henüz deneme kaydı yok.</p>
-            <p className="mt-1 text-sm text-stone-500">Yukarıdaki &quot;Yeni deneme ekle&quot; ile ilk kaydınızı girebilirsiniz.</p>
+          <div className="rounded-2xl border border-stone-200 bg-white p-12 text-center dark:border-stone-800 dark:bg-stone-900/90">
+            <TrendingUp className="mx-auto h-12 w-12 text-stone-300 dark:text-stone-600" />
+            <p className="mt-4 text-stone-600 dark:text-stone-400">Henüz deneme kaydı yok.</p>
+            <p className="mt-1 text-sm text-stone-500 dark:text-stone-500">Yukarıdaki &quot;Yeni deneme ekle&quot; ile ilk kaydınızı girebilirsiniz.</p>
           </div>
         ) : (
           <ul className="space-y-3">
             {attempts.map((a) => (
               <li
                 key={a.id}
-                className="flex flex-wrap items-center gap-4 rounded-xl border border-stone-200 bg-white p-4 shadow-sm"
+                className="flex flex-wrap items-center gap-4 rounded-xl border border-stone-200 bg-white p-4 shadow-sm dark:border-stone-800 dark:bg-stone-900/90"
               >
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-primary-600" />
-                  <span className="font-medium text-stone-900">{formatDate(a.attemptedAt)}</span>
+                  <Calendar className="h-5 w-5 text-primary-600 dark:text-primary-400" />
+                  <span className="font-medium text-stone-900 dark:text-stone-100">{formatDate(a.attemptedAt)}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <BookOpen className="h-4 w-4 text-stone-500" />
-                  <span className="text-stone-700">
+                  <BookOpen className="h-4 w-4 text-stone-500 dark:text-stone-400" />
+                  <span className="text-stone-700 dark:text-stone-300">
                     {a.exam.name} ({a.exam.code})
                   </span>
                 </div>
                 {a.totalScore != null && (
-                  <div className="flex items-center gap-1 rounded-lg bg-primary-50 px-2 py-1">
-                    <Target className="h-4 w-4 text-primary-600" />
-                    <span className="font-semibold text-primary-700">{a.totalScore} puan</span>
+                  <div className="flex items-center gap-1 rounded-lg bg-primary-50 px-2 py-1 dark:bg-primary-950/40">
+                    <Target className="h-4 w-4 text-primary-600 dark:text-primary-400" />
+                    <span className="font-semibold text-primary-700 dark:text-primary-300">{a.totalScore} puan</span>
                   </div>
                 )}
                 {a.netScore != null && (
-                  <span className="text-sm text-stone-600">Net: {a.netScore}</span>
+                  <span className="text-sm text-stone-600 dark:text-stone-400">Net: {a.netScore}</span>
                 )}
                 {(a.rightCount != null || a.wrongCount != null) && (
-                  <span className="text-sm text-stone-500">
+                  <span className="text-sm text-stone-500 dark:text-stone-400">
                     D: {a.rightCount ?? '-'} / Y: {a.wrongCount ?? '-'}
                     {a.emptyCount != null ? ` / B: ${a.emptyCount}` : ''}
                   </span>

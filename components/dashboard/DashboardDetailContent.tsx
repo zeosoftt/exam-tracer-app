@@ -25,6 +25,7 @@ import {
   Save,
   X,
 } from 'lucide-react';
+import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
 
 interface Section {
   id: string;
@@ -265,28 +266,29 @@ export function DashboardDetailContent({
   };
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
       {/* Header */}
-      <header className="border-b border-stone-200 bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-10">
+      <header className="sticky top-0 z-10 border-b border-stone-200 bg-white/80 shadow-sm backdrop-blur-sm dark:border-stone-800 dark:bg-stone-950/90">
         <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
-          <div className="flex h-14 sm:h-16 items-center justify-between gap-2">
-            <Link href="/dashboard" className="flex items-center gap-1.5 sm:gap-2 group min-w-0">
+          <div className="flex h-14 items-center justify-between gap-2 sm:h-16">
+            <Link href="/dashboard" className="group flex min-w-0 items-center gap-1.5 sm:gap-2">
               <div className="relative flex-shrink-0">
-                <div className="absolute inset-0 bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl blur opacity-75 group-hover:opacity-100 transition" />
-                <BookOpen className="relative h-5 w-5 sm:h-6 sm:w-6 text-primary-600" />
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 opacity-75 blur transition group-hover:opacity-100" />
+                <BookOpen className="relative h-5 w-5 text-primary-600 dark:text-primary-400 sm:h-6 sm:w-6" />
               </div>
-              <span className="text-base sm:text-xl font-bold bg-gradient-to-r text-stone-900 bg-clip-text text-transparent truncate">
+              <span className="truncate text-base font-bold text-stone-900 dark:text-stone-100 sm:text-xl">
                 The Goal Lab
               </span>
             </Link>
-            <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-              <div className="flex items-center gap-1.5 sm:gap-2 text-sm text-stone-600 min-w-0">
+            <div className="flex flex-shrink-0 items-center gap-2 sm:gap-3">
+              <ThemeToggleCompact />
+              <div className="flex min-w-0 items-center gap-1.5 text-sm text-stone-600 dark:text-stone-400 sm:gap-2">
                 <User className="h-4 w-4 flex-shrink-0" />
-                <span className="font-medium truncate max-w-[100px] sm:max-w-none">{user.name}</span>
+                <span className="max-w-[100px] truncate font-medium sm:max-w-none">{user.name}</span>
               </div>
               <button
                 onClick={() => signOut({ callbackUrl: '/' })}
-                className="p-2 sm:px-4 sm:py-2 text-sm font-medium text-stone-700 bg-stone-100 rounded-xl hover:bg-stone-200 transition-colors flex items-center gap-2"
+                className="flex items-center gap-2 rounded-xl bg-stone-100 p-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700 sm:px-4 sm:py-2"
                 title="Çıkış"
               >
                 <LogOut className="h-4 w-4" />
@@ -302,9 +304,9 @@ export function DashboardDetailContent({
         {/* Back Button */}
         <Link
           href="/dashboard"
-          className="inline-flex items-center gap-2 text-sm font-medium text-stone-600 hover:text-stone-900 mb-4 sm:mb-8 transition-colors group"
+          className="group mb-4 inline-flex items-center gap-2 text-sm font-medium text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 sm:mb-8"
         >
-          <div className="p-1.5 rounded-lg bg-stone-100 group-hover:bg-stone-200 transition-colors">
+          <div className="rounded-lg bg-stone-100 p-1.5 transition-colors group-hover:bg-stone-200 dark:bg-stone-800 dark:group-hover:bg-stone-700">
             <ArrowLeft className="h-4 w-4" />
           </div>
           <span className="sm:inline">Özet Ekrana Dön</span>
@@ -313,17 +315,17 @@ export function DashboardDetailContent({
         {/* Bölüm Tabları */}
         {!isLoading && detailData?.sections && detailData.sections.length > 0 && (
           <div className="mb-4 sm:mb-8">
-            <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl border border-stone-100 overflow-hidden hover:shadow-2xl transition-shadow">
+            <div className="overflow-hidden rounded-xl border border-stone-100 bg-white shadow-xl transition-shadow hover:shadow-2xl dark:border-stone-800 dark:bg-stone-900/90 sm:rounded-2xl">
               {/* Tab Headers */}
-              <div className="flex border-b border-stone-200 overflow-x-auto overflow-y-hidden bg-gradient-to-r from-stone-50 to-white scrollbar-thin snap-x snap-mandatory -mx-1 px-1">
+              <div className="-mx-1 flex snap-x snap-mandatory overflow-x-auto overflow-y-hidden border-b border-stone-200 bg-gradient-to-r from-stone-50 to-white scrollbar-thin dark:border-stone-800 dark:from-stone-900 dark:to-stone-950">
                 {detailData.sections.map((section) => (
                   <button
                     key={section.id}
                     onClick={() => setSelectedSectionId(section.id)}
-                    className={`flex-shrink-0 snap-start px-4 sm:px-8 py-4 sm:py-5 font-semibold text-sm transition-all border-b-3 relative ${
+                    className={`relative flex-shrink-0 snap-start border-b-3 px-4 py-4 text-sm font-semibold transition-all sm:px-8 sm:py-5 ${
                       selectedSectionId === section.id
-                        ? 'border-primary-600 text-primary-600 bg-gradient-to-b from-primary-50 to-white'
-                        : 'border-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-50/50'
+                        ? 'border-primary-600 bg-gradient-to-b from-primary-50 to-white text-primary-600 dark:border-primary-500 dark:from-primary-950/40 dark:to-stone-900 dark:text-primary-400'
+                        : 'border-transparent text-stone-600 hover:bg-stone-50/50 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800/50 dark:hover:text-stone-100'
                     }`}
                   >
                     {selectedSectionId === section.id && (
@@ -332,21 +334,21 @@ export function DashboardDetailContent({
                     <div className="flex flex-col items-start gap-1">
                       <div className="flex items-center gap-2">
                         <span className="font-bold">{section.name}</span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                           selectedSectionId === section.id
-                            ? 'bg-primary-100 text-primary-700'
-                            : 'bg-stone-100 text-stone-600'
+                            ? 'bg-primary-100 text-primary-700 dark:bg-primary-950/50 dark:text-primary-300'
+                            : 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400'
                         }`}>
                           {section.totalTopics} konu
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${selectedSectionId === section.id ? 'bg-primary-500' : 'bg-stone-300'}`}></div>
+                        <div className={`h-2 w-2 rounded-full ${selectedSectionId === section.id ? 'bg-primary-500' : 'bg-stone-300 dark:bg-stone-600'}`}></div>
                         <span
                           className={`text-xs font-medium ${
                             selectedSectionId === section.id
-                              ? 'text-primary-600'
-                              : 'text-stone-500'
+                              ? 'text-primary-600 dark:text-primary-400'
+                              : 'text-stone-500 dark:text-stone-400'
                           }`}
                         >
                           %{section.progressPercentage} tamamlandı
@@ -361,52 +363,52 @@ export function DashboardDetailContent({
               {selectedSection && (
                 <div className="p-8">
                   {/* Bölüm İstatistikleri */}
-                  <div className="mb-6 p-6 bg-gradient-to-br bg-primary-50 rounded-xl border border-primary-100">
-                    <div className="flex items-center justify-between mb-4">
+                  <div className="mb-6 rounded-xl border border-primary-100 bg-gradient-to-br bg-primary-50 p-6 dark:border-primary-900/40 dark:bg-primary-950/25">
+                    <div className="mb-4 flex items-center justify-between">
                       <div>
-                        <h3 className="text-2xl font-bold text-stone-900 mb-2">
+                        <h3 className="mb-2 text-2xl font-bold text-stone-900 dark:text-stone-100">
                           {selectedSection.name}
                         </h3>
-                        <div className="flex items-center gap-4 text-sm">
+                        <div className="flex flex-wrap items-center gap-4 text-sm">
                           <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                            <span className="text-stone-600 font-medium">
+                            <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                            <span className="font-medium text-stone-600 dark:text-stone-400">
                               {selectedSection.completedTopics} Tamamlandı
                             </span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                            <span className="text-stone-600 font-medium">
+                            <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
+                            <span className="font-medium text-stone-600 dark:text-stone-400">
                               {selectedSection.inProgressTopics} Devam Ediyor
                             </span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 rounded-full bg-stone-400"></div>
-                            <span className="text-stone-600 font-medium">
+                            <div className="h-2 w-2 rounded-full bg-stone-400"></div>
+                            <span className="font-medium text-stone-600 dark:text-stone-400">
                               {selectedSection.notStartedTopics} Başlanmadı
                             </span>
                           </div>
                           {selectedSection.reviewedTopics > 0 && (
                             <div className="flex items-center gap-1">
-                              <div className="w-2 h-2 rounded-full bg-primary-500"></div>
-                              <span className="text-stone-600 font-medium">
+                              <div className="h-2 w-2 rounded-full bg-primary-500"></div>
+                              <span className="font-medium text-stone-600 dark:text-stone-400">
                                 {selectedSection.reviewedTopics} Gözden Geçirildi
                               </span>
                             </div>
                           )}
                         </div>
                       </div>
-                      <div className="text-left sm:text-right flex-shrink-0">
-                        <div className="text-3xl sm:text-4xl font-extrabold bg-gradient-to-r from-primary-500 to-primary-600 bg-clip-text text-transparent">
+                      <div className="flex-shrink-0 text-left sm:text-right">
+                        <div className="bg-gradient-to-r from-primary-500 to-primary-600 bg-clip-text text-3xl font-extrabold text-transparent sm:text-4xl dark:from-primary-400 dark:to-primary-500">
                           %{selectedSection.progressPercentage}
                         </div>
-                        <p className="text-xs text-stone-500 font-medium">Tamamlanma</p>
-                        <p className="text-xs text-stone-400 mt-1">
+                        <p className="text-xs font-medium text-stone-500 dark:text-stone-400">Tamamlanma</p>
+                        <p className="mt-1 text-xs text-stone-400 dark:text-stone-500">
                           {selectedSection.completedTopics + selectedSection.reviewedTopics} / {selectedSection.totalTopics} konu
                         </p>
                       </div>
                     </div>
-                    <div className="mt-4 w-full bg-white/60 rounded-full h-3 overflow-hidden">
+                    <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-white/60 dark:bg-stone-800/80">
                       <div
                         className="h-full bg-gradient-to-r from-primary-500 to-primary-600 rounded-full transition-all duration-700 ease-out"
                         style={{ width: `${selectedSection.progressPercentage}%` }}
@@ -415,15 +417,15 @@ export function DashboardDetailContent({
                   </div>
 
                   {/* Ders Tabları */}
-                  <div className="flex border-b-2 border-stone-200 mb-4 sm:mb-6 overflow-x-auto overflow-y-hidden -mx-1 px-1 scrollbar-thin snap-x snap-mandatory">
+                  <div className="-mx-1 mb-4 flex snap-x snap-mandatory overflow-x-auto overflow-y-hidden border-b-2 border-stone-200 px-1 scrollbar-thin dark:border-stone-700 sm:mb-6">
                     {selectedSection.subjects.map((subject) => (
                       <button
                         key={subject.id}
                         onClick={() => setSelectedSubjectId(subject.id)}
-                        className={`flex-shrink-0 snap-start px-3 sm:px-5 py-3 font-semibold text-sm transition-all border-b-3 rounded-t-lg relative ${
+                        className={`relative flex-shrink-0 snap-start rounded-t-lg border-b-3 px-3 py-3 text-sm font-semibold transition-all sm:px-5 ${
                           selectedSubjectId === subject.id
-                            ? 'border-primary-600 text-primary-600 bg-gradient-to-b from-primary-50 to-white shadow-sm'
-                            : 'border-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-50/50'
+                            ? 'border-primary-600 bg-gradient-to-b from-primary-50 to-white text-primary-600 shadow-sm dark:border-primary-500 dark:from-primary-950/40 dark:to-stone-900 dark:text-primary-400'
+                            : 'border-transparent text-stone-600 hover:bg-stone-50/50 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800/50 dark:hover:text-stone-100'
                         }`}
                       >
                         {selectedSubjectId === subject.id && (
@@ -432,21 +434,21 @@ export function DashboardDetailContent({
                         <div className="flex flex-col items-start gap-1">
                           <div className="flex items-center gap-2">
                             <span>{subject.name}</span>
-                            <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
+                            <span className={`rounded-full px-1.5 py-0.5 text-xs font-medium ${
                               selectedSubjectId === subject.id
-                                ? 'bg-primary-100 text-primary-700'
-                                : 'bg-stone-100 text-stone-600'
+                                ? 'bg-primary-100 text-primary-700 dark:bg-primary-950/50 dark:text-primary-300'
+                                : 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400'
                             }`}>
                               {subject.totalTopics} konu
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className={`w-1.5 h-1.5 rounded-full ${selectedSubjectId === subject.id ? 'bg-primary-500' : 'bg-stone-300'}`}></div>
+                            <div className={`h-1.5 w-1.5 rounded-full ${selectedSubjectId === subject.id ? 'bg-primary-500' : 'bg-stone-300 dark:bg-stone-600'}`}></div>
                             <span
                               className={`text-xs font-medium ${
                                 selectedSubjectId === subject.id
-                                  ? 'text-primary-600'
-                                  : 'text-stone-500'
+                                  ? 'text-primary-600 dark:text-primary-400'
+                                  : 'text-stone-500 dark:text-stone-400'
                               }`}
                             >
                               %{subject.progressPercentage} tamamlandı
@@ -459,32 +461,32 @@ export function DashboardDetailContent({
 
                   {/* Ders İçerikleri - Alt kısım */}
                   {selectedSubject && (
-                    <div className="min-h-[200px] sm:min-h-[300px] bg-gradient-to-br from-white to-stone-50 rounded-xl p-4 sm:p-6 lg:p-8 border-2 border-stone-100 shadow-inner">
+                    <div className="min-h-[200px] rounded-xl border-2 border-stone-100 bg-gradient-to-br from-white to-stone-50 p-4 shadow-inner dark:border-stone-800 dark:from-stone-900 dark:to-stone-950 sm:min-h-[300px] sm:p-6 lg:p-8">
                       {/* Evaluation Info Card */}
                       {detailData?.evaluation && (
-                        <div className="mb-4 sm:mb-6 p-4 sm:p-5 bg-gradient-to-br bg-primary-50 rounded-xl border border-primary-200 shadow-sm">
+                        <div className="mb-4 rounded-xl border border-primary-200 bg-gradient-to-br bg-primary-50 p-4 shadow-sm dark:border-primary-900/40 dark:bg-primary-950/25 sm:mb-6 sm:p-5">
                           <div className="flex flex-col gap-4">
-                            <div className="flex items-start gap-3 min-w-0">
-                              <div className="p-2 bg-white rounded-lg shadow-sm flex-shrink-0">
-                                <Target className="h-5 w-5 text-primary-600" />
+                            <div className="flex min-w-0 items-start gap-3">
+                              <div className="flex-shrink-0 rounded-lg bg-white p-2 shadow-sm dark:bg-stone-800">
+                                <Target className="h-5 w-5 text-primary-600 dark:text-primary-400" />
                               </div>
                               <div className="min-w-0">
-                                <h5 className="text-sm font-bold text-stone-900">Hedef Puan Temelli Değerlendirme</h5>
-                                <p className="text-xs text-stone-600 mt-0.5 break-words">
+                                <h5 className="text-sm font-bold text-stone-900 dark:text-stone-100">Hedef Puan Temelli Değerlendirme</h5>
+                                <p className="mt-0.5 break-words text-xs text-stone-600 dark:text-stone-400">
                                   Hedef: {detailData.evaluation.targetScore}/100 · Gerekli Net: {detailData.evaluation.requiredNet?.toFixed(1) || '-'} · Başarı: {detailData.evaluation.requiredSuccessRate ? (detailData.evaluation.requiredSuccessRate * 100).toFixed(1) : '-'}%
                                 </p>
                               </div>
                             </div>
                             <div className="flex flex-wrap gap-2 sm:gap-3">
-                              <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                              <div className="flex items-center gap-1.5 rounded-full bg-green-100 px-2 py-1.5 text-xs font-semibold text-green-700 dark:bg-green-950/40 dark:text-green-300">
                                 <CheckCircle className="h-3 w-3 flex-shrink-0" />
                                 İYİ ≥%95
                               </div>
-                              <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
+                              <div className="flex items-center gap-1.5 rounded-full bg-yellow-100 px-2 py-1.5 text-xs font-semibold text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-300">
                                 <TrendingUp className="h-3 w-3 flex-shrink-0" />
                                 GELİŞTİRİLEBİLİR ≥%80
                               </div>
-                              <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                              <div className="flex items-center gap-1.5 rounded-full bg-red-100 px-2 py-1.5 text-xs font-semibold text-red-700 dark:bg-red-950/40 dark:text-red-300">
                                 <RefreshCw className="h-3 w-3 flex-shrink-0" />
                                 TEKRAR &lt;%80
                               </div>
@@ -493,45 +495,45 @@ export function DashboardDetailContent({
                         </div>
                       )}
                       <div className="mb-4 sm:mb-6">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                           <div className="min-w-0 flex-1">
-                            <h4 className="text-lg sm:text-xl font-bold text-stone-900 mb-2">
+                            <h4 className="mb-2 text-lg font-bold text-stone-900 dark:text-stone-100 sm:text-xl">
                               {selectedSubject.name}
                             </h4>
                             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                               <div className="flex items-center gap-1">
-                                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                <span className="text-stone-600 font-medium">
+                                <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                                <span className="font-medium text-stone-600 dark:text-stone-400">
                                   {selectedSubject.completedTopics} Tamamlandı
                                 </span>
                               </div>
                               <div className="flex items-center gap-1">
-                                <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                                <span className="text-stone-600 font-medium">
+                                <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
+                                <span className="font-medium text-stone-600 dark:text-stone-400">
                                   {selectedSubject.inProgressTopics} Devam Ediyor
                                 </span>
                               </div>
                               <div className="flex items-center gap-1">
-                                <div className="w-2 h-2 rounded-full bg-stone-400"></div>
-                                <span className="text-stone-600 font-medium">
+                                <div className="h-2 w-2 rounded-full bg-stone-400"></div>
+                                <span className="font-medium text-stone-600 dark:text-stone-400">
                                   {selectedSubject.notStartedTopics} Başlanmadı
                                 </span>
                               </div>
                               {selectedSubject.reviewedTopics > 0 && (
                                 <div className="flex items-center gap-1">
-                                  <div className="w-2 h-2 rounded-full bg-primary-500"></div>
-                                  <span className="text-stone-600 font-medium">
+                                  <div className="h-2 w-2 rounded-full bg-primary-500"></div>
+                                  <span className="font-medium text-stone-600 dark:text-stone-400">
                                     {selectedSubject.reviewedTopics} Gözden Geçirildi
                                   </span>
                                 </div>
                               )}
                             </div>
                           </div>
-                          <div className="px-4 py-2 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full sm:ml-4 w-fit">
-                            <span className="text-white font-bold text-lg">%{selectedSubject.progressPercentage}</span>
+                          <div className="w-fit rounded-full bg-gradient-to-r from-primary-500 to-primary-600 px-4 py-2 sm:ml-4">
+                            <span className="text-lg font-bold text-white">%{selectedSubject.progressPercentage}</span>
                           </div>
                         </div>
-                        <div className="w-full bg-stone-200 rounded-full h-3 overflow-hidden shadow-inner">
+                        <div className="h-3 w-full overflow-hidden rounded-full bg-stone-200 shadow-inner dark:bg-stone-800">
                           <div
                             className="h-full bg-gradient-to-r from-primary-500 to-primary-600 rounded-full transition-all duration-700 ease-out shadow-sm"
                             style={{ width: `${selectedSubject.progressPercentage}%` }}
@@ -540,13 +542,13 @@ export function DashboardDetailContent({
                       </div>
 
                       {/* Konular Tablosu */}
-                      <div className="rounded-2xl border border-stone-200 bg-white shadow-soft overflow-hidden">
+                      <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-soft dark:border-stone-800 dark:bg-stone-900/90">
                         {selectedSubject.topics && selectedSubject.topics.length > 0 && (
-                          <div className="px-4 sm:px-5 py-3 border-b border-stone-100 bg-stone-50/50">
-                            <p className="text-sm text-stone-600">
-                              <span className="font-semibold text-stone-900">{selectedSubject.topics.length}</span> konu
+                          <div className="border-b border-stone-100 bg-stone-50/50 px-4 py-3 dark:border-stone-800 dark:bg-stone-950/50 sm:px-5">
+                            <p className="text-sm text-stone-600 dark:text-stone-400">
+                              <span className="font-semibold text-stone-900 dark:text-stone-100">{selectedSubject.topics.length}</span> konu
                               {selectedSubject.completedTopics > 0 && (
-                                <> · <span className="text-primary-600 font-medium">{selectedSubject.completedTopics} tamamlandı</span></>
+                                <> · <span className="font-medium text-primary-600 dark:text-primary-400">{selectedSubject.completedTopics} tamamlandı</span></>
                               )}
                             </p>
                           </div>
@@ -555,74 +557,74 @@ export function DashboardDetailContent({
                           {selectedSubject.topics && selectedSubject.topics.length > 0 ? (
                           <table className="w-full min-w-[680px]">
                             <thead className="sticky top-0 z-10">
-                              <tr className="bg-stone-50 border-b border-stone-200 shadow-[0_1px_0_0_rgba(0,0,0,0.05)]">
-                                <th className="px-4 py-3.5 text-left text-xs font-semibold text-stone-600 uppercase tracking-wider w-[130px] sm:w-[140px]">
+                              <tr className="border-b border-stone-200 bg-stone-50 shadow-[0_1px_0_0_rgba(0,0,0,0.05)] dark:border-stone-700 dark:bg-stone-900/80">
+                                <th className="w-[130px] px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-400 sm:w-[140px]">
                                   Durum
                                 </th>
-                                <th className="px-4 py-3.5 text-left text-xs font-semibold text-stone-600 uppercase tracking-wider min-w-[160px]">
+                                <th className="min-w-[160px] px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-400">
                                   Konu Adı
                                 </th>
-                                <th className="px-3 py-3.5 text-center text-xs font-semibold text-stone-600 uppercase tracking-wider w-[90px]">
+                                <th className="w-[90px] px-3 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-400">
                                   Soru
                                 </th>
-                                <th className="px-3 py-3.5 text-center text-xs font-semibold text-stone-600 uppercase tracking-wider w-[85px]">
+                                <th className="w-[85px] px-3 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-400">
                                   Çözülen
                                 </th>
-                                <th className="px-3 py-3.5 text-center text-xs font-semibold text-stone-600 uppercase tracking-wider w-[70px]">
+                                <th className="w-[70px] px-3 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-400">
                                   Doğru
                                 </th>
-                                <th className="px-3 py-3.5 text-center text-xs font-semibold text-stone-600 uppercase tracking-wider w-[100px] min-w-[100px]">
+                                <th className="min-w-[100px] w-[100px] px-3 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-400">
                                   Yanlış
                                 </th>
                                 {detailData?.evaluation && (
                                   <>
-                                    <th className="px-3 py-3.5 text-center text-xs font-semibold text-stone-600 uppercase tracking-wider w-[70px]">
+                                    <th className="w-[70px] px-3 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-400">
                                       Net
                                     </th>
-                                    <th className="px-3 py-3.5 text-center text-xs font-semibold text-stone-600 uppercase tracking-wider w-[80px]">
+                                    <th className="w-[80px] px-3 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-stone-600 dark:text-stone-400">
                                       Başarı
                                     </th>
-                                    <th className="px-3 py-3.5 text-center text-xs font-semibold text-stone-600 uppercase tracking-wider w-[120px] sticky right-0 z-10 bg-stone-50 shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.06)]">
+                                    <th className="sticky right-0 z-10 w-[120px] bg-stone-50 px-3 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-stone-600 shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.06)] dark:bg-stone-900/80 dark:text-stone-400">
                                       Değerlendirme
                                     </th>
                                   </>
                                 )}
                               </tr>
                             </thead>
-                            <tbody className="divide-y divide-stone-100">
+                            <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
                               {selectedSubject.topics.map((topic) => {
                                 const getStatusConfig = (status: string) => {
                                   switch (status) {
                                     case 'COMPLETED':
                                       return {
                                         icon: CheckCircle,
-                                        color: 'text-green-700',
-                                        bgColor: 'bg-green-50',
-                                        borderColor: 'border-green-200',
+                                        color: 'text-green-700 dark:text-green-300',
+                                        bgColor: 'bg-green-50 dark:bg-green-950/25',
+                                        borderColor: 'border-green-200 dark:border-green-900/50',
                                         label: 'Tamamlandı',
-                                        iconBg: 'bg-green-100',
+                                        iconBg: 'bg-green-100 dark:bg-green-950/40',
                                         dotColor: 'bg-green-500',
                                         value: 'COMPLETED' as const,
                                       };
                                     case 'IN_PROGRESS':
                                       return {
                                         icon: PlayCircle,
-                                        color: 'text-yellow-700',
-                                        bgColor: 'bg-yellow-50',
-                                        borderColor: 'border-yellow-200',
+                                        color: 'text-yellow-700 dark:text-yellow-300',
+                                        bgColor: 'bg-yellow-50 dark:bg-yellow-950/20',
+                                        borderColor: 'border-yellow-200 dark:border-yellow-900/50',
                                         label: 'Devam Ediyor',
-                                        iconBg: 'bg-yellow-100',
+                                        iconBg: 'bg-yellow-100 dark:bg-yellow-950/40',
                                         dotColor: 'bg-yellow-500',
                                         value: 'IN_PROGRESS' as const,
                                       };
                                     default:
                                       return {
                                         icon: Circle,
-                                        color: 'text-stone-500',
-                                        bgColor: 'bg-stone-50',
-                                        borderColor: 'border-stone-200',
+                                        color: 'text-stone-500 dark:text-stone-400',
+                                        bgColor: 'bg-stone-50 dark:bg-stone-900/40',
+                                        borderColor: 'border-stone-200 dark:border-stone-700',
                                         label: 'Başlanmadı',
-                                        iconBg: 'bg-stone-100',
+                                        iconBg: 'bg-stone-100 dark:bg-stone-800',
                                         dotColor: 'bg-stone-400',
                                         value: 'NOT_STARTED' as const,
                                       };
@@ -661,7 +663,7 @@ export function DashboardDetailContent({
                                         <div className={`p-2 rounded-xl flex-shrink-0 ${statusConfig.iconBg}`}>
                                           <Icon className={`h-4 w-4 ${statusConfig.color}`} />
                                         </div>
-                                        <span className="text-sm font-medium text-stone-900 truncate" title={topic.name}>
+                                        <span className="truncate text-sm font-medium text-stone-900 dark:text-stone-100" title={topic.name}>
                                           {topic.name}
                                         </span>
                                       </div>
@@ -789,17 +791,17 @@ export function DashboardDetailContent({
                                         </td>
                                         <td className={`px-3 py-3 text-center align-middle sticky right-0 z-[1] ${statusConfig.bgColor} shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.06)]`}>
                                           {topic.evaluation.isGood ? (
-                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold bg-green-100 text-green-700 border border-green-200">
+                                            <span className="inline-flex items-center gap-1.5 rounded-xl border border-green-200 bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-700 dark:border-green-900/50 dark:bg-green-950/40 dark:text-green-300">
                                               <CheckCircle className="h-3.5 w-3.5" />
                                               İYİ
                                             </span>
                                           ) : topic.evaluation.isImprovable ? (
-                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-200">
+                                            <span className="inline-flex items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300">
                                               <TrendingUp className="h-3.5 w-3.5" />
                                               GELİŞTİR
                                             </span>
                                           ) : (
-                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold bg-red-100 text-red-700 border border-red-200">
+                                            <span className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
                                               <RefreshCw className="h-3.5 w-3.5" />
                                               TEKRAR
                                             </span>
@@ -820,12 +822,12 @@ export function DashboardDetailContent({
                             </tbody>
                           </table>
                           ) : (
-                          <div className="p-10 sm:p-14 text-center">
-                            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-stone-100 text-stone-400 mb-4">
+                          <div className="p-10 text-center sm:p-14">
+                            <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-stone-100 text-stone-400 dark:bg-stone-800 dark:text-stone-500">
                               <FileText className="h-7 w-7" />
                             </div>
-                            <p className="text-stone-600 font-medium">Bu ders için henüz konu yok</p>
-                            <p className="text-stone-500 text-sm mt-1">Konu eklendiğinde burada listelenecek</p>
+                            <p className="font-medium text-stone-600 dark:text-stone-400">Bu ders için henüz konu yok</p>
+                            <p className="mt-1 text-sm text-stone-500 dark:text-stone-500">Konu eklendiğinde burada listelenecek</p>
                           </div>
                         )}
                         </div>
@@ -839,12 +841,12 @@ export function DashboardDetailContent({
         )}
 
         {!isLoading && (!detailData?.exam || detailData.sections.length === 0) && (
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-8 sm:p-16 border border-stone-100 text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full mb-6">
-              <BookOpen className="h-10 w-10 text-primary-600" />
+          <div className="rounded-xl border border-stone-100 bg-white p-8 text-center shadow-xl dark:border-stone-800 dark:bg-stone-900/90 sm:rounded-2xl sm:p-16">
+            <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-950 dark:to-primary-900">
+              <BookOpen className="h-10 w-10 text-primary-600 dark:text-primary-400" />
             </div>
-            <h3 className="text-xl font-bold text-stone-900 mb-2">Aktif sınav bulunamadı</h3>
-            <p className="text-stone-600 max-w-md mx-auto">
+            <h3 className="mb-2 text-xl font-bold text-stone-900 dark:text-stone-100">Aktif sınav bulunamadı</h3>
+            <p className="mx-auto max-w-md text-stone-600 dark:text-stone-400">
               Detaylı istatistikler için bir sınava kayıt olmanız gerekiyor.
             </p>
           </div>

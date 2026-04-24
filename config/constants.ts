@@ -99,10 +99,21 @@ export const ERROR_MESSAGES = {
   EMAIL_EXISTS: 'E-posta zaten mevcut',
   INVALID_TOKEN: 'Invalid or expired token',
   RATE_LIMIT_EXCEEDED: 'Too many requests, please try again later',
-  DATABASE_UNAVAILABLE: 'Veritabanına şu an ulaşılamıyor. Lütfen kısa süre sonra tekrar deneyin.',
+  DATABASE_UNAVAILABLE:
+    'Hizmetimize şu anda ulaşılamıyor. Lütfen birkaç dakika sonra tekrar deneyin.',
+} as const;
+
+/** Giriş ve benzeri ekranlarda servis kesintisi (kullanıcı hatası değil) */
+export const SERVICE_UNAVAILABLE_COPY = {
+  badge: 'Geçici erişim sorunu',
+  title: 'Şu an giriş yapılamıyor',
+  description:
+    'Sunucularımıza geçici olarak bağlanılamıyor. Bu durum genellikle kısa sürer. Bir süre sonra tekrar deneyebilir veya aşağıdaki düğmeyle sayfayı yenileyebilirsiniz. Sorun devam ederse destek ekibine başvurun.',
+  retryLabel: 'Sayfayı yenile',
 } as const;
 
 /** NextAuth credentials: authorize içinde throw edilir; client `result.error` ile eşleşir */
 export const AUTH_ERROR_CODES = {
   EMAIL_NOT_VERIFIED: 'EMAIL_NOT_VERIFIED',
+  DATABASE_UNAVAILABLE: 'DATABASE_UNAVAILABLE',
 } as const;

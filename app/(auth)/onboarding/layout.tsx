@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { getBaseUrl } from '@/lib/seo/baseUrl';
+import { AuthThemeToggle } from '@/components/layout/AuthThemeToggle';
 
 export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = getBaseUrl();
@@ -20,5 +21,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function OnboardingLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return (
+    <>
+      <AuthThemeToggle />
+      {children}
+    </>
+  );
 }

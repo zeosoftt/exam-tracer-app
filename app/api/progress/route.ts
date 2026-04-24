@@ -15,6 +15,7 @@ import { logApi } from '@/lib/logger';
 import { HTTP_STATUS } from '@/config/constants';
 import { UnauthorizedError, NotFoundError } from '@/lib/errors/AppError';
 import { getPaginationParams, getSkip, createPaginatedResponse } from '@/lib/utils/pagination';
+import { computeInitialNextReview } from '@/lib/utils/spacedRepetition';
 
 async function getProgressHandler(req: NextRequest): Promise<NextResponse> {
   try {
@@ -112,7 +113,8 @@ async function updateProgressHandler(req: NextRequest): Promise<NextResponse> {
       throw new NotFoundError('Topic not found');
     }
 
-    // Upsert progress
+    const completedAtPost = validatedData.status === 'COMPLETED' ? new Date() : null;
+
     const progress = await prisma.userProgress.upsert({
       where: {
         userId_topicId: {
@@ -123,7 +125,18 @@ async function updateProgressHandler(req: NextRequest): Promise<NextResponse> {
       update: {
         status: validatedData.status,
         notes: validatedData.notes,
-        completedAt: validatedData.status === 'COMPLETED' ? new Date() : null,
+        completedAt: completedAtPost,
+        ...(completedAtPost
+          ? {
+              spacedRepetitionLevel: 0,
+              nextReviewAt: computeInitialNextReview(completedAtPost),
+              lastReviewedAt: null,
+            }
+          : {
+              spacedRepetitionLevel: 0,
+              nextReviewAt: null,
+              lastReviewedAt: null,
+            }),
         updatedAt: new Date(),
       },
       create: {
@@ -131,7 +144,14 @@ async function updateProgressHandler(req: NextRequest): Promise<NextResponse> {
         topicId: validatedData.topicId,
         status: validatedData.status,
         notes: validatedData.notes,
-        completedAt: validatedData.status === 'COMPLETED' ? new Date() : null,
+        completedAt: completedAtPost,
+        ...(completedAtPost
+          ? {
+              spacedRepetitionLevel: 0,
+              nextReviewAt: computeInitialNextReview(completedAtPost),
+              lastReviewedAt: null,
+            }
+          : {}),
       },
     });
 

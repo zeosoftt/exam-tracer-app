@@ -13,6 +13,7 @@ import { createExamSchema } from '@/lib/validation/schemas';
 import type { z } from 'zod';
 import { BookOpen, ArrowLeft, Loader2, Calendar } from 'lucide-react';
 import Link from 'next/link';
+import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
 
 interface CreateExamFormProps {
   user: {
@@ -70,141 +71,145 @@ export function CreateExamForm({ user: _user }: CreateExamFormProps) {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
       {/* Header */}
-      <header className="border-b border-stone-200 bg-white">
+      <header className="border-b border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-950/90">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/dashboard/exams" className="text-stone-600 hover:text-stone-900">
+              <Link
+                href="/dashboard/exams"
+                className="text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
+              >
                 <ArrowLeft className="h-5 w-5" />
               </Link>
               <div className="flex items-center gap-3">
-                <BookOpen className="h-6 w-6 text-primary-600" />
-                <h1 className="text-xl font-bold text-stone-900">Yeni Sınav Oluştur</h1>
+                <BookOpen className="h-6 w-6 text-primary-600 dark:text-primary-400" />
+                <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">Yeni Sınav Oluştur</h1>
               </div>
             </div>
+            <ThemeToggleCompact />
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-2xl border border-stone-200 shadow-sm p-8">
+        <div className="rounded-2xl border border-stone-200 bg-white p-8 shadow-sm dark:border-stone-800 dark:bg-stone-900/90">
           {error && (
-            <div className="mb-6 rounded-xl bg-red-50 border border-red-200 p-4">
-              <p className="text-sm font-medium text-red-800">{error}</p>
+            <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-900/50 dark:bg-red-950/40">
+              <p className="text-sm font-medium text-red-800 dark:text-red-200">{error}</p>
             </div>
           )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Name Field */}
             <div>
-              <label htmlFor="name" className="block text-sm font-semibold text-stone-900 mb-2">
+              <label htmlFor="name" className="mb-2 block text-sm font-semibold text-stone-900 dark:text-stone-100">
                 Sınav Adı <span className="text-red-500">*</span>
               </label>
               <input
                 id="name"
                 type="text"
                 {...register('name')}
-                className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm placeholder:text-stone-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-colors"
+                className="input w-full rounded-xl px-4 py-3 text-sm"
                 placeholder="Örn: KPSS Genel Yetenek"
                 disabled={isLoading}
               />
               {errors.name && (
-                <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name.message}</p>
               )}
-              <p className="mt-1 text-xs text-stone-500">
+              <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
                 2-100 karakter arası, sınavın açıklayıcı adı
               </p>
             </div>
 
             {/* Code Field */}
             <div>
-              <label htmlFor="code" className="block text-sm font-semibold text-stone-900 mb-2">
+              <label htmlFor="code" className="mb-2 block text-sm font-semibold text-stone-900 dark:text-stone-100">
                 Sınav Kodu <span className="text-red-500">*</span>
               </label>
               <input
                 id="code"
                 type="text"
                 {...register('code')}
-                className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm placeholder:text-stone-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-colors uppercase"
+                className="input w-full rounded-xl px-4 py-3 text-sm uppercase"
                 placeholder="KPSS_GENEL_YETENEK"
                 disabled={isLoading}
                 style={{ textTransform: 'uppercase' }}
               />
               {errors.code && (
-                <p className="mt-1 text-sm text-red-600">{errors.code.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.code.message}</p>
               )}
-              <p className="mt-1 text-xs text-stone-500">
+              <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
                 Büyük harf, rakam, tire ve alt çizgi kullanılabilir (2-50 karakter)
               </p>
             </div>
 
             {/* Description Field */}
             <div>
-              <label htmlFor="description" className="block text-sm font-semibold text-stone-900 mb-2">
+              <label htmlFor="description" className="mb-2 block text-sm font-semibold text-stone-900 dark:text-stone-100">
                 Açıklama
               </label>
               <textarea
                 id="description"
                 {...register('description')}
                 rows={4}
-                className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm placeholder:text-stone-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-colors resize-none"
+                className="input w-full resize-none rounded-xl px-4 py-3 text-sm"
                 placeholder="Sınav hakkında açıklayıcı bilgi..."
                 disabled={isLoading}
               />
               {errors.description && (
-                <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.description.message}</p>
               )}
-              <p className="mt-1 text-xs text-stone-500">
+              <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
                 Maksimum 1000 karakter
               </p>
             </div>
 
             {/* Date Fields */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               {/* Start Date */}
               <div>
-                <label htmlFor="startDate" className="block text-sm font-semibold text-stone-900 mb-2">
-                  <Calendar className="inline h-4 w-4 mr-1" />
+                <label htmlFor="startDate" className="mb-2 block text-sm font-semibold text-stone-900 dark:text-stone-100">
+                  <Calendar className="mr-1 inline h-4 w-4" />
                   Başlangıç Tarihi
                 </label>
                 <input
                   id="startDate"
                   type="datetime-local"
                   {...register('startDate')}
-                  className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm placeholder:text-stone-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-colors"
+                  className="input w-full rounded-xl px-4 py-3 text-sm"
                   disabled={isLoading}
                 />
                 {errors.startDate && (
-                  <p className="mt-1 text-sm text-red-600">{errors.startDate.message}</p>
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.startDate.message}</p>
                 )}
               </div>
 
               {/* End Date */}
               <div>
-                <label htmlFor="endDate" className="block text-sm font-semibold text-stone-900 mb-2">
-                  <Calendar className="inline h-4 w-4 mr-1" />
+                <label htmlFor="endDate" className="mb-2 block text-sm font-semibold text-stone-900 dark:text-stone-100">
+                  <Calendar className="mr-1 inline h-4 w-4" />
                   Bitiş Tarihi
                 </label>
                 <input
                   id="endDate"
                   type="datetime-local"
                   {...register('endDate')}
-                  className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm placeholder:text-stone-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-colors"
+                  className="input w-full rounded-xl px-4 py-3 text-sm"
                   disabled={isLoading}
                 />
                 {errors.endDate && (
-                  <p className="mt-1 text-sm text-red-600">{errors.endDate.message}</p>
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.endDate.message}</p>
                 )}
               </div>
             </div>
 
             {/* Form Actions */}
-            <div className="flex items-center justify-end gap-4 pt-6 border-t border-stone-200">
+            <div className="flex items-center justify-end gap-4 border-t border-stone-200 pt-6 dark:border-stone-800">
               <Link
                 href="/dashboard/exams"
-                className={`px-6 py-3 text-sm font-semibold text-stone-700 bg-white border border-stone-300 rounded-xl hover:bg-stone-50 transition-colors ${
+                className={`rounded-xl border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700 ${
                   isLoading ? 'pointer-events-none opacity-50' : ''
                 }`}
               >
@@ -213,7 +218,7 @@ export function CreateExamForm({ user: _user }: CreateExamFormProps) {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="inline-flex items-center justify-center px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-primary-500 rounded-xl hover:from-primary-700 hover:to-primary-600 transition-all shadow-lg shadow-primary-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition-all hover:from-primary-700 hover:to-primary-600 disabled:cursor-not-allowed disabled:opacity-50 dark:shadow-primary-900/40"
               >
                 {isLoading ? (
                   <>

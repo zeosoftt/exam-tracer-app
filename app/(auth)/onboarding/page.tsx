@@ -75,26 +75,26 @@ export default function OnboardingPage() {
   // Step 1: User Type Selection
   const Step1 = () => (
     <div className="space-y-6">
-      <div className="text-center mb-8">
-        <h2 className="font-display text-3xl font-bold text-stone-900 mb-2">Nasıl kullanacaksınız?</h2>
-        <p className="text-stone-600">Size en uygun seçeneği seçin</p>
+      <div className="mb-8 text-center">
+        <h2 className="mb-2 font-display text-3xl font-bold text-stone-900 dark:text-stone-100">Nasıl kullanacaksınız?</h2>
+        <p className="text-stone-600 dark:text-stone-400">Size en uygun seçeneği seçin</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <button
           onClick={() => {
             setUserType('individual');
             setStep(2);
           }}
-          className="group relative p-8 bg-white rounded-2xl border-2 border-stone-200 hover:border-primary-500 hover:shadow-xl transition-all text-left"
+          className="group relative rounded-2xl border-2 border-stone-200 bg-white p-8 text-left transition-all hover:border-primary-500 hover:shadow-xl dark:border-stone-700 dark:bg-stone-900/80 dark:hover:border-primary-600"
         >
           <div className="flex items-center gap-4 mb-4">
             <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
               <User className="h-6 w-6 text-white" />
             </div>
-            <h3 className="text-xl font-bold text-stone-900">Bireysel Kullanım</h3>
+            <h3 className="text-xl font-bold text-stone-900 dark:text-stone-100">Bireysel Kullanım</h3>
           </div>
-          <p className="text-stone-600">
+          <p className="text-stone-600 dark:text-stone-400">
             Kendi sınav hazırlığınızı takip etmek için. Kişisel ilerlemenizi görüntüleyin ve yönetin.
           </p>
           <div className="mt-4 flex items-center text-primary-600 font-semibold group-hover:translate-x-2 transition-transform">
@@ -108,15 +108,15 @@ export default function OnboardingPage() {
             setUserType('institution');
             setStep(2);
           }}
-          className="group relative p-8 bg-white rounded-2xl border-2 border-stone-200 hover:border-primary-400 hover:shadow-xl transition-all text-left"
+          className="group relative rounded-2xl border-2 border-stone-200 bg-white p-8 text-left transition-all hover:border-primary-400 hover:shadow-xl dark:border-stone-700 dark:bg-stone-900/80 dark:hover:border-primary-600"
         >
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary-600 to-teal-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+          <div className="mb-4 flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary-600 to-teal-500 transition-transform group-hover:scale-110">
               <Building2 className="h-6 w-6 text-white" />
             </div>
-            <h3 className="text-xl font-bold text-stone-900">Kurumsal Kullanım</h3>
+            <h3 className="text-xl font-bold text-stone-900 dark:text-stone-100">Kurumsal Kullanım</h3>
           </div>
-          <p className="text-stone-600">
+          <p className="text-stone-600 dark:text-stone-400">
             Kurumunuz için. Tüm ekibinizin sınav hazırlığını merkezi olarak yönetin ve takip edin.
           </p>
           <div className="mt-4 flex items-center text-primary-600 font-semibold group-hover:translate-x-2 transition-transform">
@@ -131,23 +131,23 @@ export default function OnboardingPage() {
   // Step 2: Exam Selection
   const Step2 = () => (
     <div className="space-y-6">
-      <div className="text-center mb-8">
-        <h2 className="font-display text-3xl font-bold text-stone-900 mb-2">Hangi sınava hazırlanıyorsunuz?</h2>
-        <p className="text-stone-600">Size uygun sınavı listeden seçin</p>
+      <div className="mb-8 text-center">
+        <h2 className="mb-2 font-display text-3xl font-bold text-stone-900 dark:text-stone-100">Hangi sınava hazırlanıyorsunuz?</h2>
+        <p className="text-stone-600 dark:text-stone-400">Size uygun sınavı listeden seçin</p>
       </div>
 
-      <div className="max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+      <div className="custom-scrollbar max-h-[600px] overflow-y-auto pr-2">
         {isLoadingExams ? (
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-stone-200 border-t-primary-600 mb-4"></div>
-              <p className="text-stone-600">Sınavlar yükleniyor...</p>
+              <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-stone-200 border-t-primary-600 dark:border-stone-700"></div>
+              <p className="text-stone-600 dark:text-stone-400">Sınavlar yükleniyor...</p>
             </div>
           </div>
         ) : examError ? (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-            <p className="text-red-800 font-semibold mb-2">Hata</p>
-            <p className="text-red-600 text-sm mb-4">{examError}</p>
+          <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center dark:border-red-900/50 dark:bg-red-950/40">
+            <p className="mb-2 font-semibold text-red-800 dark:text-red-200">Hata</p>
+            <p className="mb-4 text-sm text-red-600 dark:text-red-300">{examError}</p>
             <button
               onClick={() => {
                 setIsLoadingExams(true);
@@ -172,20 +172,20 @@ export default function OnboardingPage() {
             </button>
           </div>
         ) : availableExams.length === 0 ? (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center">
-            <p className="text-yellow-800 font-semibold mb-2">Henüz sınav bulunmuyor</p>
-            <p className="text-yellow-600 text-sm">Sistem yöneticisi ile iletişime geçin.</p>
+          <div className="rounded-xl border border-yellow-200 bg-yellow-50 p-6 text-center dark:border-yellow-900/40 dark:bg-yellow-950/30">
+            <p className="mb-2 font-semibold text-yellow-800 dark:text-yellow-200">Henüz sınav bulunmuyor</p>
+            <p className="text-sm text-yellow-600 dark:text-yellow-300/90">Sistem yöneticisi ile iletişime geçin.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {availableExams.map((exam) => (
             <button
               key={exam?.id}
               onClick={() => setSelectedExam(exam)}
-              className={`group relative p-6 rounded-2xl border-2 text-left transition-all duration-300 ${
+              className={`group relative rounded-2xl border-2 p-6 text-left transition-all duration-300 ${
                 selectedExam?.id === exam?.id
-                  ? 'border-primary-500 bg-primary-50 shadow-soft-lg shadow-primary-500/20 scale-[1.02]'
-                  : 'border-stone-200 hover:border-primary-300 hover:shadow-lg bg-white hover:bg-stone-50'
+                  ? 'scale-[1.02] border-primary-500 bg-primary-50 shadow-soft-lg shadow-primary-500/20 dark:border-primary-600 dark:bg-primary-950/40'
+                  : 'border-stone-200 bg-white hover:border-primary-300 hover:bg-stone-50 hover:shadow-lg dark:border-stone-700 dark:bg-stone-900/80 dark:hover:border-primary-700 dark:hover:bg-stone-800'
               }`}
             >
               {/* Selected indicator */}
@@ -198,27 +198,27 @@ export default function OnboardingPage() {
               )}
 
               <div className="pr-8">
-                <h3 className={`font-bold text-lg mb-2 leading-tight transition-colors ${
+                <h3 className={`mb-2 text-lg font-bold leading-tight transition-colors ${
                   selectedExam?.id === exam?.id
-                    ? 'text-primary-900'
-                    : 'text-stone-900 group-hover:text-primary-600'
+                    ? 'text-primary-900 dark:text-primary-100'
+                    : 'text-stone-900 group-hover:text-primary-600 dark:text-stone-100 dark:group-hover:text-primary-400'
                 }`}>
                   {exam?.name}
                 </h3>
                 
                 {exam?.description && (
-                  <p className={`text-sm mb-3 leading-relaxed ${
-                    selectedExam?.id === exam.id ? 'text-stone-700' : 'text-stone-600'
+                  <p className={`mb-3 text-sm leading-relaxed ${
+                    selectedExam?.id === exam.id ? 'text-stone-700 dark:text-stone-300' : 'text-stone-600 dark:text-stone-400'
                   }`}>
                     {exam.description}
                   </p>
                 )}
                 
                 <div className="flex items-center gap-2">
-                  <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                  <span className={`inline-flex items-center rounded-lg border px-3 py-1 text-xs font-semibold transition-colors ${
                     selectedExam?.id === exam?.id
-                      ? 'bg-primary-100 text-primary-700 border border-primary-200'
-                      : 'bg-stone-100 text-stone-700 group-hover:bg-primary-100 group-hover:text-primary-700'
+                      ? 'border-primary-200 bg-primary-100 text-primary-700 dark:border-primary-800 dark:bg-primary-950/50 dark:text-primary-200'
+                      : 'border-transparent bg-stone-100 text-stone-700 group-hover:bg-primary-100 group-hover:text-primary-700 dark:bg-stone-800 dark:text-stone-300 dark:group-hover:bg-primary-950/40 dark:group-hover:text-primary-300'
                   }`}>
                     {exam?.code}
                   </span>
@@ -233,7 +233,7 @@ export default function OnboardingPage() {
       <div className="flex items-center justify-between pt-6">
         <button
           onClick={() => setStep(1)}
-          className="inline-flex items-center px-6 py-3 text-sm font-semibold text-stone-700 bg-white border border-stone-300 rounded-xl hover:bg-stone-50 transition-colors"
+          className="inline-flex items-center rounded-xl border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Geri
@@ -248,7 +248,7 @@ export default function OnboardingPage() {
             }
           }}
           disabled={!selectedExam}
-          className="inline-flex items-center px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-primary-500 rounded-xl hover:from-primary-700 hover:to-primary-600 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex items-center rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:from-primary-700 hover:to-primary-600 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Devam Et
           <ArrowRight className="ml-2 h-4 w-4" />
@@ -264,25 +264,25 @@ export default function OnboardingPage() {
 
     return (
       <div className="space-y-6">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full mb-4">
+        <div className="mb-8 text-center">
+          <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-600">
             <Target className="h-8 w-8 text-white" />
           </div>
-          <h2 className="font-display text-3xl font-bold text-stone-900 mb-2">Hedef Puanınız Nedir?</h2>
-          <p className="text-stone-600">
+          <h2 className="mb-2 font-display text-3xl font-bold text-stone-900 dark:text-stone-100">Hedef Puanınız Nedir?</h2>
+          <p className="text-stone-600 dark:text-stone-400">
             {selectedExam?.name} için hedeflediğiniz puanı seçin
           </p>
         </div>
 
         <div className="space-y-6">
-          <div className="bg-gradient-to-br bg-primary-50 rounded-2xl p-8 border border-primary-200">
-            <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-24 h-24 bg-white rounded-full shadow-lg mb-4">
-                <span className="text-4xl font-extrabold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent">
+          <div className="rounded-2xl border border-primary-200 bg-gradient-to-br bg-primary-50 p-8 dark:border-primary-800 dark:bg-primary-950/30">
+            <div className="mb-6 text-center">
+              <div className="mb-4 inline-flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-lg dark:bg-stone-900">
+                <span className="bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-4xl font-extrabold text-transparent">
                   {currentScore}
                 </span>
               </div>
-              <label className="block text-sm font-semibold text-stone-900 mb-4">
+              <label className="mb-4 block text-sm font-semibold text-stone-900 dark:text-stone-100">
                 Hedef Puan
               </label>
             </div>
@@ -293,9 +293,9 @@ export default function OnboardingPage() {
               step={scoreRange.step}
               value={currentScore}
               onChange={(e) => setTargetScore(parseFloat(e.target.value))}
-              className="w-full h-4 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
+              className="h-4 w-full cursor-pointer appearance-none rounded-lg bg-stone-200 accent-primary-600 dark:bg-stone-700"
             />
-            <div className="flex justify-between text-xs text-stone-500 mt-3">
+            <div className="mt-3 flex justify-between text-xs text-stone-500 dark:text-stone-400">
               <span className="font-medium">{scoreRange.min}</span>
               <span className="font-medium">{scoreRange.max}</span>
             </div>
@@ -303,7 +303,7 @@ export default function OnboardingPage() {
 
           {/* Quick select buttons */}
           <div>
-            <p className="text-sm font-semibold text-stone-700 mb-3">Hızlı Seçim:</p>
+            <p className="mb-3 text-sm font-semibold text-stone-700 dark:text-stone-300">Hızlı Seçim:</p>
             <div className="grid grid-cols-4 gap-2">
               {[
                 Math.round(scoreRange.min + (scoreRange.max - scoreRange.min) * 0.5),
@@ -314,10 +314,10 @@ export default function OnboardingPage() {
                 <button
                   key={score}
                   onClick={() => setTargetScore(score)}
-                  className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+                  className={`rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
                     targetScore === score
-                      ? 'bg-primary-600 text-white shadow-lg scale-105'
-                      : 'bg-white border-2 border-stone-200 text-stone-700 hover:border-primary-300 hover:bg-primary-50'
+                      ? 'scale-105 bg-primary-600 text-white shadow-lg'
+                      : 'border-2 border-stone-200 bg-white text-stone-700 hover:border-primary-300 hover:bg-primary-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200 dark:hover:border-primary-700 dark:hover:bg-stone-700'
                   }`}
                 >
                   {score}
@@ -330,7 +330,7 @@ export default function OnboardingPage() {
       <div className="flex items-center justify-between pt-6">
           <button
             onClick={() => setStep(2)}
-            className="inline-flex items-center px-6 py-3 text-sm font-semibold text-stone-700 bg-white border border-stone-300 rounded-xl hover:bg-stone-50 transition-colors"
+            className="inline-flex items-center rounded-xl border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Geri
@@ -342,7 +342,7 @@ export default function OnboardingPage() {
               }
             }}
             disabled={targetScore === null}
-            className="inline-flex items-center px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-primary-500 rounded-xl hover:from-primary-700 hover:to-primary-600 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:from-primary-700 hover:to-primary-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Devam Et
             <ArrowRight className="ml-2 h-4 w-4" />
@@ -358,39 +358,39 @@ export default function OnboardingPage() {
 
     return (
       <div className="space-y-6">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full mb-4">
+        <div className="mb-8 text-center">
+          <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-600">
             <Clock className="h-8 w-8 text-white" />
           </div>
-          <h2 className="font-display text-3xl font-bold text-stone-900 mb-2">Günlük Çalışma Hedefiniz</h2>
-          <p className="text-stone-600">Günde kaç saat çalışmayı hedefliyorsunuz?</p>
+          <h2 className="mb-2 font-display text-3xl font-bold text-stone-900 dark:text-stone-100">Günlük Çalışma Hedefiniz</h2>
+          <p className="text-stone-600 dark:text-stone-400">Günde kaç saat çalışmayı hedefliyorsunuz?</p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {studyHoursOptions.map((hours) => (
             <button
               key={hours}
               onClick={() => setDailyStudyHours(hours)}
-              className={`relative p-6 rounded-2xl border-2 text-center transition-all duration-300 ${
+              className={`relative rounded-2xl border-2 p-6 text-center transition-all duration-300 ${
                 dailyStudyHours === hours
-                  ? 'border-primary-500 bg-primary-50 shadow-soft-lg shadow-primary-500/20 scale-105'
-                  : 'border-stone-200 hover:border-primary-300 hover:shadow-lg bg-white'
+                  ? 'scale-105 border-primary-500 bg-primary-50 shadow-soft-lg shadow-primary-500/20 dark:border-primary-600 dark:bg-primary-950/40'
+                  : 'border-stone-200 bg-white hover:border-primary-300 hover:shadow-lg dark:border-stone-700 dark:bg-stone-900/80 dark:hover:border-primary-700'
               }`}
             >
               {dailyStudyHours === hours && (
-                <div className="absolute top-3 right-3">
-                  <div className="w-6 h-6 bg-gradient-to-br from-primary-600 to-primary-500 rounded-full flex items-center justify-center shadow-lg">
+                <div className="absolute right-3 top-3">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-primary-600 to-primary-500 shadow-lg">
                     <CheckCircle className="h-4 w-4 text-white" />
                   </div>
                 </div>
               )}
-              <div className={`text-4xl font-bold mb-2 ${
-                dailyStudyHours === hours ? 'text-primary-900' : 'text-stone-900'
+              <div className={`mb-2 text-4xl font-bold ${
+                dailyStudyHours === hours ? 'text-primary-900 dark:text-primary-100' : 'text-stone-900 dark:text-stone-100'
               }`}>
                 {hours}
               </div>
               <div className={`text-sm font-semibold ${
-                dailyStudyHours === hours ? 'text-primary-700' : 'text-stone-600'
+                dailyStudyHours === hours ? 'text-primary-700 dark:text-primary-300' : 'text-stone-600 dark:text-stone-400'
               }`}>
                 Saat
               </div>
@@ -398,8 +398,8 @@ export default function OnboardingPage() {
           ))}
         </div>
 
-        <div className="bg-primary-50 border border-primary-200 rounded-xl p-4">
-          <p className="text-sm text-primary-800">
+        <div className="rounded-xl border border-primary-200 bg-primary-50 p-4 dark:border-primary-800 dark:bg-primary-950/30">
+          <p className="text-sm text-primary-800 dark:text-primary-200">
             <strong>💡 İpucu:</strong> Gerçekçi bir hedef belirleyin. Düzenli çalışma, uzun saatler çalışmaktan daha etkilidir.
           </p>
         </div>
@@ -407,7 +407,7 @@ export default function OnboardingPage() {
         <div className="flex items-center justify-between pt-6">
           <button
             onClick={() => setStep(3)}
-            className="inline-flex items-center px-6 py-3 text-sm font-semibold text-stone-700 bg-white border border-stone-300 rounded-xl hover:bg-stone-50 transition-colors"
+            className="inline-flex items-center rounded-xl border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Geri
@@ -419,7 +419,7 @@ export default function OnboardingPage() {
               }
             }}
             disabled={dailyStudyHours === null}
-            className="inline-flex items-center px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-primary-500 rounded-xl hover:from-primary-700 hover:to-primary-600 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:from-primary-700 hover:to-primary-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Devam Et
             <ArrowRight className="ml-2 h-4 w-4" />
@@ -449,43 +449,43 @@ export default function OnboardingPage() {
 
     return (
       <div className="space-y-6">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full mb-4">
+        <div className="mb-8 text-center">
+          <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-green-500 to-green-600">
             <CheckCircle className="h-8 w-8 text-white" />
           </div>
-          <h2 className="font-display text-3xl font-bold text-stone-900 mb-2">Hemen Başlayın</h2>
-          <p className="text-stone-600">Bilgilerinizi tamamlayın ve hesabınızı oluşturun</p>
+          <h2 className="mb-2 font-display text-3xl font-bold text-stone-900 dark:text-stone-100">Hemen Başlayın</h2>
+          <p className="text-stone-600 dark:text-stone-400">Bilgilerinizi tamamlayın ve hesabınızı oluşturun</p>
         </div>
 
-        <div className="bg-stone-50 rounded-2xl p-6 space-y-4">
+        <div className="space-y-4 rounded-2xl bg-stone-50 p-6 dark:bg-stone-800/60">
           <div className="flex items-center gap-3">
-            <div className="w-2 h-2 bg-primary-600 rounded-full"></div>
+            <div className="h-2 w-2 rounded-full bg-primary-600"></div>
             <div>
-              <p className="text-sm text-stone-600">Kullanım Tipi</p>
-              <p className="font-semibold text-stone-900">
+              <p className="text-sm text-stone-600 dark:text-stone-400">Kullanım Tipi</p>
+              <p className="font-semibold text-stone-900 dark:text-stone-100">
                 {userType === 'individual' ? 'Bireysel Kullanım' : 'Kurumsal Kullanım'}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-2 h-2 bg-primary-600 rounded-full"></div>
+            <div className="h-2 w-2 rounded-full bg-primary-600"></div>
             <div>
-              <p className="text-sm text-stone-600">Seçilen Sınav</p>
-              <p className="font-semibold text-stone-900">{selectedExam?.name}</p>
+              <p className="text-sm text-stone-600 dark:text-stone-400">Seçilen Sınav</p>
+              <p className="font-semibold text-stone-900 dark:text-stone-100">{selectedExam?.name}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+            <div className="h-2 w-2 rounded-full bg-green-600"></div>
             <div>
-              <p className="text-sm text-stone-600">Hedef Puan</p>
-              <p className="font-semibold text-stone-900">{targetScore}</p>
+              <p className="text-sm text-stone-600 dark:text-stone-400">Hedef Puan</p>
+              <p className="font-semibold text-stone-900 dark:text-stone-100">{targetScore}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-2 h-2 bg-orange-600 rounded-full"></div>
+            <div className="h-2 w-2 rounded-full bg-orange-600"></div>
             <div>
-              <p className="text-sm text-stone-600">Günlük Çalışma Hedefi</p>
-              <p className="font-semibold text-stone-900">{dailyStudyHours} saat</p>
+              <p className="text-sm text-stone-600 dark:text-stone-400">Günlük Çalışma Hedefi</p>
+              <p className="font-semibold text-stone-900 dark:text-stone-100">{dailyStudyHours} saat</p>
             </div>
           </div>
         </div>
@@ -493,7 +493,7 @@ export default function OnboardingPage() {
         <div className="flex items-center justify-between pt-6">
           <button
             onClick={() => setStep(4)}
-            className="inline-flex items-center px-6 py-3 text-sm font-semibold text-stone-700 bg-white border border-stone-300 rounded-xl hover:bg-stone-50 transition-colors"
+            className="inline-flex items-center rounded-xl border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Geri
@@ -501,7 +501,7 @@ export default function OnboardingPage() {
           <button
             onClick={handleComplete}
             disabled={false}
-            className="inline-flex items-center px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-primary-500 rounded-xl hover:from-primary-700 hover:to-primary-600 transition-all shadow-lg disabled:opacity-50"
+            className="inline-flex items-center rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:from-primary-700 hover:to-primary-600 disabled:opacity-50"
           >
             Kayıt Ol
             <ArrowRight className="ml-2 h-4 w-4" />
@@ -512,24 +512,24 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 flex items-center justify-center px-4 py-12">
+    <div className="flex min-h-screen items-center justify-center bg-stone-50 px-4 py-12 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
       <div className="w-full max-w-2xl">
         {/* Progress Bar */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-stone-600">Adım {step} / 5</span>
-            <span className="text-sm font-medium text-stone-600">%{Math.round((step / 5) * 100)}</span>
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-sm font-medium text-stone-600 dark:text-stone-400">Adım {step} / 5</span>
+            <span className="text-sm font-medium text-stone-600 dark:text-stone-400">%{Math.round((step / 5) * 100)}</span>
           </div>
-          <div className="w-full bg-stone-200 rounded-full h-2">
+          <div className="h-2 w-full rounded-full bg-stone-200 dark:bg-stone-800">
             <div
-              className="bg-gradient-to-r from-primary-600 to-primary-500 h-2 rounded-full transition-all duration-300"
+              className="h-2 rounded-full bg-gradient-to-r from-primary-600 to-primary-500 transition-all duration-300"
               style={{ width: `${(step / 5) * 100}%` }}
             ></div>
           </div>
         </div>
 
         {/* Content Card */}
-        <div className="bg-white rounded-3xl shadow-soft-lg p-6 sm:p-8 sm:p-12 border border-stone-100">
+        <div className="rounded-3xl border border-stone-200 bg-white p-6 shadow-soft-lg dark:border-stone-800 dark:bg-stone-900/90 sm:p-8 sm:p-12">
           {step === 1 && <Step1 />}
           {step === 2 && <Step2 />}
           {step === 3 && <Step3 />}
@@ -541,7 +541,7 @@ export default function OnboardingPage() {
         <div className="mt-6 text-center">
           <Link
             href="/"
-            className="text-sm text-stone-600 hover:text-stone-900 transition-colors"
+            className="text-sm text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
           >
             ← Ana Sayfaya Dön
           </Link>

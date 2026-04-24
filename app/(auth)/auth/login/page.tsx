@@ -13,8 +13,20 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema } from '@/lib/validation/schemas';
 import type { z } from 'zod';
-import { AUTH_ERROR_CODES } from '@/config/constants';
-import { BookOpen, Mail, Lock, Loader2, ArrowLeft, CheckCircle, Eye, EyeOff, Send } from 'lucide-react';
+import { AUTH_ERROR_CODES, SERVICE_UNAVAILABLE_COPY } from '@/config/constants';
+import {
+  BookOpen,
+  Mail,
+  Lock,
+  Loader2,
+  ArrowLeft,
+  CheckCircle,
+  Eye,
+  EyeOff,
+  Send,
+  CloudOff,
+  RefreshCw,
+} from 'lucide-react';
 
 function LoginForm() {
   const router = useRouter();
@@ -25,6 +37,7 @@ function LoginForm() {
   const [resendMessage, setResendMessage] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [pendingVerifyEmail, setPendingVerifyEmail] = useState<string | null>(null);
+  const [serviceOutage, setServiceOutage] = useState(false);
   const registered = searchParams.get('registered');
   const passwordReset = searchParams.get('passwordReset');
   const verified = searchParams.get('verified');
@@ -67,6 +80,7 @@ function LoginForm() {
     try {
       setIsLoading(true);
       setError(null);
+      setServiceOutage(false);
       setPendingVerifyEmail(null);
       setResendMessage(null);
 
@@ -85,6 +99,10 @@ function LoginForm() {
       });
 
       if (result?.error) {
+        if (result.error === AUTH_ERROR_CODES.DATABASE_UNAVAILABLE) {
+          setServiceOutage(true);
+          return;
+        }
         if (result.error === AUTH_ERROR_CODES.EMAIL_NOT_VERIFIED) {
           setPendingVerifyEmail(data.email.toLowerCase().trim());
           setError(
@@ -112,28 +130,28 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 flex items-center justify-center px-4 py-12">
+    <div className="flex min-h-screen items-center justify-center bg-stone-50 px-4 py-12 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-3 mb-4 group">
-            <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/25 group-hover:shadow-primary-500/40 transition-shadow">
+        <div className="mb-8 text-center">
+          <Link href="/" className="group mb-4 inline-flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/25 transition-shadow group-hover:shadow-primary-500/40">
               <BookOpen className="h-6 w-6" />
             </div>
-            <span className="font-display text-2xl font-bold text-stone-900">The Goal Lab</span>
+            <span className="font-display text-2xl font-bold text-stone-900 dark:text-stone-100">The Goal Lab</span>
           </Link>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-soft-lg p-6 sm:p-8 border border-stone-100">
-          <div className="text-center mb-8">
-            <h1 className="font-display text-3xl font-extrabold text-stone-900 mb-2">Hoş Geldiniz</h1>
-            <p className="text-stone-600">Hesabınıza giriş yapın</p>
+        <div className="rounded-3xl border border-stone-200 bg-white p-6 shadow-soft-lg dark:border-stone-800 dark:bg-stone-900/90 sm:p-8">
+          <div className="mb-8 text-center">
+            <h1 className="mb-2 font-display text-3xl font-extrabold text-stone-900 dark:text-stone-100">Hoş Geldiniz</h1>
+            <p className="text-stone-600 dark:text-stone-400">Hesabınıza giriş yapın</p>
           </div>
 
           {registered && (
-            <div className="mb-6 rounded-xl bg-green-50 border border-green-200 p-4">
+            <div className="mb-6 rounded-xl border border-green-200 bg-green-50 p-4 dark:border-green-900/50 dark:bg-green-950/40">
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
-                <p className="text-sm font-medium text-green-800">
+                <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400" />
+                <p className="text-sm font-medium text-green-800 dark:text-green-200">
                   Hesabınız oluşturuldu. E-posta adresinize gönderilen doğrulama linkine tıklayın, ardından giriş yapabilirsiniz.
                 </p>
               </div>
@@ -141,10 +159,10 @@ function LoginForm() {
           )}
 
           {verified && (
-            <div className="mb-6 rounded-xl bg-green-50 border border-green-200 p-4">
+            <div className="mb-6 rounded-xl border border-green-200 bg-green-50 p-4 dark:border-green-900/50 dark:bg-green-950/40">
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
-                <p className="text-sm font-medium text-green-800">
+                <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400" />
+                <p className="text-sm font-medium text-green-800 dark:text-green-200">
                   E-posta adresiniz doğrulandı. Giriş yapabilirsiniz.
                 </p>
               </div>
@@ -152,26 +170,61 @@ function LoginForm() {
           )}
 
           {passwordReset && (
-            <div className="mb-6 rounded-xl bg-green-50 border border-green-200 p-4">
+            <div className="mb-6 rounded-xl border border-green-200 bg-green-50 p-4 dark:border-green-900/50 dark:bg-green-950/40">
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
-                <p className="text-sm font-medium text-green-800">
+                <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400" />
+                <p className="text-sm font-medium text-green-800 dark:text-green-200">
                   Şifreniz başarıyla güncellendi! Yeni şifrenizle giriş yapabilirsiniz.
                 </p>
               </div>
             </div>
           )}
 
+          {serviceOutage && (
+            <div
+              className="mb-6 rounded-2xl border border-amber-200/90 bg-gradient-to-br from-amber-50 via-orange-50/40 to-stone-50/80 p-5 shadow-sm ring-1 ring-amber-100/60 dark:border-amber-900/40 dark:from-amber-950/50 dark:via-stone-900 dark:to-stone-950 dark:ring-amber-900/30"
+              role="alert"
+            >
+              <div className="flex gap-4">
+                <div
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800 shadow-inner"
+                  aria-hidden
+                >
+                  <CloudOff className="h-5 w-5" strokeWidth={2} />
+                </div>
+                <div className="min-w-0 flex-1 text-left">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-amber-800/75">
+                    {SERVICE_UNAVAILABLE_COPY.badge}
+                  </p>
+                  <h2 className="mt-1 font-display text-lg font-bold tracking-tight text-stone-900 dark:text-stone-100">
+                    {SERVICE_UNAVAILABLE_COPY.title}
+                  </h2>
+                  <p className="mt-2 text-sm leading-relaxed text-stone-600 dark:text-stone-400">
+                    {SERVICE_UNAVAILABLE_COPY.description}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => window.location.reload()}
+                    className="mt-4 inline-flex items-center gap-2 rounded-xl border border-amber-300/80 bg-white px-4 py-2.5 text-sm font-semibold text-amber-950 shadow-sm transition hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-amber-400/40 dark:border-amber-800 dark:bg-stone-900 dark:text-amber-100 dark:hover:bg-stone-800"
+                  >
+                    <RefreshCw className="h-4 w-4 text-amber-700" aria-hidden />
+                    {SERVICE_UNAVAILABLE_COPY.retryLabel}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {error && (
-            <div className="mb-6 rounded-xl bg-red-50 border border-red-200 p-4 space-y-3">
-              <p className="text-sm font-medium text-red-800">{error}</p>
+            <div className="mb-6 space-y-3 rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-900/50 dark:bg-red-950/40">
+              <p className="text-sm font-medium text-red-800 dark:text-red-200">{error}</p>
               {pendingVerifyEmail && (
-                <div className="pt-2 border-t border-red-100">
+                <div className="border-t border-red-100 pt-2 dark:border-red-900/40">
                   <button
                     type="button"
                     onClick={handleResendVerification}
                     disabled={resendLoading}
-                    className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-medium text-primary-700 border border-primary-200 hover:bg-primary-50 disabled:opacity-50"
+                    className="inline-flex items-center gap-2 rounded-lg border border-primary-200 bg-white px-3 py-2 text-sm font-medium text-primary-700 hover:bg-primary-50 disabled:opacity-50 dark:border-primary-800 dark:bg-stone-900 dark:text-primary-300 dark:hover:bg-stone-800"
                   >
                     {resendLoading ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -181,7 +234,7 @@ function LoginForm() {
                     Doğrulama e-postasını tekrar gönder
                   </button>
                   {resendMessage && (
-                    <p className="mt-2 text-xs text-stone-600">{resendMessage}</p>
+                    <p className="mt-2 text-xs text-stone-600 dark:text-stone-400">{resendMessage}</p>
                   )}
                 </div>
               )}
@@ -191,7 +244,7 @@ function LoginForm() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-stone-900 mb-2">
+              <label htmlFor="email" className="mb-2 block text-sm font-semibold text-stone-900 dark:text-stone-100">
                 E-posta Adresi
               </label>
               <div className="relative">
@@ -202,7 +255,7 @@ function LoginForm() {
                   id="email"
                   type="email"
                   {...register('email')}
-                  className="w-full pl-10 rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm placeholder:text-stone-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-colors"
+                  className="input w-full pl-10"
                   placeholder="ornek@email.com"
                   autoComplete="email"
                   disabled={isLoading}
@@ -215,7 +268,7 @@ function LoginForm() {
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-stone-900 mb-2">
+              <label htmlFor="password" className="mb-2 block text-sm font-semibold text-stone-900 dark:text-stone-100">
                 Şifre
               </label>
               <div className="relative">
@@ -226,7 +279,7 @@ function LoginForm() {
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   {...register('password')}
-                  className="w-full pl-10 pr-10 rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm placeholder:text-stone-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-colors"
+                  className="input w-full pl-10 pr-10"
                   placeholder="••••••••"
                   autoComplete="current-password"
                   disabled={isLoading}
@@ -234,7 +287,7 @@ function LoginForm() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-stone-400 hover:text-stone-600 transition-colors"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-stone-400 transition-colors hover:text-stone-600 dark:hover:text-stone-300"
                   tabIndex={-1}
                 >
                   {showPassword ? (
@@ -253,7 +306,7 @@ function LoginForm() {
             <div className="flex justify-end">
               <Link
                 href="/auth/forgot-password"
-                className="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
+                className="text-sm font-medium text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
               >
                 Şifremi Unuttum
               </Link>
@@ -278,9 +331,9 @@ function LoginForm() {
 
           {/* Register Link */}
           <div className="mt-6 text-center">
-            <p className="text-sm text-stone-600">
+            <p className="text-sm text-stone-600 dark:text-stone-400">
               Hesabınız yok mu?{' '}
-              <Link href="/onboarding" className="font-semibold text-primary-600 hover:text-primary-700 transition-colors">
+              <Link href="/onboarding" className="font-semibold text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
                 Ücretsiz kayıt olun
               </Link>
             </p>
@@ -291,7 +344,7 @@ function LoginForm() {
         <div className="mt-6 text-center">
           <Link
             href="/"
-            className="inline-flex items-center text-sm text-stone-600 hover:text-stone-900 transition-colors"
+            className="inline-flex items-center text-sm text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
             Ana Sayfaya Dön
@@ -304,7 +357,13 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Yükleniyor...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-stone-50 text-stone-600 dark:bg-stone-950 dark:text-stone-400">
+          Yükleniyor...
+        </div>
+      }
+    >
       <LoginForm />
     </Suspense>
   );

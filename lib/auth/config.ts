@@ -10,6 +10,15 @@ import { comparePassword } from '@/lib/auth/password';
 import { logAuth, logError } from '@/lib/logger';
 import { ERROR_MESSAGES, AUTH_ERROR_CODES } from '@/config/constants';
 
+function isDatabaseConnectionError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const e = err as { name?: string; code?: string; message?: string };
+  if (e.name === 'PrismaClientInitializationError') return true;
+  if (e.code === 'P1001' || e.code === 'P1017') return true;
+  if (typeof e.message === 'string' && e.message.includes("Can't reach database")) return true;
+  return false;
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -110,6 +119,10 @@ export const authOptions: NextAuthOptions = {
             activeOrganizationId, // NEW: Active organization ID (null if not migrated yet)
           } as const;
         } catch (error) {
+          if (isDatabaseConnectionError(error)) {
+            logError('Auth: database unreachable', error);
+            throw new Error(AUTH_ERROR_CODES.DATABASE_UNAVAILABLE);
+          }
           logError('Auth error', error);
           throw error;
         }

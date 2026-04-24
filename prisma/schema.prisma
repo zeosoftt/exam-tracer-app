@@ -200,18 +200,23 @@ model ExamAssignment {
 }
 
 model UserProgress {
-  id             String         @id @default(cuid())
-  userId         String
-  topicId        String
-  status         ProgressStatus @default(NOT_STARTED)
-  completedAt    DateTime?
-  notes          String?
-  totalQuestions Int?
-  correctAnswers Int?
-  wrongAnswers   Int?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  deletedAt      DateTime?
+  id                     String         @id @default(cuid())
+  userId                 String
+  topicId                String
+  status                 ProgressStatus @default(NOT_STARTED)
+  completedAt            DateTime?
+  notes                  String?
+  totalQuestions         Int?
+  correctAnswers         Int?
+  wrongAnswers           Int?
+  /// Aralıklı tekrar: tamamlama sonrası kaç kez “tekrar ettim” işaretlendi (0 = henüz yok)
+  spacedRepetitionLevel  Int            @default(0)
+  /// Bir sonraki önerilen tekrar tarihi (UTC)
+  nextReviewAt           DateTime?
+  lastReviewedAt         DateTime?
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+  deletedAt              DateTime?
   topic          Topic          @relation(fields: [topicId], references: [id], onDelete: Cascade)
   user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -221,6 +226,7 @@ model UserProgress {
   @@index([status])
   @@index([userId, deletedAt])
   @@index([topicId, deletedAt])
+  @@index([userId, nextReviewAt])
   @@map("user_progress")
 }
 

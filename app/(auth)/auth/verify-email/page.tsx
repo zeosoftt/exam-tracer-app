@@ -57,50 +57,50 @@ function VerifyEmailContent() {
   }, [searchParams, router]);
 
   return (
-    <div className="min-h-screen bg-stone-50 flex items-center justify-center px-4 py-12">
+    <div className="flex min-h-screen items-center justify-center bg-stone-50 px-4 py-12 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-3 mb-4 group">
-            <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/25 group-hover:shadow-primary-500/40 transition-shadow">
+        <div className="mb-8 text-center">
+          <Link href="/" className="group mb-4 inline-flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/25 transition-shadow group-hover:shadow-primary-500/40">
               <BookOpen className="h-6 w-6" />
             </div>
-            <span className="font-display text-2xl font-bold text-stone-900">The Goal Lab</span>
+            <span className="font-display text-2xl font-bold text-stone-900 dark:text-stone-100">The Goal Lab</span>
           </Link>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-soft-lg p-6 sm:p-8 border border-stone-100">
+        <div className="rounded-3xl border border-stone-200 bg-white p-6 shadow-soft-lg dark:border-stone-800 dark:bg-stone-900/90 sm:p-8">
           <div className="text-center">
             {status === 'loading' && (
               <>
-                <Loader2 className="h-12 w-12 animate-spin text-primary-600 mx-auto mb-4" />
-                <h1 className="text-xl font-semibold text-stone-900 mb-2">E-posta doğrulanıyor</h1>
-                <p className="text-stone-600">Lütfen bekleyin...</p>
+                <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-primary-600" />
+                <h1 className="mb-2 text-xl font-semibold text-stone-900 dark:text-stone-100">E-posta doğrulanıyor</h1>
+                <p className="text-stone-600 dark:text-stone-400">Lütfen bekleyin...</p>
               </>
             )}
             {status === 'success' && (
               <>
-                <div className="flex justify-center mb-4">
-                  <div className="w-14 h-14 rounded-full bg-primary-100 flex items-center justify-center">
-                    <CheckCircle className="h-8 w-8 text-primary-600" />
+                <div className="mb-4 flex justify-center">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary-100 dark:bg-primary-950/60">
+                    <CheckCircle className="h-8 w-8 text-primary-600 dark:text-primary-400" />
                   </div>
                 </div>
-                <h1 className="text-xl font-semibold text-stone-900 mb-2">Doğrulama başarılı</h1>
-                <p className="text-stone-600 mb-6">{message}</p>
-                <p className="text-sm text-stone-500">Giriş sayfasına yönlendiriliyorsunuz...</p>
+                <h1 className="mb-2 text-xl font-semibold text-stone-900 dark:text-stone-100">Doğrulama başarılı</h1>
+                <p className="mb-6 text-stone-600 dark:text-stone-400">{message}</p>
+                <p className="text-sm text-stone-500 dark:text-stone-400">Giriş sayfasına yönlendiriliyorsunuz...</p>
               </>
             )}
             {status === 'error' && (
               <>
-                <div className="flex justify-center mb-4">
-                  <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center">
-                    <XCircle className="h-8 w-8 text-amber-600" />
+                <div className="mb-4 flex justify-center">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-950/50">
+                    <XCircle className="h-8 w-8 text-amber-600 dark:text-amber-400" />
                   </div>
                 </div>
-                <h1 className="text-xl font-semibold text-stone-900 mb-2">Doğrulama başarısız</h1>
-                <p className="text-stone-600 mb-6">{message}</p>
+                <h1 className="mb-2 text-xl font-semibold text-stone-900 dark:text-stone-100">Doğrulama başarısız</h1>
+                <p className="mb-6 text-stone-600 dark:text-stone-400">{message}</p>
                 <Link
                   href="/auth/login"
-                  className="inline-flex items-center justify-center w-full rounded-xl bg-primary-600 text-white py-3 px-4 font-medium hover:bg-primary-700 transition-colors"
+                  className="inline-flex w-full items-center justify-center rounded-xl bg-primary-600 px-4 py-3 font-medium text-white transition-colors hover:bg-primary-700"
                 >
                   Giriş sayfasına git
                 </Link>
@@ -109,12 +109,12 @@ function VerifyEmailContent() {
           </div>
         </div>
 
-        <p className="text-center text-sm text-stone-500 mt-6">
-          <Link href="/auth/login" className="text-primary-600 hover:underline">
+        <p className="mt-6 text-center text-sm text-stone-500 dark:text-stone-400">
+          <Link href="/auth/login" className="text-primary-600 hover:underline dark:text-primary-400">
             Giriş yap
           </Link>
           {' · '}
-          <Link href="/" className="text-primary-600 hover:underline">
+          <Link href="/" className="text-primary-600 hover:underline dark:text-primary-400">
             Ana sayfa
           </Link>
         </p>
@@ -127,7 +127,7 @@ export default function VerifyEmailPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+        <div className="flex min-h-screen items-center justify-center bg-stone-50 dark:bg-stone-950">
           <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
         </div>
       }

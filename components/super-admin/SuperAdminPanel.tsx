@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Loader2,
 } from 'lucide-react';
+import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
 
 const LANDING_SHOW_PARTNERS_KEY = 'landing_show_partners';
 
@@ -146,83 +147,85 @@ export function SuperAdminPanel() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br bg-stone-50">
-      <header className="border-b border-stone-200 bg-white/90 backdrop-blur-sm shadow-sm">
+    <div className="min-h-screen bg-gradient-to-br bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
+      <header className="border-b border-stone-200 bg-white/90 shadow-sm backdrop-blur-sm dark:border-stone-800 dark:bg-stone-950/90">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <Link
               href="/dashboard"
-              className="flex items-center gap-2 text-stone-600 hover:text-stone-900 transition-colors"
+              className="flex items-center gap-2 text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
             >
               <ArrowLeft className="h-5 w-5" />
               <span className="font-medium">Dashboard</span>
             </Link>
             <div className="flex items-center gap-2">
-              <Shield className="h-6 w-6 text-primary-600" />
-              <span className="text-xl font-bold text-primary-600">Super Admin Panel</span>
+              <Shield className="h-6 w-6 text-primary-600 dark:text-primary-400" />
+              <span className="text-xl font-bold text-primary-600 dark:text-primary-400">Super Admin Panel</span>
             </div>
-            <div className="w-24" />
+            <div className="flex w-24 justify-end">
+              <ThemeToggleCompact />
+            </div>
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <h1 className="text-2xl font-bold text-stone-900 mb-6">Sistem Özeti</h1>
+        <h1 className="mb-6 text-2xl font-bold text-stone-900 dark:text-stone-100">Sistem Özeti</h1>
 
         {/* Stats */}
         {isLoadingStats ? (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5 mb-8">
+          <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-5">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-24 bg-stone-100 rounded-xl animate-pulse" />
+              <div key={i} className="h-24 animate-pulse rounded-xl bg-stone-100 dark:bg-stone-800" />
             ))}
           </div>
         ) : stats ? (
           <>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5 mb-8">
-            <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-lg bg-indigo-100">
-                  <Users className="h-5 w-5 text-primary-600" />
+          <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+            <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900/90">
+              <div className="mb-2 flex items-center gap-3">
+                <div className="rounded-lg bg-indigo-100 p-2 dark:bg-indigo-950/50">
+                  <Users className="h-5 w-5 text-primary-600 dark:text-primary-400" />
                 </div>
-                <span className="text-sm font-medium text-stone-600">Toplam Kullanıcı</span>
+                <span className="text-sm font-medium text-stone-600 dark:text-stone-400">Toplam Kullanıcı</span>
               </div>
-              <p className="text-2xl font-bold text-stone-900">{stats.usersCount}</p>
+              <p className="text-2xl font-bold text-stone-900 dark:text-stone-100">{stats.usersCount}</p>
             </div>
-            <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-lg bg-green-100">
-                  <Users className="h-5 w-5 text-green-600" />
+            <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900/90">
+              <div className="mb-2 flex items-center gap-3">
+                <div className="rounded-lg bg-green-100 p-2 dark:bg-green-950/40">
+                  <Users className="h-5 w-5 text-green-600 dark:text-green-400" />
                 </div>
-                <span className="text-sm font-medium text-stone-600">Aktif Kullanıcı</span>
+                <span className="text-sm font-medium text-stone-600 dark:text-stone-400">Aktif Kullanıcı</span>
               </div>
-              <p className="text-2xl font-bold text-stone-900">{stats.activeUsersCount}</p>
+              <p className="text-2xl font-bold text-stone-900 dark:text-stone-100">{stats.activeUsersCount}</p>
             </div>
-            <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-lg bg-amber-100">
-                  <BookOpen className="h-5 w-5 text-amber-600" />
+            <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900/90">
+              <div className="mb-2 flex items-center gap-3">
+                <div className="rounded-lg bg-amber-100 p-2 dark:bg-amber-950/40">
+                  <BookOpen className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                 </div>
-                <span className="text-sm font-medium text-stone-600">Sınav</span>
+                <span className="text-sm font-medium text-stone-600 dark:text-stone-400">Sınav</span>
               </div>
-              <p className="text-2xl font-bold text-stone-900">{stats.examsCount}</p>
+              <p className="text-2xl font-bold text-stone-900 dark:text-stone-100">{stats.examsCount}</p>
             </div>
-            <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-lg bg-primary-100">
-                  <Timer className="h-5 w-5 text-primary-600" />
+            <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900/90">
+              <div className="mb-2 flex items-center gap-3">
+                <div className="rounded-lg bg-primary-100 p-2 dark:bg-primary-950/40">
+                  <Timer className="h-5 w-5 text-primary-600 dark:text-primary-400" />
                 </div>
-                <span className="text-sm font-medium text-stone-600">Pomodoro Oturum</span>
+                <span className="text-sm font-medium text-stone-600 dark:text-stone-400">Pomodoro Oturum</span>
               </div>
-              <p className="text-2xl font-bold text-stone-900">{stats.pomodoroSessionsCount}</p>
+              <p className="text-2xl font-bold text-stone-900 dark:text-stone-100">{stats.pomodoroSessionsCount}</p>
             </div>
-            <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-lg bg-primary-100">
-                  <ClipboardList className="h-5 w-5 text-primary-600" />
+            <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900/90">
+              <div className="mb-2 flex items-center gap-3">
+                <div className="rounded-lg bg-primary-100 p-2 dark:bg-primary-950/40">
+                  <ClipboardList className="h-5 w-5 text-primary-600 dark:text-primary-400" />
                 </div>
-                <span className="text-sm font-medium text-stone-600">Sınav Ataması</span>
+                <span className="text-sm font-medium text-stone-600 dark:text-stone-400">Sınav Ataması</span>
               </div>
-              <p className="text-2xl font-bold text-stone-900">{stats.examAssignmentsCount}</p>
+              <p className="text-2xl font-bold text-stone-900 dark:text-stone-100">{stats.examAssignmentsCount}</p>
             </div>
           </div>
 
@@ -230,10 +233,10 @@ export function SuperAdminPanel() {
         ) : null}
 
         {/* Users table */}
-        <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-stone-200">
-            <h2 className="text-lg font-bold text-stone-900">Kullanıcılar</h2>
-            <p className="text-sm text-stone-500 mt-0.5">Kayıtlı kullanıcı listesi (sayfalı)</p>
+        <div className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-900/90">
+          <div className="border-b border-stone-200 px-5 py-4 dark:border-stone-800">
+            <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">Kullanıcılar</h2>
+            <p className="mt-0.5 text-sm text-stone-500 dark:text-stone-400">Kayıtlı kullanıcı listesi (sayfalı)</p>
           </div>
           {isLoadingUsers ? (
             <div className="p-8 flex justify-center">
@@ -244,7 +247,7 @@ export function SuperAdminPanel() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead>
-                    <tr className="bg-stone-50 text-stone-600 text-xs font-semibold uppercase tracking-wider">
+                    <tr className="bg-stone-50 text-xs font-semibold uppercase tracking-wider text-stone-600 dark:bg-stone-900/80 dark:text-stone-400">
                       <th className="px-5 py-3">Ad Soyad</th>
                       <th className="px-5 py-3">E-posta</th>
                       <th className="px-5 py-3">Rol</th>
@@ -256,25 +259,25 @@ export function SuperAdminPanel() {
                   <tbody>
                     {users.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="px-5 py-8 text-center text-stone-500">
+                        <td colSpan={6} className="px-5 py-8 text-center text-stone-500 dark:text-stone-400">
                           Kullanıcı bulunamadı.
                         </td>
                       </tr>
                     ) : (
                       users.map((u) => (
-                        <tr key={u.id} className="border-t border-stone-100 hover:bg-stone-50/50">
-                          <td className="px-5 py-3 font-medium text-stone-900">
+                        <tr key={u.id} className="border-t border-stone-100 hover:bg-stone-50/50 dark:border-stone-800 dark:hover:bg-stone-800/40">
+                          <td className="px-5 py-3 font-medium text-stone-900 dark:text-stone-100">
                             {u.firstName} {u.lastName}
                           </td>
-                          <td className="px-5 py-3 text-stone-600">{u.email}</td>
+                          <td className="px-5 py-3 text-stone-600 dark:text-stone-400">{u.email}</td>
                           <td className="px-5 py-3">
                             <span
-                              className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${
+                              className={`inline-flex rounded px-2 py-0.5 text-xs font-medium ${
                                 u.role === 'ADMIN'
-                                  ? 'bg-red-100 text-red-800'
+                                  ? 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-200'
                                   : u.role === 'INSTITUTION_ADMIN'
-                                    ? 'bg-amber-100 text-amber-800'
-                                    : 'bg-stone-100 text-stone-700'
+                                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200'
+                                    : 'bg-stone-100 text-stone-700 dark:bg-stone-800 dark:text-stone-300'
                               }`}
                             >
                               {ROLE_LABELS[u.role || ''] ?? u.role ?? '—'}
@@ -282,13 +285,13 @@ export function SuperAdminPanel() {
                           </td>
                           <td className="px-5 py-3">
                             {u.isActive ? (
-                              <span className="text-green-600 text-sm font-medium">Aktif</span>
+                              <span className="text-sm font-medium text-green-600 dark:text-green-400">Aktif</span>
                             ) : (
-                              <span className="text-stone-400 text-sm">Pasif</span>
+                              <span className="text-sm text-stone-400 dark:text-stone-500">Pasif</span>
                             )}
                           </td>
-                          <td className="px-5 py-3 text-sm text-stone-500">{formatDate(u.lastLoginAt)}</td>
-                          <td className="px-5 py-3 text-sm text-stone-500">{formatDate(u.createdAt)}</td>
+                          <td className="px-5 py-3 text-sm text-stone-500 dark:text-stone-400">{formatDate(u.lastLoginAt)}</td>
+                          <td className="px-5 py-3 text-sm text-stone-500 dark:text-stone-400">{formatDate(u.createdAt)}</td>
                         </tr>
                       ))
                     )}
@@ -296,8 +299,8 @@ export function SuperAdminPanel() {
                 </table>
               </div>
               {pagination.totalPages > 1 && (
-                <div className="px-5 py-3 border-t border-stone-200 flex items-center justify-between">
-                  <p className="text-sm text-stone-600">
+                <div className="flex items-center justify-between border-t border-stone-200 px-5 py-3 dark:border-stone-800">
+                  <p className="text-sm text-stone-600 dark:text-stone-400">
                     Toplam {pagination.total} kullanıcı · Sayfa {page} / {pagination.totalPages}
                   </p>
                   <div className="flex gap-2">
@@ -305,7 +308,7 @@ export function SuperAdminPanel() {
                       type="button"
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       disabled={page <= 1}
-                      className="p-2 rounded-lg border border-stone-200 hover:bg-stone-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="rounded-lg border border-stone-200 p-2 hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-stone-700 dark:hover:bg-stone-800"
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </button>
@@ -313,7 +316,7 @@ export function SuperAdminPanel() {
                       type="button"
                       onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
                       disabled={page >= pagination.totalPages}
-                      className="p-2 rounded-lg border border-stone-200 hover:bg-stone-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="rounded-lg border border-stone-200 p-2 hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-stone-700 dark:hover:bg-stone-800"
                     >
                       <ChevronRight className="h-4 w-4" />
                     </button>
@@ -326,21 +329,21 @@ export function SuperAdminPanel() {
 
         {/* Ana sayfa bölümleri: göster/gizle */}
         <section className="mt-10 space-y-4">
-          <h2 className="text-xl font-bold text-stone-900">Ana Sayfa Bölümleri</h2>
-          <p className="text-sm text-stone-500">
+          <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100">Ana Sayfa Bölümleri</h2>
+          <p className="text-sm text-stone-500 dark:text-stone-400">
             Ana sayfada (landing) hangi bölümlerin görüneceğini açıp kapatabilirsiniz.
           </p>
           {siteSettingsLoading ? (
-            <div className="flex items-center gap-2 text-stone-500">
+            <div className="flex items-center gap-2 text-stone-500 dark:text-stone-400">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span className="text-sm">Yükleniyor...</span>
             </div>
           ) : (
-            <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-5 max-w-xl">
+            <div className="max-w-xl rounded-xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900/90">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="font-medium text-stone-900">Birlikte Çalıştığımız Kurumlar</p>
-                  <p className="text-xs text-stone-500 mt-0.5">
+                  <p className="font-medium text-stone-900 dark:text-stone-100">Birlikte Çalıştığımız Kurumlar</p>
+                  <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">
                     Ana sayfada &quot;Birlikte Çalıştığımız Kurumlar&quot; bölümü gösterilsin mi?
                   </p>
                 </div>
@@ -355,20 +358,20 @@ export function SuperAdminPanel() {
                       !(siteSettings?.[LANDING_SHOW_PARTNERS_KEY] ?? true)
                     )
                   }
-                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-stone-950 ${
                     siteSettings?.[LANDING_SHOW_PARTNERS_KEY] ?? true
                       ? 'bg-primary-600'
-                      : 'bg-stone-200'
+                      : 'bg-stone-200 dark:bg-stone-700'
                   }`}
                 >
                   <span
-                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition ${
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition dark:bg-stone-200 ${
                       siteSettings?.[LANDING_SHOW_PARTNERS_KEY] ?? true ? 'translate-x-5' : 'translate-x-1'
                     }`}
                   />
                 </button>
               </div>
-              <p className="mt-2 text-xs text-stone-500">
+              <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">
                 {siteSettings?.[LANDING_SHOW_PARTNERS_KEY] ?? true ? 'Gösteriliyor' : 'Gizli'}
               </p>
             </div>
@@ -377,34 +380,36 @@ export function SuperAdminPanel() {
 
         {/* Yönetim alanları */}
         <section className="mt-10 space-y-6">
-          <h2 className="text-xl font-bold text-stone-900">Yönetim Alanları</h2>
-          <p className="text-sm text-stone-500">
+          <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100">Yönetim Alanları</h2>
+          <p className="text-sm text-stone-500 dark:text-stone-400">
             Bu bölümde planlar, kurumlar, sınavlar ve sistem ayarları için gelişmiş yönetim ekranları olacak.
           </p>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {/* Planlar & abonelikler */}
             <Link
               href="/dashboard/super-admin/plans"
-              className="bg-white rounded-xl border border-stone-200 shadow-sm p-4 flex flex-col justify-between hover:border-primary-200 hover:shadow-md transition-all group"
+              className="group flex flex-col justify-between rounded-xl border border-stone-200 bg-white p-4 shadow-sm transition-all hover:border-primary-200 hover:shadow-md dark:border-stone-800 dark:bg-stone-900/90 dark:hover:border-primary-800"
             >
               <div>
-                <h3 className="text-sm font-semibold text-stone-900 mb-1 group-hover:text-primary-700">Planlar &amp; Abonelikler</h3>
-                <p className="text-xs text-stone-500">
+                <h3 className="mb-1 text-sm font-semibold text-stone-900 group-hover:text-primary-700 dark:text-stone-100 dark:group-hover:text-primary-400">
+                  Planlar &amp; Abonelikler
+                </h3>
+                <p className="text-xs text-stone-500 dark:text-stone-400">
                   Plan listesi, fiyatlar, limitler ve özellikler. Kurum bazlı plan atama / değiştirme.
                 </p>
               </div>
               <div className="mt-3">
-                <span className="inline-flex items-center rounded-lg border border-primary-200 bg-primary-50 px-3 py-1.5 text-xs font-medium text-primary-700 group-hover:bg-primary-100">
+                <span className="inline-flex items-center rounded-lg border border-primary-200 bg-primary-50 px-3 py-1.5 text-xs font-medium text-primary-700 group-hover:bg-primary-100 dark:border-primary-800 dark:bg-primary-950/40 dark:text-primary-300 dark:group-hover:bg-primary-950/60">
                   Görüntüle
                 </span>
               </div>
             </Link>
 
             {/* Kurumlar & organizasyonlar */}
-            <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-4 flex flex-col justify-between">
+            <div className="flex flex-col justify-between rounded-xl border border-stone-200 bg-white p-4 shadow-sm dark:border-stone-800 dark:bg-stone-900/90">
               <div>
-                <h3 className="text-sm font-semibold text-stone-900 mb-1">Kurumlar &amp; Organizasyonlar</h3>
-                <p className="text-xs text-stone-500">
+                <h3 className="mb-1 text-sm font-semibold text-stone-900 dark:text-stone-100">Kurumlar &amp; Organizasyonlar</h3>
+                <p className="text-xs text-stone-500 dark:text-stone-400">
                   Kurum listesi, kota kullanımı, aktif sınavlar ve yöneticiler için yönetim ekranı.
                 </p>
               </div>
@@ -412,7 +417,7 @@ export function SuperAdminPanel() {
                 <button
                   type="button"
                   disabled
-                  className="inline-flex items-center rounded-lg border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-500 bg-stone-50 cursor-not-allowed"
+                  className="inline-flex cursor-not-allowed items-center rounded-lg border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-medium text-stone-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-500"
                 >
                   Yakında
                 </button>
@@ -422,26 +427,28 @@ export function SuperAdminPanel() {
             {/* Sınav & içerik yönetimi */}
             <Link
               href="/dashboard/super-admin/exam-content"
-              className="bg-white rounded-xl border border-stone-200 shadow-sm p-4 flex flex-col justify-between hover:border-primary-200 hover:shadow-md transition-all group"
+              className="group flex flex-col justify-between rounded-xl border border-stone-200 bg-white p-4 shadow-sm transition-all hover:border-primary-200 hover:shadow-md dark:border-stone-800 dark:bg-stone-900/90 dark:hover:border-primary-800"
             >
               <div>
-                <h3 className="text-sm font-semibold text-stone-900 mb-1 group-hover:text-primary-700">Sınav &amp; İçerik Yönetimi</h3>
-                <p className="text-xs text-stone-500">
+                <h3 className="mb-1 text-sm font-semibold text-stone-900 group-hover:text-primary-700 dark:text-stone-100 dark:group-hover:text-primary-400">
+                  Sınav &amp; İçerik Yönetimi
+                </h3>
+                <p className="text-xs text-stone-500 dark:text-stone-400">
                   Sınav şablonları, ders / konu ağaçları ve sistem genelinde kullanılacak içeriklerin yönetimi.
                 </p>
               </div>
               <div className="mt-3">
-                <span className="inline-flex items-center rounded-lg border border-primary-200 bg-primary-50 px-3 py-1.5 text-xs font-medium text-primary-700 group-hover:bg-primary-100">
-                  Yakında
+                <span className="inline-flex items-center rounded-lg border border-primary-200 bg-primary-50 px-3 py-1.5 text-xs font-medium text-primary-700 group-hover:bg-primary-100 dark:border-primary-800 dark:bg-primary-950/40 dark:text-primary-300 dark:group-hover:bg-primary-950/60">
+                  Aç
                 </span>
               </div>
             </Link>
 
             {/* Sistem & güvenlik */}
-            <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-4 flex flex-col justify-between">
+            <div className="flex flex-col justify-between rounded-xl border border-stone-200 bg-white p-4 shadow-sm dark:border-stone-800 dark:bg-stone-900/90">
               <div>
-                <h3 className="text-sm font-semibold text-stone-900 mb-1">Sistem &amp; Güvenlik</h3>
-                <p className="text-xs text-stone-500">
+                <h3 className="mb-1 text-sm font-semibold text-stone-900 dark:text-stone-100">Sistem &amp; Güvenlik</h3>
+                <p className="text-xs text-stone-500 dark:text-stone-400">
                   Loglar, hata raporları, oran limitleri ve kritik sistem ayarları için yönetim araçları.
                 </p>
               </div>
@@ -449,7 +456,7 @@ export function SuperAdminPanel() {
                 <button
                   type="button"
                   disabled
-                  className="inline-flex items-center rounded-lg border border-stone-200 px-3 py-1.5 text-xs font-medium text-stone-500 bg-stone-50 cursor-not-allowed"
+                  className="inline-flex cursor-not-allowed items-center rounded-lg border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-medium text-stone-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-500"
                 >
                   Yakında
                 </button>

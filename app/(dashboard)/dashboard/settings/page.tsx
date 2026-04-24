@@ -22,6 +22,7 @@ import {
   AlertCircle,
   CreditCard,
 } from 'lucide-react';
+import { ThemeSelect } from '@/components/theme/ThemeSelect';
 
 type ExamOption = { id: string; name: string; code: string };
 type SettingsData = {
@@ -187,28 +188,26 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+      <div className="flex min-h-screen items-center justify-center bg-stone-50 dark:bg-stone-950">
+        <Loader2 className="h-8 w-8 animate-spin text-primary-600 dark:text-primary-400" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-stone-50">
-      <header className="border-b border-stone-200 bg-white/80 backdrop-blur-sm shadow-sm">
+    <div className="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
+      <header className="border-b border-stone-200 bg-white/90 backdrop-blur-sm dark:border-stone-800 dark:bg-stone-950/90">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <Link
               href="/dashboard"
-              className="flex items-center gap-2 text-stone-700 hover:text-stone-900 transition-colors"
+              className="flex items-center gap-2 text-stone-700 transition-colors hover:text-stone-900 dark:text-stone-300 dark:hover:text-stone-100"
             >
               <ArrowLeft className="h-5 w-5" />
               <span className="font-medium">Geri</span>
             </Link>
             <div className="flex items-center gap-2">
-              <span className="text-xl font-bold bg-gradient-to-r text-stone-900 bg-clip-text text-transparent">
-                Ayarlar
-              </span>
+              <span className="text-xl font-bold text-stone-900 dark:text-stone-100">Ayarlar</span>
             </div>
             <div className="w-20" />
           </div>
@@ -216,15 +215,17 @@ export default function SettingsPage() {
       </header>
 
       <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="text-center mb-10">
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-stone-900 mb-2">Ayarlar</h1>
-          <p className="text-stone-600">Hesap, hedef ve sınav tercihlerinizi yönetin</p>
+        <div className="mb-10 text-center sm:text-left">
+          <h1 className="mb-2 font-display text-3xl font-bold text-stone-900 dark:text-stone-100 sm:text-4xl">Ayarlar</h1>
+          <p className="text-stone-600 dark:text-stone-400">Hesap, görünüm, hedef ve sınav tercihleri</p>
         </div>
 
         {message && (
           <div
             className={`mb-6 flex items-center gap-2 rounded-xl px-4 py-3 ${
-              message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+              message.type === 'success'
+                ? 'bg-green-50 text-green-800 dark:bg-green-950/40 dark:text-green-200'
+                : 'bg-red-50 text-red-800 dark:bg-red-950/40 dark:text-red-200'
             }`}
           >
             {message.type === 'success' ? (
@@ -238,12 +239,12 @@ export default function SettingsPage() {
 
         <div className="space-y-6">
           {/* Hesap Ayarları */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-stone-100">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="rounded-full bg-primary-100 p-3">
-                <User className="h-6 w-6 text-primary-600" />
+          <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900/80 sm:p-8">
+            <div className="mb-6 flex items-center gap-3">
+              <div className="rounded-full bg-primary-100 p-3 dark:bg-primary-950">
+                <User className="h-6 w-6 text-primary-600 dark:text-primary-400" />
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-stone-900">Hesap Ayarları</h2>
+              <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 sm:text-2xl">Hesap Ayarları</h2>
             </div>
             <div className="space-y-4">
               <div>
@@ -357,12 +358,12 @@ export default function SettingsPage() {
           </div>
 
           {/* Plan ve Faturalandırma */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-stone-100">
+          <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900/80 sm:p-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="rounded-full bg-emerald-100 p-3">
                 <CreditCard className="h-6 w-6 text-emerald-600" />
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-stone-900">Plan ve Faturalandırma</h2>
+              <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 sm:text-2xl">Plan ve Faturalandırma</h2>
             </div>
             {planLoading ? (
               <div className="flex items-center gap-2 text-stone-500">
@@ -372,7 +373,7 @@ export default function SettingsPage() {
             ) : planInfo ? (
               <div className="space-y-4">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-semibold text-stone-900">{planInfo.planName}</span>
+                  <span className="font-semibold text-stone-900 dark:text-stone-100">{planInfo.planName}</span>
                   <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600">
                     {planInfo.planType}
                   </span>
@@ -405,12 +406,12 @@ export default function SettingsPage() {
           </div>
 
           {/* Hedef ve çalışma */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-stone-100">
+          <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900/80 sm:p-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="rounded-full bg-amber-100 p-3">
                 <Target className="h-6 w-6 text-amber-600" />
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-stone-900">Çalışma Hedefleri</h2>
+              <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 sm:text-2xl">Çalışma Hedefleri</h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -441,12 +442,12 @@ export default function SettingsPage() {
           </div>
 
           {/* Sınav / Ders seçimi */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-stone-100">
+          <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900/80 sm:p-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="rounded-full bg-primary-100 p-3">
                 <BookOpen className="h-6 w-6 text-primary-600" />
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-stone-900">Sınav / Ders</h2>
+              <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 sm:text-2xl">Sınav / Ders</h2>
             </div>
             <div>
               <label className="block text-sm font-semibold text-stone-700 mb-2">Aktif sınavınız</label>
@@ -469,18 +470,18 @@ export default function SettingsPage() {
           </div>
 
           {/* Bildirimler (placeholder) */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-stone-100">
+          <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900/80 sm:p-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="rounded-full bg-pink-100 p-3">
                 <Bell className="h-6 w-6 text-pink-600" />
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-stone-900">Bildirimler</h2>
+              <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 sm:text-2xl">Bildirimler</h2>
             </div>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-semibold text-stone-900">E-posta bildirimleri</div>
-                  <div className="text-sm text-stone-600">Önemli güncellemeler için e-posta alın</div>
+                  <div className="font-semibold text-stone-900 dark:text-stone-100">E-posta bildirimleri</div>
+                  <div className="text-sm text-stone-600 dark:text-stone-400">Önemli güncellemeler için e-posta alın</div>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only peer" defaultChecked />
@@ -489,8 +490,8 @@ export default function SettingsPage() {
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-semibold text-stone-900">Çalışma hatırlatıcıları</div>
-                  <div className="text-sm text-stone-600">Günlük hedefler için hatırlatıcılar</div>
+                  <div className="font-semibold text-stone-900 dark:text-stone-100">Çalışma hatırlatıcıları</div>
+                  <div className="text-sm text-stone-600 dark:text-stone-400">Günlük hedefler için hatırlatıcılar</div>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only peer" defaultChecked />
@@ -500,22 +501,20 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Görünüm */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-stone-100">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="rounded-full bg-stone-100 p-3">
-                <Palette className="h-6 w-6 text-stone-600" />
+          {/* Görünüm — localStorage + html class; sunucuya yazılmaz */}
+          <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900/80 sm:p-8">
+            <div className="mb-6 flex items-center gap-3">
+              <div className="rounded-full bg-stone-100 p-3 dark:bg-stone-800">
+                <Palette className="h-6 w-6 text-stone-600 dark:text-stone-300" />
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-stone-900">Görünüm</h2>
+              <div>
+                <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 sm:text-2xl">Görünüm</h2>
+                <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
+                  Tercih bu cihazda saklanır; ister buradan ister üst menüdeki ikonlardan değiştirin.
+                </p>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-stone-700 mb-2">Tema</label>
-              <select className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl text-stone-900 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                <option>Açık</option>
-                <option>Koyu</option>
-                <option>Sistem</option>
-              </select>
-            </div>
+            <ThemeSelect />
           </div>
 
           {/* Kaydet */}
