@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { unstable_cache } from 'next/cache';
 import { getBaseUrl } from '@/lib/seo/baseUrl';
 import { getSettingBoolean, SITE_KEYS } from '@/lib/siteSettings';
+import { ShopierCheckoutLink } from '@/components/checkout/ShopierCheckoutLink';
 import { MarketingHeader } from '@/components/layout/MarketingHeader';
 import { MobileLandingCta } from '@/components/layout/MobileLandingCta';
 import {
@@ -211,7 +212,7 @@ export default async function LandingPage() {
               Planınız net, risk yok
             </h2>
             <p className="mt-3 text-base text-stone-600 dark:text-stone-400 sm:text-lg">
-              Kredi kartı olmadan deneyin. İhtiyaç duyduğunuzda Pro ile pomodoro geçmişi ve gelişmiş analitiklere geçebilirsiniz.
+              Kredi kartı olmadan deneyin. İhtiyaç duyduğunuzda Pro&apos;yu Shopier üzerinden satın alarak pomodoro geçmişi ve gelişmiş analitiklere geçebilirsiniz.
             </p>
           </div>
           <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
@@ -422,7 +423,7 @@ export default async function LandingPage() {
               Ücretsiz başlayın, büyüdükçe Pro
             </h2>
             <p className="mt-3 text-lg text-stone-600 dark:text-stone-400">
-              Temel sınav ve konu takibi her zaman ücretsiz. Odak ve analitik için Pro planına geçiş tek tık.
+              Temel sınav ve konu takibi her zaman ücretsiz. Pro ve gelişmiş özellikler için ödeme güvenli şekilde Shopier üzerinden yapılır.
             </p>
           </div>
           <div className="mx-auto grid max-w-4xl grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
@@ -458,16 +459,13 @@ export default async function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <Link
-                href="/onboarding"
-                className="mt-8 inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-primary-600 to-primary-500 py-3.5 text-sm font-bold text-white shadow-lg shadow-primary-500/25 transition-transform hover:scale-[1.01] active:scale-[0.99]"
-              >
-                Kayıt ol, Pro&apos;yu uygulama içinden seç
-              </Link>
+              <ShopierCheckoutLink className="mt-8 inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-primary-600 to-primary-500 py-3.5 text-sm font-bold text-white shadow-lg shadow-primary-500/25 transition-transform hover:scale-[1.01] active:scale-[0.99]">
+                Pro&apos;yu Shopier&apos;da satın al
+              </ShopierCheckoutLink>
             </div>
           </div>
           <p className="mx-auto mt-8 max-w-2xl text-center text-xs text-stone-500 dark:text-stone-400">
-            Fiyatlandırma ve kota detayları hesabınızdan faturalandırma bölümünde güncellenir; taahhüt yoktur.
+            Pro satın alma Shopier üzerinden tamamlanır. Ücretsiz hesap için kayıt yeterlidir; taahhüt yoktur.
           </p>
         </div>
       </section>

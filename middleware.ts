@@ -43,6 +43,7 @@ export default withAuth(
           '/api/health',
           '/api/exams/available',
           '/api/support',
+          '/api/analytics',
         ];
         const path = req.nextUrl.pathname;
 

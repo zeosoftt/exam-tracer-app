@@ -117,3 +117,6 @@ export const AUTH_ERROR_CODES = {
   EMAIL_NOT_VERIFIED: 'EMAIL_NOT_VERIFIED',
   DATABASE_UNAVAILABLE: 'DATABASE_UNAVAILABLE',
 } as const;
+
+/** Ücretli plan (Pro) satın alma — Shopier ürün sayfası */
+export const SHOPIER_CHECKOUT_URL = 'https://www.shopier.com/zeosoft/47039117' as const;

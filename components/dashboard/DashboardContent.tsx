@@ -34,6 +34,7 @@ import {
   LifeBuoy,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { ShopierCheckoutLink } from '@/components/checkout/ShopierCheckoutLink';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
 
 interface StudyDay {
@@ -454,19 +455,32 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
               <div className="hidden items-center gap-2 text-xs text-stone-600 dark:text-stone-400 sm:flex sm:text-sm">
                 <User className="h-4 w-4 shrink-0" />
                 <span className="max-w-[140px] truncate font-medium lg:max-w-none">{user.name}</span>
-                {planBadge && (
-                  <span
-                    className={cn(
-                      'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold',
-                      planBadge.bgClass,
-                      planBadge.textClass,
-                    )}
-                    title={`${planBadge.label} planı`}
-                  >
-                    <span className={cn('h-1.5 w-1.5 rounded-full', planBadge.dotClass)} />
-                    {planBadge.label}
-                  </span>
-                )}
+                {planBadge &&
+                  (planBadge.code === 'FREE' ? (
+                    <ShopierCheckoutLink
+                      className={cn(
+                        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold transition-opacity hover:opacity-90',
+                        planBadge.bgClass,
+                        planBadge.textClass,
+                      )}
+                      title="Pro planı Shopier üzerinden satın al"
+                    >
+                      <span className={cn('h-1.5 w-1.5 rounded-full', planBadge.dotClass)} />
+                      {planBadge.label}
+                    </ShopierCheckoutLink>
+                  ) : (
+                    <span
+                      className={cn(
+                        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold',
+                        planBadge.bgClass,
+                        planBadge.textClass,
+                      )}
+                      title={`${planBadge.label} planı`}
+                    >
+                      <span className={cn('h-1.5 w-1.5 rounded-full', planBadge.dotClass)} />
+                      {planBadge.label}
+                    </span>
+                  ))}
               </div>
               <button
                 type="button"

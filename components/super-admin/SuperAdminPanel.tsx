@@ -8,6 +8,7 @@ import {
   BookOpen,
   Timer,
   ClipboardList,
+  MousePointerClick,
   Shield,
   ChevronLeft,
   ChevronRight,
@@ -24,6 +25,8 @@ interface AdminStats {
   examsCount: number;
   pomodoroSessionsCount: number;
   examAssignmentsCount: number;
+  /** Shopier “satın al” bağlantısına yapılan toplam tıklama (client-side sayım) */
+  shopierCheckoutClicks: number;
   planStats?: Array<{
     planId: string | null;
     planCode: string;
@@ -192,14 +195,14 @@ export function SuperAdminPanel() {
 
         {/* Stats */}
         {isLoadingStats ? (
-          <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-            {[...Array(5)].map((_, i) => (
+          <div className="mb-8 grid gap-4 grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
+            {[...Array(6)].map((_, i) => (
               <div key={i} className="h-24 animate-pulse rounded-xl bg-stone-100 dark:bg-stone-800" />
             ))}
           </div>
         ) : stats ? (
           <>
-          <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+          <div className="mb-8 grid gap-4 grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
             <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900/90">
               <div className="mb-2 flex items-center gap-3">
                 <div className="rounded-lg bg-indigo-100 p-2 dark:bg-indigo-950/50">
@@ -244,6 +247,17 @@ export function SuperAdminPanel() {
                 <span className="text-sm font-medium text-stone-600 dark:text-stone-400">Sınav Ataması</span>
               </div>
               <p className="text-2xl font-bold text-stone-900 dark:text-stone-100">{stats.examAssignmentsCount}</p>
+            </div>
+            <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900/90">
+              <div className="mb-2 flex items-center gap-3">
+                <div className="rounded-lg bg-violet-100 p-2 dark:bg-violet-950/40">
+                  <MousePointerClick className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+                </div>
+                <span className="text-sm font-medium text-stone-600 dark:text-stone-400">Shopier satın al tıklaması</span>
+              </div>
+              <p className="text-2xl font-bold text-stone-900 dark:text-stone-100">
+                {stats.shopierCheckoutClicks ?? 0}
+              </p>
             </div>
           </div>
 

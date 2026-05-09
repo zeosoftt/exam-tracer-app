@@ -24,6 +24,7 @@ import {
   LifeBuoy,
 } from 'lucide-react';
 import { ThemeSelect } from '@/components/theme/ThemeSelect';
+import { ShopierCheckoutLink } from '@/components/checkout/ShopierCheckoutLink';
 
 type ExamOption = { id: string; name: string; code: string };
 type SettingsData = {
@@ -408,6 +409,11 @@ export default function SettingsPage() {
                     ? 'Sadece temel takip: sınav listesi, konu ilerlemesi ve basit dashboard.'
                     : 'Raporlar, dışa aktarma ve gelişmiş analitik dahil.'}
                 </p>
+                {planInfo.planCode === 'FREE' && (
+                  <ShopierCheckoutLink className="inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 py-3 text-sm font-bold text-white shadow-md transition-opacity hover:opacity-95 sm:w-auto sm:px-6">
+                    Pro planı Shopier&apos;da satın al
+                  </ShopierCheckoutLink>
+                )}
                 {planInfo.limits.length > 0 && (
                   <ul className="text-sm text-stone-600 space-y-1">
                     {planInfo.limits.map((l) => (

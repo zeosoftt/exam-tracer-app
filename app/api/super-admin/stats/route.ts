@@ -9,6 +9,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
 import { prisma } from '@/lib/db/prisma';
 import { USER_ROLES, HTTP_STATUS, ERROR_MESSAGES } from '@/config/constants';
+import { getShopierCheckoutClickCount } from '@/lib/siteSettings';
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -26,19 +27,27 @@ export async function GET() {
   }
 
   try {
-    const [usersCount, activeUsersCount, examsCount, pomodoroSessionsCount, examAssignmentsCount, usersByPlan] =
-      await Promise.all([
-        prisma.user.count({ where: { deletedAt: null } }),
-        prisma.user.count({ where: { deletedAt: null, isActive: true } }),
-        prisma.exam.count({ where: { deletedAt: null } }),
-        prisma.pomodoroSession.count({ where: { deletedAt: null } }),
-        prisma.examAssignment.count({ where: { deletedAt: null } }),
-        prisma.user.groupBy({
-          by: ['currentPlanId'],
-          where: { deletedAt: null },
-          _count: { _all: true },
-        }),
-      ]);
+    const [
+      usersCount,
+      activeUsersCount,
+      examsCount,
+      pomodoroSessionsCount,
+      examAssignmentsCount,
+      usersByPlan,
+      shopierCheckoutClicks,
+    ] = await Promise.all([
+      prisma.user.count({ where: { deletedAt: null } }),
+      prisma.user.count({ where: { deletedAt: null, isActive: true } }),
+      prisma.exam.count({ where: { deletedAt: null } }),
+      prisma.pomodoroSession.count({ where: { deletedAt: null } }),
+      prisma.examAssignment.count({ where: { deletedAt: null } }),
+      prisma.user.groupBy({
+        by: ['currentPlanId'],
+        where: { deletedAt: null },
+        _count: { _all: true },
+      }),
+      getShopierCheckoutClickCount(),
+    ]);
 
     // Plan bazlı kullanıcı sayıları (FREE / PRO / ENTERPRISE vs.)
     const planIds = usersByPlan
@@ -82,6 +91,7 @@ export async function GET() {
         examsCount,
         pomodoroSessionsCount,
         examAssignmentsCount,
+        shopierCheckoutClicks,
         planStats,
       },
     });

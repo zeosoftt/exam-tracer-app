@@ -24,6 +24,7 @@ import {
   ClipboardList,
 } from 'lucide-react';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
+import { ShopierCheckoutLink } from '@/components/checkout/ShopierCheckoutLink';
 
 const DENEME_PRESETS = [
   { minutes: 40, label: '40 dk' },
@@ -672,13 +673,10 @@ export default function PomodoroPage() {
                 <p className="mb-4 text-sm text-stone-600 dark:text-stone-400">
                   Pomodoro istatistikleri ve oturum geçmişi Premium plan özelliğidir. Görüntülemek için Premium&apos;a yükseltin.
                 </p>
-                <Link
-                  href="/dashboard/settings"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-xl hover:bg-amber-600 font-medium text-sm"
-                >
+                <ShopierCheckoutLink className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-amber-600">
                   <Sparkles className="h-4 w-4" />
-                  Planı görüntüle / Yükselt
-                </Link>
+                  Pro&apos;yu Shopier&apos;da satın al
+                </ShopierCheckoutLink>
               </div>
             ) : (
               <>
