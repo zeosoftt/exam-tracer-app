@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     }
 
     const categoryLabel = SUPPORT_CATEGORY_LABELS[parsed.data.category] ?? parsed.data.category;
-    await sendSupportContactEmail({
+    const mailResult = await sendSupportContactEmail({
       fromEmail,
       userName: session?.user?.name ?? null,
       userId: session?.user?.id ?? null,
@@ -53,6 +53,16 @@ export async function POST(req: NextRequest) {
       subject: parsed.data.subject,
       message: parsed.data.message,
     });
+
+    if (!mailResult.ok) {
+      const status =
+        mailResult.reason === 'not_configured'
+          ? HTTP_STATUS.SERVICE_UNAVAILABLE
+          : mailResult.reason === 'provider_error'
+            ? HTTP_STATUS.BAD_GATEWAY
+            : HTTP_STATUS.INTERNAL_SERVER_ERROR;
+      return NextResponse.json({ success: false, error: mailResult.userMessage }, { status });
+    }
 
     return NextResponse.json({
       success: true,

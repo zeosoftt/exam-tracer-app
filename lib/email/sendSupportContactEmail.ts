@@ -1,6 +1,6 @@
 /**
  * Destek talebi — Resend ile SUPPORT_INBOX_EMAIL adresine iletilir.
- * RESEND_API_KEY veya SUPPORT_INBOX_EMAIL yoksa içerik loglanır (kayıp olmaz).
+ * RESEND_API_KEY veya SUPPORT_INBOX_EMAIL yoksa gönderim yapılmaz (çağıran API hata döner).
  */
 
 import { Resend } from 'resend';
@@ -55,11 +55,22 @@ export type SendSupportContactEmailParams = {
   message: string;
 };
 
-export async function sendSupportContactEmail(params: SendSupportContactEmailParams): Promise<void> {
+export type SendSupportContactEmailResult =
+  | { ok: true }
+  | {
+      ok: false;
+      reason: 'not_configured' | 'provider_error' | 'unexpected';
+      /** Kullanıcıya gösterilecek kısa mesaj (Türkçe) */
+      userMessage: string;
+    };
+
+export async function sendSupportContactEmail(
+  params: SendSupportContactEmailParams,
+): Promise<SendSupportContactEmailResult> {
   const { fromEmail, userName, userId, categoryLabel, subject, message } = params;
-  const apiKey = process.env.RESEND_API_KEY;
+  const apiKey = process.env.RESEND_API_KEY?.trim();
   const supportInbox = process.env.SUPPORT_INBOX_EMAIL?.trim();
-  const from = process.env.EMAIL_FROM || DEFAULT_FROM;
+  const from = process.env.EMAIL_FROM?.trim() || DEFAULT_FROM;
 
   const logPayload = {
     tag: 'SUPPORT_CONTACT',
@@ -71,8 +82,16 @@ export async function sendSupportContactEmail(params: SendSupportContactEmailPar
   };
 
   if (!apiKey || !supportInbox) {
-    logInfo('Support ticket (configure RESEND_API_KEY + SUPPORT_INBOX_EMAIL for email delivery)', logPayload);
-    return;
+    logInfo(
+      'Support email skipped: set RESEND_API_KEY and SUPPORT_INBOX_EMAIL (and verify EMAIL_FROM domain on Resend)',
+      logPayload,
+    );
+    return {
+      ok: false,
+      reason: 'not_configured',
+      userMessage:
+        'Destek mesajı şu an iletilemiyor (e-posta hizmeti yapılandırılmamış). Lütfen daha sonra tekrar deneyin.',
+    };
   }
 
   try {
@@ -94,12 +113,21 @@ export async function sendSupportContactEmail(params: SendSupportContactEmailPar
     });
     if (error) {
       logError('Resend support email failed', new Error(JSON.stringify(error)), logPayload);
-      logInfo('Support ticket (Resend error, logged)', logPayload);
-    } else {
-      logInfo('Support email sent', { ...logPayload, to: supportInbox });
+      return {
+        ok: false,
+        reason: 'provider_error',
+        userMessage:
+          'E-posta gönderilirken bir sorun oluştu. Lütfen bir süre sonra tekrar deneyin.',
+      };
     }
+    logInfo('Support email sent', { ...logPayload, to: supportInbox });
+    return { ok: true };
   } catch (err) {
     logError('Resend support send exception', err as Error, logPayload);
-    logInfo('Support ticket (exception, logged)', logPayload);
+    return {
+      ok: false,
+      reason: 'unexpected',
+      userMessage: 'Mesaj gönderilemedi. Lütfen daha sonra tekrar deneyin.',
+    };
   }
 }

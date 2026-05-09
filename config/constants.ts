@@ -86,6 +86,8 @@ export const HTTP_STATUS = {
   CONFLICT: 409,
   UNPROCESSABLE_ENTITY: 422,
   INTERNAL_SERVER_ERROR: 500,
+  /** Üst akış (ör. e-posta sağlayıcısı) geçersiz yanıt */
+  BAD_GATEWAY: 502,
   SERVICE_UNAVAILABLE: 503,
 } as const;
 
