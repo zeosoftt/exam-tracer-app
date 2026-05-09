@@ -60,6 +60,8 @@ export default function DenemePage() {
   const [submitting, setSubmitting] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  /** Super admin site ayarı: kapalıyken analiz + yeni kayıt formu gizli (sadece liste). */
+  const [denemeAdvanced, setDenemeAdvanced] = useState<boolean | null>(null);
   const attemptsFetchInFlightRef = useRef(false);
   const lastAttemptsFetchAtRef = useRef(0);
   const structureCacheRef = useRef(
@@ -100,8 +102,22 @@ export default function DenemePage() {
     fetchAttempts();
   }, [fetchAttempts]);
 
-  // Sınav listesi ve kullanıcının kayıtlı olduğu (aktif) sınav
   useEffect(() => {
+    fetch('/api/site/deneme-flags')
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.success && json.data) {
+          setDenemeAdvanced(Boolean(json.data.deneme_show_advanced));
+        } else {
+          setDenemeAdvanced(false);
+        }
+      })
+      .catch(() => setDenemeAdvanced(false));
+  }, []);
+
+  // Sınav listesi ve kullanıcının kayıtlı olduğu (aktif) sınav (gelişmiş form açıkken)
+  useEffect(() => {
+    if (!denemeAdvanced) return;
     Promise.all([
       fetch('/api/exams/available').then((r) => r.json()),
       fetch('/api/user/settings').then((r) => r.json()),
@@ -113,17 +129,19 @@ export default function DenemePage() {
         }
       })
       .catch(() => {});
-  }, []);
+  }, [denemeAdvanced]);
 
   // Form açıldığında kayıtlı dersi otomatik seç
   useEffect(() => {
+    if (!denemeAdvanced) return;
     if (showForm && activeExamId && form.examId === '') {
       setForm((f) => ({ ...f, examId: activeExamId }));
     }
-  }, [showForm, activeExamId, form.examId]);
+  }, [denemeAdvanced, showForm, activeExamId, form.examId]);
 
   // Sınav seçilince ders yapısını yükle
   useEffect(() => {
+    if (!denemeAdvanced) return;
     if (!form.examId) {
       setExamSubjects([]);
       setSubjectInputs({});
@@ -170,12 +188,13 @@ export default function DenemePage() {
         setSubjectInputs({});
       })
       .finally(() => setStructureLoading(false));
-  }, [form.examId]);
+  }, [denemeAdvanced, form.examId]);
 
   const selectedExamCode = exams.find((e) => e.id === form.examId)?.code ?? '';
 
   // KPSS seçiliyse GY/GK ortalama ve standart sapma al
   useEffect(() => {
+    if (!denemeAdvanced) return;
     if (selectedExamCode !== 'KPSS' || sections.length === 0) return;
     fetch('/api/deneme/kpss-stats')
       .then((r) => r.json())
@@ -183,7 +202,13 @@ export default function DenemePage() {
         if (json.success && json.data) setKpssStats(json.data);
       })
       .catch(() => {});
-  }, [selectedExamCode, sections.length]);
+  }, [denemeAdvanced, selectedExamCode, sections.length]);
+
+  useEffect(() => {
+    if (denemeAdvanced === false) {
+      setShowForm(false);
+    }
+  }, [denemeAdvanced]);
 
   const updateSubjectInput = (subjectId: string, field: 'right' | 'wrong' | 'empty', value: number) => {
     setSubjectInputs((prev) => ({
@@ -380,19 +405,34 @@ export default function DenemePage() {
           </div>
         )}
 
+        {denemeAdvanced === false && (
+          <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-100">
+            <p className="font-medium">Gelişmiş deneme özellikleri şu an kapalı.</p>
+            <p className="mt-1 text-amber-800/90 dark:text-amber-200/90">
+              Deneme analizi ve yeni kayıt formu yalnızca yönetici tarafından açıldığında görünür. Ayar için{' '}
+              <Link href="/dashboard/super-admin" className="font-semibold underline underline-offset-2">
+                Super Admin
+              </Link>{' '}
+              → &quot;Deneme Takibi Sayfası&quot; bölümünden &quot;Gelişmiş deneme özellikleri&quot; anahtarını açın.
+            </p>
+          </div>
+        )}
+
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100">Deneme kayıtlarım</h1>
-          <button
-            type="button"
-            onClick={() => setShowForm(!showForm)}
-            className="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-2.5 font-medium text-white hover:bg-primary-700"
-          >
-            <Plus className="h-4 w-4" />
-            Yeni deneme ekle
-          </button>
+          {denemeAdvanced && (
+            <button
+              type="button"
+              onClick={() => setShowForm(!showForm)}
+              className="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-2.5 font-medium text-white hover:bg-primary-700"
+            >
+              <Plus className="h-4 w-4" />
+              Yeni deneme ekle
+            </button>
+          )}
         </div>
 
-        {!loading && analysis && (
+        {!loading && denemeAdvanced && analysis && (
           <section className="mb-8 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900/90">
             <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-stone-900 dark:text-stone-100">
               <BarChart3 className="h-5 w-5 text-primary-600 dark:text-primary-400" />
@@ -468,7 +508,7 @@ export default function DenemePage() {
           </section>
         )}
 
-        {showForm && (
+        {denemeAdvanced && showForm && (
           <form onSubmit={handleSubmit} className="mb-8 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900/90">
             <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-stone-900 dark:text-stone-100">
               <BookOpen className="h-5 w-5 text-primary-600 dark:text-primary-400" />
@@ -719,13 +759,13 @@ export default function DenemePage() {
                 {a.netScore != null && (
                   <span className="text-sm text-stone-600 dark:text-stone-400">Net: {a.netScore}</span>
                 )}
-                {(a.rightCount != null || a.wrongCount != null) && (
+                {denemeAdvanced && (a.rightCount != null || a.wrongCount != null) && (
                   <span className="text-sm text-stone-500 dark:text-stone-400">
                     D: {a.rightCount ?? '-'} / Y: {a.wrongCount ?? '-'}
                     {a.emptyCount != null ? ` / B: ${a.emptyCount}` : ''}
                   </span>
                 )}
-                {a.durationMinutes != null && (
+                {denemeAdvanced && a.durationMinutes != null && (
                   <span className="flex items-center gap-1 text-sm text-stone-500">
                     <Clock className="h-4 w-4" />
                     {a.durationMinutes} dk

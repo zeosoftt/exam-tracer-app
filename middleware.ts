@@ -37,9 +37,12 @@ export default withAuth(
           '/auth/forgot-password',
           '/auth/reset-password',
           '/onboarding',
+          '/destek',
+          '/sss',
           '/api/auth',
           '/api/health',
           '/api/exams/available',
+          '/api/support',
         ];
         const path = req.nextUrl.pathname;
 

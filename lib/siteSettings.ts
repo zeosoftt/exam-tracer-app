@@ -7,10 +7,13 @@ import { prisma } from '@/lib/db/prisma';
 
 export const SITE_KEYS = {
   LANDING_SHOW_PARTNERS: 'landing_show_partners',
+  /** Deneme sayfasında analiz + yeni kayıt formu (ders bazlı, KPSS, süre, not vb.) */
+  DENEME_SHOW_ADVANCED: 'deneme_show_advanced',
 } as const;
 
 const DEFAULTS: Record<string, string> = {
   [SITE_KEYS.LANDING_SHOW_PARTNERS]: 'true',
+  [SITE_KEYS.DENEME_SHOW_ADVANCED]: 'false',
 };
 
 export async function getSetting(key: string): Promise<string> {
@@ -34,8 +37,12 @@ export async function setSetting(key: string, value: string): Promise<void> {
 }
 
 export async function getAllLandingSectionSettings(): Promise<Record<string, boolean>> {
-  const partners = await getSettingBoolean(SITE_KEYS.LANDING_SHOW_PARTNERS);
+  const [partners, denemeAdvanced] = await Promise.all([
+    getSettingBoolean(SITE_KEYS.LANDING_SHOW_PARTNERS),
+    getSettingBoolean(SITE_KEYS.DENEME_SHOW_ADVANCED),
+  ]);
   return {
     [SITE_KEYS.LANDING_SHOW_PARTNERS]: partners,
+    [SITE_KEYS.DENEME_SHOW_ADVANCED]: denemeAdvanced,
   };
 }

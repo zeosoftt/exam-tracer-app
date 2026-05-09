@@ -16,6 +16,7 @@ import {
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
 
 const LANDING_SHOW_PARTNERS_KEY = 'landing_show_partners';
+const DENEME_SHOW_ADVANCED_KEY = 'deneme_show_advanced';
 
 interface AdminStats {
   usersCount: number;
@@ -41,6 +42,9 @@ interface AdminUser {
   isActive: boolean;
   lastLoginAt: string | null;
   createdAt: string;
+  /** Aktif kullanıcı atamalı sınavlar (silinmemiş atama ve sınav) */
+  exams: { id: string; name: string; code: string }[];
+  hearAboutLabel?: string;
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -57,6 +61,7 @@ export function SuperAdminPanel() {
   const [pagination, setPagination] = useState({ limit: 20, total: 0, totalPages: 0 });
   const [isLoadingStats, setIsLoadingStats] = useState(true);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+  const [usersLoadError, setUsersLoadError] = useState<string | null>(null);
   const [siteSettings, setSiteSettings] = useState<Record<string, boolean> | null>(null);
   const [siteSettingsLoading, setSiteSettingsLoading] = useState(true);
   const [siteSettingsPatching, setSiteSettingsPatching] = useState(false);
@@ -75,15 +80,16 @@ export function SuperAdminPanel() {
     }
   };
 
-  const toggleLandingSection = async (key: string, value: boolean) => {
+  const patchSiteSettings = async (patch: {
+    landing_show_partners?: boolean;
+    deneme_show_advanced?: boolean;
+  }) => {
     setSiteSettingsPatching(true);
     try {
       const res = await fetch('/api/super-admin/site-settings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(
-          key === LANDING_SHOW_PARTNERS_KEY ? { landing_show_partners: value } : {}
-        ),
+        body: JSON.stringify(patch),
       });
       if (res.ok) {
         const json = await res.json();
@@ -110,16 +116,28 @@ export function SuperAdminPanel() {
 
   const fetchUsers = async (pageNum: number) => {
     setIsLoadingUsers(true);
+    setUsersLoadError(null);
     try {
       const res = await fetch(`/api/super-admin/users?page=${pageNum}&limit=20`);
-      if (res.ok) {
-        const json = await res.json();
+      const json = await res.json().catch(() => ({}));
+      if (res.ok && json.success && Array.isArray(json.data?.users)) {
         setUsers(json.data.users);
         const p = json.data.pagination;
         setPagination({ limit: p.limit, total: p.total, totalPages: p.totalPages });
+        setUsersLoadError(null);
+      } else {
+        setUsers([]);
+        setPagination({ limit: 20, total: 0, totalPages: 0 });
+        const msg =
+          typeof json.error === 'string'
+            ? json.error
+            : json.error?.message ?? `Liste yüklenemedi (HTTP ${res.status}).`;
+        setUsersLoadError(msg);
       }
     } catch {
-      // ignore
+      setUsers([]);
+      setPagination({ limit: 20, total: 0, totalPages: 0 });
+      setUsersLoadError('Bağlantı hatası. Ağı kontrol edip yenileyin.');
     } finally {
       setIsLoadingUsers(false);
     }
@@ -238,6 +256,11 @@ export function SuperAdminPanel() {
             <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">Kullanıcılar</h2>
             <p className="mt-0.5 text-sm text-stone-500 dark:text-stone-400">Kayıtlı kullanıcı listesi (sayfalı)</p>
           </div>
+          {usersLoadError ? (
+            <div className="border-b border-red-200 bg-red-50 px-5 py-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
+              {usersLoadError}
+            </div>
+          ) : null}
           {isLoadingUsers ? (
             <div className="p-8 flex justify-center">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary-600 border-t-transparent" />
@@ -250,6 +273,8 @@ export function SuperAdminPanel() {
                     <tr className="bg-stone-50 text-xs font-semibold uppercase tracking-wider text-stone-600 dark:bg-stone-900/80 dark:text-stone-400">
                       <th className="px-5 py-3">Ad Soyad</th>
                       <th className="px-5 py-3">E-posta</th>
+                      <th className="min-w-[120px] max-w-[200px] px-5 py-3">Kaynak</th>
+                      <th className="min-w-[140px] px-5 py-3">Sınavlar</th>
                       <th className="px-5 py-3">Rol</th>
                       <th className="px-5 py-3">Durum</th>
                       <th className="px-5 py-3">Son Giriş</th>
@@ -257,9 +282,15 @@ export function SuperAdminPanel() {
                     </tr>
                   </thead>
                   <tbody>
-                    {users.length === 0 ? (
+                    {usersLoadError ? (
                       <tr>
-                        <td colSpan={6} className="px-5 py-8 text-center text-stone-500 dark:text-stone-400">
+                        <td colSpan={8} className="px-5 py-8 text-center text-stone-500 dark:text-stone-400">
+                          Liste yüklenemedi. Yukarıdaki mesaja bakın veya sayfayı yenileyin.
+                        </td>
+                      </tr>
+                    ) : users.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="px-5 py-8 text-center text-stone-500 dark:text-stone-400">
                           Kullanıcı bulunamadı.
                         </td>
                       </tr>
@@ -270,6 +301,28 @@ export function SuperAdminPanel() {
                             {u.firstName} {u.lastName}
                           </td>
                           <td className="px-5 py-3 text-stone-600 dark:text-stone-400">{u.email}</td>
+                          <td className="max-w-[200px] px-5 py-3 align-top text-sm text-stone-600 dark:text-stone-400">
+                            <span className="line-clamp-2" title={u.hearAboutLabel}>
+                              {u.hearAboutLabel ?? '—'}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3 align-top">
+                            {u.exams?.length ? (
+                              <div className="flex max-w-xs flex-wrap gap-1.5">
+                                {u.exams.map((ex) => (
+                                  <span
+                                    key={ex.id}
+                                    title={ex.code}
+                                    className="inline-flex max-w-full items-center truncate rounded-lg border border-primary-200 bg-primary-50 px-2 py-0.5 text-xs font-medium text-primary-800 dark:border-primary-800 dark:bg-primary-950/50 dark:text-primary-200"
+                                  >
+                                    {ex.name}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-sm text-stone-400 dark:text-stone-500">—</span>
+                            )}
+                          </td>
                           <td className="px-5 py-3">
                             <span
                               className={`inline-flex rounded px-2 py-0.5 text-xs font-medium ${
@@ -353,10 +406,9 @@ export function SuperAdminPanel() {
                   aria-checked={siteSettings?.[LANDING_SHOW_PARTNERS_KEY] ?? true}
                   disabled={siteSettingsPatching}
                   onClick={() =>
-                    toggleLandingSection(
-                      LANDING_SHOW_PARTNERS_KEY,
-                      !(siteSettings?.[LANDING_SHOW_PARTNERS_KEY] ?? true)
-                    )
+                    patchSiteSettings({
+                      landing_show_partners: !(siteSettings?.[LANDING_SHOW_PARTNERS_KEY] ?? true),
+                    })
                   }
                   className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-stone-950 ${
                     siteSettings?.[LANDING_SHOW_PARTNERS_KEY] ?? true
@@ -373,6 +425,57 @@ export function SuperAdminPanel() {
               </div>
               <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">
                 {siteSettings?.[LANDING_SHOW_PARTNERS_KEY] ?? true ? 'Gösteriliyor' : 'Gizli'}
+              </p>
+            </div>
+          )}
+        </section>
+
+        {/* Deneme sayfası: gelişmiş özellikler */}
+        <section className="mt-10 space-y-4">
+          <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100">Deneme Takibi Sayfası</h2>
+          <p className="text-sm text-stone-500 dark:text-stone-400">
+            Kapalıyken kullanıcılar sadece mevcut deneme listesini görür; analiz, yeni kayıt formu, ders bazlı
+            giriş ve KPSS önizlemesi gizlenir. Açtığınızda sayfa tam özelliklidir.
+          </p>
+          {siteSettingsLoading ? (
+            <div className="flex items-center gap-2 text-stone-500 dark:text-stone-400">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span className="text-sm">Yükleniyor...</span>
+            </div>
+          ) : (
+            <div className="max-w-xl rounded-xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900/90">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="font-medium text-stone-900 dark:text-stone-100">Gelişmiş deneme özellikleri</p>
+                  <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">
+                    Analiz grafiği, yeni deneme formu, ders ders D/Y/B, süre, not ve KPSS puan önizlemesi
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={siteSettings?.[DENEME_SHOW_ADVANCED_KEY] ?? false}
+                  disabled={siteSettingsPatching}
+                  onClick={() =>
+                    patchSiteSettings({
+                      deneme_show_advanced: !(siteSettings?.[DENEME_SHOW_ADVANCED_KEY] ?? false),
+                    })
+                  }
+                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-stone-950 ${
+                    siteSettings?.[DENEME_SHOW_ADVANCED_KEY] ?? false
+                      ? 'bg-primary-600'
+                      : 'bg-stone-200 dark:bg-stone-700'
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition dark:bg-stone-200 ${
+                      siteSettings?.[DENEME_SHOW_ADVANCED_KEY] ?? false ? 'translate-x-5' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+              <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">
+                {siteSettings?.[DENEME_SHOW_ADVANCED_KEY] ?? false ? 'Açık — kullanıcılar tam deneme arayüzünü görür' : 'Kapalı — sadece liste'}
               </p>
             </div>
           )}

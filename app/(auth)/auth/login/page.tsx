@@ -337,6 +337,12 @@ function LoginForm() {
                 Ücretsiz kayıt olun
               </Link>
             </p>
+            <p className="mt-3 text-sm text-stone-600 dark:text-stone-400">
+              Girişte sorun mu var?{' '}
+              <Link href="/destek" className="font-semibold text-primary-600 transition-colors hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+                Destek
+              </Link>
+            </p>
           </div>
         </div>
 

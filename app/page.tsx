@@ -8,7 +8,33 @@ import { unstable_cache } from 'next/cache';
 import { getBaseUrl } from '@/lib/seo/baseUrl';
 import { getSettingBoolean, SITE_KEYS } from '@/lib/siteSettings';
 import { MarketingHeader } from '@/components/layout/MarketingHeader';
-import { BookOpen, Users, ArrowRight, CheckCircle, Target, BarChart3, GraduationCap, Library, FileCheck, ClipboardCheck, Sparkles, TrendingUp, Award, UserPlus, ListChecks, MessageCircle, HelpCircle, Instagram, Linkedin, Youtube, Facebook } from 'lucide-react';
+import { MobileLandingCta } from '@/components/layout/MobileLandingCta';
+import {
+  BookOpen,
+  Users,
+  ArrowRight,
+  CheckCircle,
+  Target,
+  BarChart3,
+  GraduationCap,
+  Library,
+  ClipboardCheck,
+  Sparkles,
+  TrendingUp,
+  Award,
+  UserPlus,
+  ListChecks,
+  MessageCircle,
+  HelpCircle,
+  Instagram,
+  Linkedin,
+  Youtube,
+  Facebook,
+  Shield,
+  Lock,
+  Zap,
+  Building2,
+} from 'lucide-react';
 
 const getShowPartnersCached = () =>
   unstable_cache(
@@ -56,7 +82,7 @@ export default async function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
+    <div className="min-h-screen bg-stone-50 pb-24 text-stone-900 dark:bg-stone-950 dark:text-stone-100 sm:pb-0">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -163,58 +189,65 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* Sayılarla The Goal Lab */}
-      <section className="py-16 sm:py-20 lg:py-24 bg-white dark:bg-stone-900 border-y border-stone-100 dark:border-stone-800">
+      {/* Güven bandı + değer özetleri (satış odaklı, yanıltıcı rakam yok) */}
+      <section className="border-y border-stone-100 bg-white py-10 dark:border-stone-800 dark:bg-stone-900 sm:py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10 sm:mb-14">
-            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-primary-600 mb-3 sm:mb-4">
-              Sayılarla The Goal Lab
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-sm text-stone-600 dark:text-stone-400">
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5 shrink-0 text-primary-600" aria-hidden />
+              <span>Şeffaf ilerleme takibi</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Lock className="h-5 w-5 shrink-0 text-primary-600" aria-hidden />
+              <span>Hesabınıza özel veri</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Zap className="h-5 w-5 shrink-0 text-primary-600" aria-hidden />
+              <span>Dakikalar içinde ilk sınavınız</span>
+            </div>
+          </div>
+          <div className="mx-auto mt-10 max-w-3xl border-t border-stone-100 pt-10 text-center dark:border-stone-800">
+            <h2 className="font-display text-2xl font-bold text-stone-900 dark:text-stone-100 sm:text-3xl lg:text-4xl">
+              Planınız net, risk yok
             </h2>
-            <p className="text-base sm:text-lg text-stone-600 dark:text-stone-400 max-w-2xl mx-auto">
-              Kurulduğu günden bu yana binlerce öğrencinin sınav hazırlığına destek olan The Goal Lab büyümeye devam ediyor.
+            <p className="mt-3 text-base text-stone-600 dark:text-stone-400 sm:text-lg">
+              Kredi kartı olmadan deneyin. İhtiyaç duyduğunuzda Pro ile pomodoro geçmişi ve gelişmiş analitiklere geçebilirsiniz.
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-            <div className="flex flex-col items-center text-center">
-              <div className="relative w-full max-w-[180px] mx-auto mb-4 sm:mb-5">
-                <div className="aspect-square rounded-[2rem] bg-gradient-to-br from-primary-600 to-primary-700 flex items-center justify-center p-6 shadow-lg shadow-primary-500/25">
-                  <div className="absolute inset-0 rounded-[2rem] bg-primary-500/20 blur-xl" />
-                  <GraduationCap className="relative h-10 w-10 sm:h-12 sm:w-12 text-white" />
+          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+            {[
+              {
+                title: 'Kendi ritminiz',
+                desc: 'Konu konu işaretleyin; haftalık hedef ve ilerleme çubuklarıyla motive kalın.',
+                icon: GraduationCap,
+              },
+              {
+                title: 'Sınav yapınız sizde',
+                desc: 'KPSS, ÖABT, ALES veya kurum içi sınav — ders ve konu ağacını kendiniz kurun.',
+                icon: Library,
+              },
+              {
+                title: 'Tek ekranda görünürlük',
+                desc: 'Dashboard ve istatistiklerle hangi alanda geride kaldığınızı hemen görün.',
+                icon: BarChart3,
+              },
+              {
+                title: 'Denemeler tek yerde',
+                desc: 'Deneme sonuçlarını kaydedin; gelişimi zaman içinde karşılaştırın.',
+                icon: ClipboardCheck,
+              },
+            ].map(({ title, desc, icon: Icon }) => (
+              <div
+                key={title}
+                className="rounded-2xl border border-stone-100 bg-stone-50/80 p-6 dark:border-stone-800 dark:bg-stone-950/60"
+              >
+                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/20">
+                  <Icon className="h-6 w-6" />
                 </div>
+                <h3 className="font-display text-lg font-bold text-stone-900 dark:text-stone-100">{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-stone-600 dark:text-stone-400">{desc}</p>
               </div>
-              <div className="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold text-primary-600 mb-1">65.549</div>
-              <div className="text-stone-800 font-semibold text-sm sm:text-base">Mutlu Öğrenci</div>
-            </div>
-            <div className="flex flex-col items-center text-center">
-              <div className="relative w-full max-w-[180px] mx-auto mb-4 sm:mb-5">
-                <div className="aspect-square rounded-[2rem] bg-gradient-to-br from-primary-600 to-primary-700 flex items-center justify-center p-6 shadow-lg shadow-primary-500/25">
-                  <div className="absolute inset-0 rounded-[2rem] bg-amber-400/20 blur-xl" />
-                  <Library className="relative h-10 w-10 sm:h-12 sm:w-12 text-white" />
-                </div>
-              </div>
-              <div className="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold text-primary-600 mb-1">2.969</div>
-              <div className="text-stone-800 font-semibold text-sm sm:text-base">Takip Edilen Konu</div>
-            </div>
-            <div className="flex flex-col items-center text-center">
-              <div className="relative w-full max-w-[180px] mx-auto mb-4 sm:mb-5">
-                <div className="aspect-square rounded-[2rem] bg-gradient-to-br from-primary-600 to-primary-700 flex items-center justify-center p-6 shadow-lg shadow-primary-500/25">
-                  <div className="absolute inset-0 rounded-[2rem] bg-teal-400/20 blur-xl" />
-                  <FileCheck className="relative h-10 w-10 sm:h-12 sm:w-12 text-white" />
-                </div>
-              </div>
-              <div className="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold text-primary-600 mb-1">11.913</div>
-              <div className="text-stone-800 font-semibold text-sm sm:text-base">Çözülen Soru</div>
-            </div>
-            <div className="flex flex-col items-center text-center">
-              <div className="relative w-full max-w-[180px] mx-auto mb-4 sm:mb-5">
-                <div className="aspect-square rounded-[2rem] bg-gradient-to-br from-primary-600 to-primary-700 flex items-center justify-center p-6 shadow-lg shadow-primary-500/25">
-                  <div className="absolute inset-0 rounded-[2rem] bg-amber-400/20 blur-xl" />
-                  <ClipboardCheck className="relative h-10 w-10 sm:h-12 sm:w-12 text-white" />
-                </div>
-              </div>
-              <div className="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold text-primary-600 mb-1">1.213</div>
-              <div className="text-stone-800 font-semibold text-sm sm:text-base">Tamamlanan Deneme</div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -244,8 +277,52 @@ export default async function LandingPage() {
         </div>
       </section>
 
+      {/* Kimler için */}
+      <section id="kimler" className="border-y border-stone-100 bg-stone-50 py-14 dark:border-stone-800 dark:bg-stone-950 sm:py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto mb-10 max-w-2xl text-center sm:mb-12">
+            <h2 className="font-display text-2xl font-bold text-stone-900 dark:text-stone-100 sm:text-3xl lg:text-4xl">
+              Kimler için?
+            </h2>
+            <p className="mt-2 text-stone-600 dark:text-stone-400 sm:text-lg">
+              Bireysel adaydan kurumsal ekibe kadar aynı net panel; rolünüze göre derinleşir.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-8">
+            {[
+              {
+                title: 'Bireysel aday',
+                desc: 'KPSS, ÖABT veya ALES — konu takibi, deneme ve hedef puanı tek hesapta.',
+                icon: GraduationCap,
+              },
+              {
+                title: 'Kurs ve dershane',
+                desc: 'Şubeler ve sınıflar için merkezi takip; öğrenci ilerlemesini raporlamaya hazır veri.',
+                icon: Users,
+              },
+              {
+                title: 'Kurum ve koordinasyon',
+                desc: 'Rol yönetimi ve ekip görünürlüğü ile kurumsal sınav hazırlığını tek çatıda toplayın.',
+                icon: Building2,
+              },
+            ].map(({ title, desc, icon: Icon }) => (
+              <div
+                key={title}
+                className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-700 dark:bg-stone-900/90 sm:p-8"
+              >
+                <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary-100 text-primary-700 dark:bg-primary-950 dark:text-primary-300">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <h3 className="font-display text-lg font-bold text-stone-900 dark:text-stone-100">{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-stone-600 dark:text-stone-400">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Features */}
-      <section className="py-16 sm:py-24 lg:py-32">
+      <section id="ozellikler" className="py-16 sm:py-24 lg:py-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-900 dark:text-stone-100 mb-3 sm:mb-4">
@@ -337,6 +414,64 @@ export default async function LandingPage() {
         </div>
       </section>
 
+      {/* Paket özeti */}
+      <section id="paketler" className="border-y border-stone-100 bg-stone-50 py-16 dark:border-stone-800 dark:bg-stone-950 sm:py-20 lg:py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto mb-10 max-w-2xl text-center sm:mb-12">
+            <h2 className="font-display text-3xl font-bold text-stone-900 dark:text-stone-100 sm:text-4xl lg:text-5xl">
+              Ücretsiz başlayın, büyüdükçe Pro
+            </h2>
+            <p className="mt-3 text-lg text-stone-600 dark:text-stone-400">
+              Temel sınav ve konu takibi her zaman ücretsiz. Odak ve analitik için Pro planına geçiş tek tık.
+            </p>
+          </div>
+          <div className="mx-auto grid max-w-4xl grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
+            <div className="flex flex-col rounded-3xl border-2 border-stone-200 bg-white p-8 dark:border-stone-700 dark:bg-stone-900/90">
+              <p className="text-sm font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">Ücretsiz</p>
+              <p className="font-display mt-2 text-3xl font-bold text-stone-900 dark:text-stone-100">0 ₺</p>
+              <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">Sınav, ders ve konu takibi; dashboard; deneme kayıtları.</p>
+              <ul className="mt-6 flex flex-1 flex-col gap-3 text-sm text-stone-700 dark:text-stone-300">
+                {['Sınırsız sınav / ders / konu (politikaya tabi)', 'İlerleme ve temel istatistikler', 'Mobil uyumlu arayüz'].map((line) => (
+                  <li key={line} className="flex gap-2">
+                    <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary-600" aria-hidden />
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/onboarding"
+                className="mt-8 inline-flex w-full items-center justify-center rounded-2xl border-2 border-stone-300 py-3.5 text-center text-sm font-bold text-stone-800 transition-colors hover:border-primary-400 hover:bg-primary-50 dark:border-stone-600 dark:text-stone-100 dark:hover:border-primary-600 dark:hover:bg-stone-800"
+              >
+                Ücretsiz kayıt ol
+              </Link>
+            </div>
+            <div className="relative flex flex-col overflow-hidden rounded-3xl border-2 border-primary-500 bg-gradient-to-b from-primary-50/90 to-white p-8 dark:from-primary-950/40 dark:to-stone-900/90 dark:border-primary-600">
+              <div className="absolute right-4 top-4 rounded-full bg-primary-600 px-2.5 py-0.5 text-xs font-bold text-white">Pro</div>
+              <p className="text-sm font-semibold uppercase tracking-wide text-primary-800 dark:text-primary-300">Profesyonel</p>
+              <p className="font-display mt-2 text-3xl font-bold text-stone-900 dark:text-stone-100">İhtiyaca göre</p>
+              <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">Pomodoro geçmişi ve gelişmiş analitik; yüksek kullanım limitleri.</p>
+              <ul className="mt-6 flex flex-1 flex-col gap-3 text-sm text-stone-700 dark:text-stone-300">
+                {['Ücretsiz plandaki her şey', 'Pomodoro oturum geçmişi ve istatistikleri', 'Öncelikli kullanım kotası ve özellikler'].map((line) => (
+                  <li key={line} className="flex gap-2">
+                    <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary-600" aria-hidden />
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/onboarding"
+                className="mt-8 inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-primary-600 to-primary-500 py-3.5 text-sm font-bold text-white shadow-lg shadow-primary-500/25 transition-transform hover:scale-[1.01] active:scale-[0.99]"
+              >
+                Kayıt ol, Pro&apos;yu uygulama içinden seç
+              </Link>
+            </div>
+          </div>
+          <p className="mx-auto mt-8 max-w-2xl text-center text-xs text-stone-500 dark:text-stone-400">
+            Fiyatlandırma ve kota detayları hesabınızdan faturalandırma bölümünde güncellenir; taahhüt yoktur.
+          </p>
+        </div>
+      </section>
+
       {/* Benefits */}
       <section className="py-16 sm:py-24 lg:py-32 bg-white dark:bg-stone-900 border-y border-stone-100 dark:border-stone-800">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -401,14 +536,14 @@ export default async function LandingPage() {
       </section>
 
       {/* Kullanıcı Yorumları */}
-      <section className="py-16 sm:py-24 lg:py-32 bg-stone-50 dark:bg-stone-950">
+      <section id="yorumlar" className="py-16 sm:py-24 lg:py-32 bg-stone-50 dark:bg-stone-950">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-900 dark:text-stone-100 mb-3 sm:mb-4">
               Kullanıcılarımız Ne Diyor?
             </h2>
             <p className="text-lg sm:text-xl text-stone-600 dark:text-stone-400 max-w-2xl mx-auto">
-              Binlerce öğrenci ve kurum sınav takibini The Goal Lab ile yapıyor
+              Adaylar ve kurumlar sınav takibini The Goal Lab ile sadeleştiriyor
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
@@ -513,7 +648,7 @@ export default async function LandingPage() {
 
       {/* CTA */}
       <section className="py-16 sm:py-24 lg:py-32 bg-gradient-to-br from-primary-600 via-primary-500 to-teal-400 relative overflow-hidden">
-        <div className="absolute inset-0 bg-grid-white/[0.06] bg-[size:24px_24px]" />
+        <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:24px_24px]" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-white mb-4 sm:mb-6">
@@ -547,6 +682,9 @@ export default async function LandingPage() {
               <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
                 <Link href="/sss" className="text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-primary-600 transition-colors">
                   Sıkça Sorulan Sorular
+                </Link>
+                <Link href="/destek" className="text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-primary-600 transition-colors">
+                  Destek
                 </Link>
                 <Link href="/auth/login" className="text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-primary-600 transition-colors hidden sm:block">
                   Giriş Yap
@@ -584,6 +722,8 @@ export default async function LandingPage() {
           </div>
         </div>
       </footer>
+
+      <MobileLandingCta />
     </div>
   );
 }

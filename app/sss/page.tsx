@@ -79,13 +79,21 @@ export default function SSSPage() {
           ))}
         </div>
         <div className="mt-10 text-center">
-          <p className="mb-4 text-sm text-stone-500 dark:text-stone-400">Sorunuz mu var?</p>
-          <Link
-            href="/onboarding"
-            className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 px-6 py-3 text-base font-semibold text-white transition-all hover:from-primary-700 hover:to-primary-600"
-          >
-            Ücretsiz Başla
-          </Link>
+          <p className="mb-4 text-sm text-stone-500 dark:text-stone-400">Cevabını bulamadınız mı?</p>
+          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link
+              href="/destek"
+              className="inline-flex items-center justify-center rounded-xl border-2 border-primary-500 bg-white px-6 py-3 text-base font-semibold text-primary-700 transition-colors hover:bg-primary-50 dark:border-primary-600 dark:bg-stone-900 dark:text-primary-300 dark:hover:bg-primary-950/40"
+            >
+              Destek ile iletişim
+            </Link>
+            <Link
+              href="/onboarding"
+              className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 px-6 py-3 text-base font-semibold text-white transition-all hover:from-primary-700 hover:to-primary-600"
+            >
+              Ücretsiz Başla
+            </Link>
+          </div>
         </div>
       </main>
 

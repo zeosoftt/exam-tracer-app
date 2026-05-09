@@ -62,6 +62,16 @@ export const registerSchema = z.object({
   dailyStudyHours: z.number().int().min(1).max(24).optional(),
   examCode: z.string().optional(),
   examName: z.string().optional(),
+  acquisitionSource: z.string().max(64).optional().nullable(),
+  acquisitionSourceDetail: z.string().max(200).optional().nullable(),
+});
+
+/** Destek / iletişim formu (giriş yapmamış kullanıcılar için e-posta zorunlu) */
+export const supportContactSchema = z.object({
+  email: emailSchema,
+  category: z.enum(['TECHNICAL', 'ACCOUNT', 'BILLING', 'FEEDBACK', 'OTHER']),
+  subject: z.string().min(3, 'Konu en az 3 karakter olmalı').max(120).trim(),
+  message: z.string().min(10, 'Mesaj en az 10 karakter olmalı').max(4000).trim(),
 });
 
 // User schemas

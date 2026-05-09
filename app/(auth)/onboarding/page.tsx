@@ -7,8 +7,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Building2, ArrowRight, ArrowLeft, CheckCircle, Target, Clock } from 'lucide-react';
+import { User, Building2, ArrowRight, ArrowLeft, CheckCircle, Target, Clock, Megaphone } from 'lucide-react';
 import Link from 'next/link';
+import { ACQUISITION_SOURCES, getAcquisitionSourceLabel } from '@/lib/marketing/acquisitionSources';
 
 type UserType = 'individual' | 'institution' | null;
 type ExamType = {
@@ -28,6 +29,8 @@ export default function OnboardingPage() {
   const [selectedExam, setSelectedExam] = useState<ExamType>(null);
   const [targetScore, setTargetScore] = useState<number | null>(null);
   const [dailyStudyHours, setDailyStudyHours] = useState<number | null>(null);
+  const [hearAboutSource, setHearAboutSource] = useState<string | null>(null);
+  const [hearAboutOtherDetail, setHearAboutOtherDetail] = useState('');
   const [availableExams, setAvailableExams] = useState<ExamType[]>([]);
   const [isLoadingExams, setIsLoadingExams] = useState(true);
   const [examError, setExamError] = useState<string | null>(null);
@@ -429,10 +432,95 @@ export default function OnboardingPage() {
     );
   };
 
-  // Step 5: Registration Summary
-  const Step5 = () => {
+  // Step 5: Bizi nereden buldunuz? (kayıt formundan önce; isteğe bağlı)
+  const Step5 = () => (
+    <div className="space-y-6">
+      <div className="mb-8 text-center">
+        <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-600">
+          <Megaphone className="h-8 w-8 text-white" />
+        </div>
+        <h2 className="mb-2 font-display text-3xl font-bold text-stone-900 dark:text-stone-100">Bizi nereden duydunuz?</h2>
+        <p className="text-stone-600 dark:text-stone-400">
+          İsteğe bağlı — cevabınız pazarlama ve içerik yatırımlarımızı iyileştirmemize yardım eder. Atlamak için doğrudan devam edebilirsiniz.
+        </p>
+      </div>
+
+      <div className="custom-scrollbar grid max-h-[min(52vh,420px)] grid-cols-1 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
+        <button
+          type="button"
+          onClick={() => {
+            setHearAboutSource(null);
+            setHearAboutOtherDetail('');
+          }}
+          className={`rounded-xl border-2 px-4 py-3 text-left text-sm font-semibold transition-all ${
+            hearAboutSource === null
+              ? 'border-primary-500 bg-primary-50 text-primary-900 dark:border-primary-600 dark:bg-primary-950/40 dark:text-primary-100'
+              : 'border-stone-200 bg-white text-stone-700 hover:border-primary-200 dark:border-stone-700 dark:bg-stone-900/80 dark:text-stone-200'
+          }`}
+        >
+          Belirtmek istemiyorum
+        </button>
+        {ACQUISITION_SOURCES.map((opt) => (
+          <button
+            key={opt.id}
+            type="button"
+            onClick={() => {
+              setHearAboutSource(opt.id);
+              if (opt.id !== 'OTHER') setHearAboutOtherDetail('');
+            }}
+            className={`rounded-xl border-2 px-4 py-3 text-left text-sm font-semibold transition-all ${
+              hearAboutSource === opt.id
+                ? 'border-primary-500 bg-primary-50 text-primary-900 dark:border-primary-600 dark:bg-primary-950/40 dark:text-primary-100'
+                : 'border-stone-200 bg-white text-stone-700 hover:border-primary-200 dark:border-stone-700 dark:bg-stone-900/80 dark:text-stone-200'
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
+      {hearAboutSource === 'OTHER' && (
+        <div>
+          <label htmlFor="hear-about-other" className="mb-2 block text-sm font-semibold text-stone-700 dark:text-stone-300">
+            Kısaca yazın (isteğe bağlı)
+          </label>
+          <input
+            id="hear-about-other"
+            type="text"
+            maxLength={200}
+            value={hearAboutOtherDetail}
+            onChange={(e) => setHearAboutOtherDetail(e.target.value)}
+            placeholder="Örn. bir forum, etkinlik adı…"
+            className="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-900 placeholder:text-stone-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
+          />
+        </div>
+      )}
+
+      <div className="flex items-center justify-between pt-6">
+        <button
+          type="button"
+          onClick={() => setStep(4)}
+          className="inline-flex items-center rounded-xl border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Geri
+        </button>
+        <button
+          type="button"
+          onClick={() => setStep(6)}
+          className="inline-flex items-center rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:from-primary-700 hover:to-primary-600"
+        >
+          Devam Et
+          <ArrowRight className="ml-2 h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+
+  // Step 6: Kayıt özeti
+  const Step6 = () => {
     const handleComplete = () => {
-      // Store onboarding data in sessionStorage
+      const detailTrim = hearAboutOtherDetail.trim();
       const onboardingData = {
         userType,
         examId: selectedExam?.id,
@@ -440,10 +528,11 @@ export default function OnboardingPage() {
         examCode: selectedExam?.code,
         targetScore,
         dailyStudyHours,
+        acquisitionSource: hearAboutSource,
+        acquisitionSourceDetail: hearAboutSource === 'OTHER' ? detailTrim || undefined : undefined,
       };
       sessionStorage.setItem('onboarding', JSON.stringify(onboardingData));
-      
-      // Redirect to registration with query params
+
       router.push(`/auth/register?userType=${userType}&examId=${selectedExam?.id}&examCode=${selectedExam?.code}&targetScore=${targetScore}&dailyStudyHours=${dailyStudyHours}`);
     };
 
@@ -488,19 +577,29 @@ export default function OnboardingPage() {
               <p className="font-semibold text-stone-900 dark:text-stone-100">{dailyStudyHours} saat</p>
             </div>
           </div>
+          <div className="flex items-center gap-3">
+            <div className="h-2 w-2 rounded-full bg-violet-600"></div>
+            <div>
+              <p className="text-sm text-stone-600 dark:text-stone-400">Bizi nereden duydunuz?</p>
+              <p className="font-semibold text-stone-900 dark:text-stone-100">
+                {getAcquisitionSourceLabel(hearAboutSource, hearAboutSource === 'OTHER' ? hearAboutOtherDetail : null)}
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="flex items-center justify-between pt-6">
           <button
-            onClick={() => setStep(4)}
+            type="button"
+            onClick={() => setStep(5)}
             className="inline-flex items-center rounded-xl border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-700 transition-colors hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Geri
           </button>
           <button
+            type="button"
             onClick={handleComplete}
-            disabled={false}
             className="inline-flex items-center rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:from-primary-700 hover:to-primary-600 disabled:opacity-50"
           >
             Kayıt Ol
@@ -517,13 +616,13 @@ export default function OnboardingPage() {
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-sm font-medium text-stone-600 dark:text-stone-400">Adım {step} / 5</span>
-            <span className="text-sm font-medium text-stone-600 dark:text-stone-400">%{Math.round((step / 5) * 100)}</span>
+            <span className="text-sm font-medium text-stone-600 dark:text-stone-400">Adım {step} / 6</span>
+            <span className="text-sm font-medium text-stone-600 dark:text-stone-400">%{Math.round((step / 6) * 100)}</span>
           </div>
           <div className="h-2 w-full rounded-full bg-stone-200 dark:bg-stone-800">
             <div
               className="h-2 rounded-full bg-gradient-to-r from-primary-600 to-primary-500 transition-all duration-300"
-              style={{ width: `${(step / 5) * 100}%` }}
+              style={{ width: `${(step / 6) * 100}%` }}
             ></div>
           </div>
         </div>
@@ -535,6 +634,7 @@ export default function OnboardingPage() {
           {step === 3 && <Step3 />}
           {step === 4 && <Step4 />}
           {step === 5 && <Step5 />}
+          {step === 6 && <Step6 />}
         </div>
 
         {/* Back to Home */}

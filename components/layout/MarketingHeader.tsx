@@ -17,6 +17,26 @@ export function MarketingHeader() {
               The Goal Lab
             </span>
           </Link>
+          <nav
+            className="hidden items-center gap-6 text-sm font-medium text-stone-600 dark:text-stone-400 md:flex"
+            aria-label="Sayfa bölümleri"
+          >
+            <a href="/#ozellikler" className="transition-colors hover:text-primary-600 dark:hover:text-primary-400">
+              Özellikler
+            </a>
+            <a href="/#paketler" className="transition-colors hover:text-primary-600 dark:hover:text-primary-400">
+              Paketler
+            </a>
+            <a href="/#yorumlar" className="transition-colors hover:text-primary-600 dark:hover:text-primary-400">
+              Yorumlar
+            </a>
+            <Link href="/sss" className="transition-colors hover:text-primary-600 dark:hover:text-primary-400">
+              SSS
+            </Link>
+            <Link href="/destek" className="transition-colors hover:text-primary-600 dark:hover:text-primary-400">
+              Destek
+            </Link>
+          </nav>
           <div className="flex items-center gap-2 sm:gap-4">
             <ThemeToggleCompact />
             <Link

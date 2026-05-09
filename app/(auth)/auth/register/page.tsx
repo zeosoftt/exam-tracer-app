@@ -27,6 +27,8 @@ function RegisterForm() {
     examName?: string;
     targetScore?: number;
     dailyStudyHours?: number;
+    acquisitionSource?: string | null;
+    acquisitionSourceDetail?: string | null;
   } | null>(null);
 
   useEffect(() => {
@@ -48,6 +50,8 @@ function RegisterForm() {
           examName: data.examName,
           targetScore: targetScore ? parseInt(targetScore) : data.targetScore,
           dailyStudyHours: dailyStudyHours ? parseInt(dailyStudyHours) : data.dailyStudyHours,
+          acquisitionSource: data.acquisitionSource ?? undefined,
+          acquisitionSourceDetail: data.acquisitionSourceDetail ?? undefined,
         });
       } catch (e) {
         // Ignore parse errors
@@ -82,6 +86,8 @@ function RegisterForm() {
         dailyStudyHours: onboardingData?.dailyStudyHours,
         examCode: onboardingData?.examCode,
         examName: onboardingData?.examName,
+        acquisitionSource: onboardingData?.acquisitionSource ?? undefined,
+        acquisitionSourceDetail: onboardingData?.acquisitionSourceDetail ?? undefined,
       };
 
       const response = await fetch('/api/auth/register', {

@@ -31,6 +31,7 @@ import {
   Brain,
   LayoutDashboard,
   ArrowUpRight,
+  LifeBuoy,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
@@ -426,6 +427,15 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
                 </Link>
               )}
               <ThemeToggleCompact />
+              <Link
+                href="/destek"
+                className="btn btn-secondary !px-2.5 !py-2 sm:!px-3"
+                title="Destek ve iletişim"
+                aria-label="Destek ve iletişim"
+              >
+                <LifeBuoy className="h-4 w-4 text-stone-600 dark:text-stone-400" />
+                <span className="ml-1.5 hidden text-xs font-semibold sm:inline">Destek</span>
+              </Link>
               <button
                 type="button"
                 onClick={async () => {

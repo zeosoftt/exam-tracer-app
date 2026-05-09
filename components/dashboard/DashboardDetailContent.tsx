@@ -24,6 +24,7 @@ import {
   Edit2,
   Save,
   X,
+  LifeBuoy,
 } from 'lucide-react';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
 
@@ -261,6 +262,14 @@ export function DashboardDetailContent({
               </span>
             </Link>
             <div className="flex flex-shrink-0 items-center gap-2 sm:gap-3">
+              <Link
+                href="/destek"
+                className="rounded-xl border border-stone-200 p-2 text-stone-600 transition-colors hover:bg-stone-50 hover:text-primary-600 dark:border-stone-700 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-primary-400"
+                title="Destek ve iletişim"
+                aria-label="Destek ve iletişim"
+              >
+                <LifeBuoy className="h-[18px] w-[18px]" aria-hidden />
+              </Link>
               <ThemeToggleCompact />
               <div className="flex min-w-0 items-center gap-1.5 text-sm text-stone-600 dark:text-stone-400 sm:gap-2">
                 <User className="h-4 w-4 flex-shrink-0" />

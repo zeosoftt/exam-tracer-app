@@ -48,6 +48,12 @@ async function registerHandler(req: NextRequest): Promise<NextResponse> {
     // Hash password
     const passwordHash = await hashPassword(validatedData.password);
 
+    const acquisitionSource = validatedData.acquisitionSource?.trim() || null;
+    const acquisitionSourceDetail =
+      acquisitionSource === 'OTHER'
+        ? validatedData.acquisitionSourceDetail?.trim() || null
+        : null;
+
     // Find exam if examCode is provided (exam must exist in master data)
     let examId: string | undefined;
     if (validatedData.examCode) {
@@ -80,6 +86,8 @@ async function registerHandler(req: NextRequest): Promise<NextResponse> {
           institutionId: validatedData.institutionId,
           targetScore: validatedData.targetScore,
           dailyStudyHours: validatedData.dailyStudyHours,
+          acquisitionSource,
+          acquisitionSourceDetail,
         },
         select: {
           id: true,

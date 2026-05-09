@@ -20,6 +20,10 @@ model User {
   isActive               Boolean           @default(true)
   emailVerified          Boolean           @default(false)
   lastLoginAt            DateTime?
+  /// Onboarding: bizi nereden buldunuz (sabit id, örn. GOOGLE_SEARCH)
+  acquisitionSource        String? @db.VarChar(64)
+  /// OTHER seçildiğinde veya kısa açıklama
+  acquisitionSourceDetail String? @db.VarChar(200)
   targetScore            Int?
   dailyStudyHours        Int?
   createdAt              DateTime          @default(now())

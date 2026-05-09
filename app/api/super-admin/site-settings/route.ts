@@ -57,12 +57,22 @@ export async function PATCH(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { landing_show_partners } = body as { landing_show_partners?: boolean };
+    const { landing_show_partners, deneme_show_advanced } = body as {
+      landing_show_partners?: boolean;
+      deneme_show_advanced?: boolean;
+    };
 
     if (typeof landing_show_partners === 'boolean') {
       await setSetting(
         SITE_KEYS.LANDING_SHOW_PARTNERS,
         landing_show_partners ? 'true' : 'false'
+      );
+    }
+
+    if (typeof deneme_show_advanced === 'boolean') {
+      await setSetting(
+        SITE_KEYS.DENEME_SHOW_ADVANCED,
+        deneme_show_advanced ? 'true' : 'false'
       );
     }
 
