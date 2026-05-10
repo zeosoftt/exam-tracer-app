@@ -29,6 +29,11 @@
 
 - `next.config.js` — `poweredByHeader: false`, sıkıştırma, güvenlik başlıkları (HSTS, X-Frame-Options, vb.).
 
+## Search Console: “404” veya “robots.txt engelledi”
+
+- **404 (favicon):** Tarayıcılar `/favicon.ico` ister; projede yalnızca `icon.svg` varsa 404 oluşur. `next.config.js` içinde `/favicon.ico` → `/icon.svg` yönlendirmesi tanımlıdır.
+- **robots / sitemap / manifest / OG:** Bu URL’ler `next-auth` middleware’inden **muaf** tutulmalıdır; aksi halde oturumsuz Googlebot giriş sayfasına düşer veya 404 görür. `middleware.ts` matcher ve `authorized` içinde bu yollar açıktır.
+
 ## Sizin yapmanız gerekenler (operasyon)
 
 1. **Google Search Console** — Mülk ekleyin, `https://thegoallab.com/sitemap.xml` gönderin (domain farklıysa `SITE_URL` ile aynı host).

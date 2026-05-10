@@ -13,6 +13,10 @@ const nextConfig = {
       bodySizeLimit: '2mb',
     },
   },
+  /** Tarayıcıların varsayılan /favicon.ico isteği 404 vermesin */
+  async redirects() {
+    return [{ source: '/favicon.ico', destination: '/icon.svg', permanent: false }];
+  },
   // Security headers
   async headers() {
     return [

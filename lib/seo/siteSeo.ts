@@ -131,10 +131,7 @@ export function buildRootMetadata(): Metadata {
     },
     verification: { google: GOOGLE_SITE_VERIFICATION },
     icons: {
-      icon: [
-        { url: '/icon.svg', type: 'image/svg+xml' },
-        { url: '/favicon.ico', sizes: 'any' },
-      ],
+      icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
       apple: [{ url: '/icon.svg', type: 'image/svg+xml' }],
     },
     alternates: { canonical: baseUrl, languages: { 'tr-TR': baseUrl } },

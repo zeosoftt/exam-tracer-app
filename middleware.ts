@@ -29,6 +29,20 @@ export default withAuth(
     callbacks: {
       authorized: ({ token, req }) => {
         // Public routes that don't require authentication
+        const path = req.nextUrl.pathname;
+
+        /** Sitemap / robots / manifest / ikon / OG — oturum olmadan erişilebilir olmalı (Google, sosyal önizleme) */
+        if (
+          path === '/icon.svg' ||
+          path === '/robots.txt' ||
+          path === '/sitemap.xml' ||
+          path === '/manifest.webmanifest' ||
+          path === '/opengraph-image' ||
+          path.startsWith('/opengraph-image/')
+        ) {
+          return true;
+        }
+
         const publicPaths = [
           '/',
           '/auth/login',
@@ -45,7 +59,6 @@ export default withAuth(
           '/api/support',
           '/api/analytics',
         ];
-        const path = req.nextUrl.pathname;
 
         if (publicPaths.some((p) => path === p || path.startsWith(p))) {
           return true;
@@ -61,11 +74,9 @@ export default withAuth(
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
+     * withAuth dışında bırakılanlar (SEO + önizleme):
+     * robots, sitemap, manifest, ikon, OG görseli — oturumsuz istekte yönlendirme/401 olmasın.
      */
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|favicon\\.ico|icon\\.svg|robots\\.txt|sitemap\\.xml|manifest\\.webmanifest|opengraph-image).*)',
   ],
 };
