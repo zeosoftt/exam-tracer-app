@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { randomBytes } from 'crypto';
+import { PASSWORD_RESET_TTL_MINUTES } from '@/config/constants';
 import { handleError } from '@/lib/errors/errorHandler';
 import { logInfo } from '@/lib/logger';
 
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest) {
     // Generate secure random token
     const token = randomBytes(32).toString('hex');
     const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 1); // Token valid for 1 hour
+    expiresAt.setMinutes(expiresAt.getMinutes() + PASSWORD_RESET_TTL_MINUTES);
 
     // Delete any existing unused tokens for this user
     await prisma.passwordResetToken.deleteMany({
@@ -70,6 +71,7 @@ export async function POST(req: NextRequest) {
       email: user.email,
       resetUrl,
       expiresAt: expiresAt.toISOString(),
+      ttlMinutes: PASSWORD_RESET_TTL_MINUTES,
     });
 
     // In production, uncomment and configure email service:

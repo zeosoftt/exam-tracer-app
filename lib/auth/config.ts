@@ -8,7 +8,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { prisma } from '@/lib/db/prisma';
 import { comparePassword } from '@/lib/auth/password';
 import { logAuth, logError } from '@/lib/logger';
-import { ERROR_MESSAGES, AUTH_ERROR_CODES } from '@/config/constants';
+import { ERROR_MESSAGES, AUTH_ERROR_CODES, NEXTAUTH_SESSION_MAX_AGE_SECONDS } from '@/config/constants';
 
 function isDatabaseConnectionError(err: unknown): boolean {
   if (!err || typeof err !== 'object') return false;
@@ -131,10 +131,10 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: NEXTAUTH_SESSION_MAX_AGE_SECONDS,
   },
   jwt: {
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: NEXTAUTH_SESSION_MAX_AGE_SECONDS,
   },
   cookies: {
     sessionToken: {

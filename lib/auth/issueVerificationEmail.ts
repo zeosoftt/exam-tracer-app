@@ -4,10 +4,9 @@
 
 import { randomBytes } from 'crypto';
 import { prisma } from '@/lib/db/prisma';
+import { EMAIL_VERIFICATION_TTL_HOURS } from '@/config/constants';
 import { sendVerificationEmail, buildVerificationUrl } from '@/lib/email';
 import { logError } from '@/lib/logger';
-
-const TOKEN_TTL_HOURS = 24;
 
 export async function issueVerificationEmailForUser(userId: string): Promise<void> {
   const user = await prisma.user.findFirst({
@@ -18,7 +17,7 @@ export async function issueVerificationEmailForUser(userId: string): Promise<voi
 
   const verificationToken = randomBytes(32).toString('hex');
   const verificationExpiresAt = new Date();
-  verificationExpiresAt.setHours(verificationExpiresAt.getHours() + TOKEN_TTL_HOURS);
+  verificationExpiresAt.setHours(verificationExpiresAt.getHours() + EMAIL_VERIFICATION_TTL_HOURS);
 
   await prisma.emailVerificationToken.create({
     data: {
@@ -33,5 +32,6 @@ export async function issueVerificationEmailForUser(userId: string): Promise<voi
     to: user.email,
     firstName: user.firstName,
     verifyUrl,
+    linkValidityHours: EMAIL_VERIFICATION_TTL_HOURS,
   }).catch((err) => logError('Verification email send failed', err as Error));
 }

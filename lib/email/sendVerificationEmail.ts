@@ -10,12 +10,18 @@ export type SendVerificationEmailParams = {
   to: string;
   firstName: string;
   verifyUrl: string;
+  /** DB ile aynı süre; e-posta metninde gösterilir (varsayılan 24) */
+  linkValidityHours?: number;
 };
 
 /** Resend için gönderici adresi. Kendi domain'inizi doğruladıysanız EMAIL_FROM ile değiştirin. */
 const DEFAULT_FROM = 'The Goal Lab <onboarding@resend.dev>';
 
-function getVerificationEmailHtml(firstName: string, verifyUrl: string): string {
+function getVerificationEmailHtml(firstName: string, verifyUrl: string, validityHours: number): string {
+  const ttlLabel =
+    validityHours % 24 === 0
+      ? `${validityHours / 24} gün`
+      : `${validityHours} saat`;
   return `
 <!DOCTYPE html>
 <html>
@@ -24,7 +30,7 @@ function getVerificationEmailHtml(firstName: string, verifyUrl: string): string 
   <h2>Merhaba ${firstName}</h2>
   <p>Hesabınızı oluşturdunuz. E-posta adresinizi doğrulamak için aşağıdaki bağlantıya tıklayın:</p>
   <p><a href="${verifyUrl}" style="display: inline-block; padding: 12px 24px; background: #0d9488; color: white; text-decoration: none; border-radius: 8px;">E-postamı doğrula</a></p>
-  <p>Bağlantı 24 saat geçerlidir.</p>
+  <p>Bağlantı ${ttlLabel} geçerlidir.</p>
   <p>Bu işlemi siz yapmadıysanız bu e-postayı yok sayabilirsiniz.</p>
   <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;">
   <p style="color: #666; font-size: 12px;">The Goal Lab</p>
@@ -37,7 +43,7 @@ function getVerificationEmailHtml(firstName: string, verifyUrl: string): string 
  * Doğrulama e-postası gönderir. RESEND_API_KEY varsa Resend ile gönderir, yoksa linki loglar.
  */
 export async function sendVerificationEmail(params: SendVerificationEmailParams): Promise<void> {
-  const { to, firstName, verifyUrl } = params;
+  const { to, firstName, verifyUrl, linkValidityHours = 24 } = params;
   const apiKey = process.env.RESEND_API_KEY;
 
   if (apiKey) {
@@ -48,7 +54,7 @@ export async function sendVerificationEmail(params: SendVerificationEmailParams)
         from,
         to: [to],
         subject: 'E-posta adresinizi doğrulayın - The Goal Lab',
-        html: getVerificationEmailHtml(firstName, verifyUrl),
+        html: getVerificationEmailHtml(firstName, verifyUrl, linkValidityHours),
       });
       if (error) {
         logError('Resend verification email failed', new Error(JSON.stringify(error)), { to, error });

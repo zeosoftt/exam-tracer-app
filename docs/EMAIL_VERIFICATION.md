@@ -24,3 +24,8 @@ psql "$DATABASE_URL" -f scripts/backfill-email-verified.sql
 
 - `NEXTAUTH_URL` — doğrulama linkinin doğru domain’e gitmesi için zorunlu (production).
 - `RESEND_API_KEY` + `EMAIL_FROM` — gerçek e-posta gönderimi için.
+- `EMAIL_VERIFICATION_TTL_HOURS` — doğrulama token süresi (saat, varsayılan 24, en fazla 168). Veritabanı `expiresAt` ve e-posta metni buna uyumlu.
+
+## Oturum süresi
+
+Giriş sonrası NextAuth JWT / oturum çerezi süresi `SESSION_EXPIRES_IN` ile ayarlanır (örn. `7d`, `12h` veya saniye cinsinden tamsayı). Varsayılan `30d`.
