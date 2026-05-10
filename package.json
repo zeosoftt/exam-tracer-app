@@ -76,5 +76,20 @@
   },
   "overrides": {
     "glob": "^9.3.5"
+  },
+  "browserslist": {
+    "production": [
+      "chrome >= 92",
+      "edge >= 92",
+      "firefox >= 90",
+      "safari >= 15.4",
+      "ios_saf >= 15.4",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

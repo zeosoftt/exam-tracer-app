@@ -29,6 +29,9 @@
 
 - `next.config.js` — `poweredByHeader: false`, sıkıştırma, güvenlik başlıkları (HSTS, X-Frame-Options, vb.), üretimde `removeConsole` (error/warn hariç), `images.formats` (AVIF/WebP), `experimental.optimizePackageImports: ['lucide-react']`, isteğe bağlı `ASSET_PREFIX` (CDN’den `_next/static` ön eki).
 - Ana sayfa — `MobileLandingCta` `next/dynamic` ile ayrı chunk (ilk yüklemede gereksiz client JS azalır).
+- Font — yalnızca `next/font` **Inter** (`latin` + `latin-ext`); ikinci Google font kaldırıldı (PageSpeed kritik zincir / blokaj).
+- `package.json` **browserslist** (üretim) — modern tarayıcılar; gereksiz legacy polyfill (ör. `Array.prototype.at`) azaltır.
+- `app/layout.tsx` — `preconnect` + `dns-prefetch` (Google Tag / Analytics).
 - `middleware.ts` — `FORCE_HTTPS_REDIRECT=true` ile (localhost hariç) `x-forwarded-proto: http` → HTTPS 308; Vercel’de TLS zaten edge’de sonlanır, bu değişken çoğu kurulumda kapalı kalabilir.
 
 ## Kontrol listesi (hız, mobil, HTTPS, SEO, CDN)
