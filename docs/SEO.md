@@ -1,21 +1,40 @@
-# SEO ve trafik — teknik + operasyonel
+# SEO — teknik temel ve operasyon
 
-## Projede yapılanlar (teknik)
+“%100 verim” arama sıralamasında garanti değildir; burada **teknik SEO’yu mümkün olan en sıkı şekilde** topladık. Sıralama = teknik + içerik + otorite (backlink) + kullanıcı sinyalleri.
 
-- `metadataBase`, başlık şablonu, açıklama, OG/Twitter, Google site doğrulama (`app/layout.tsx`)
-- Dinamik **Open Graph görseli** (`app/opengraph-image.tsx`, 1200×630)
-- `robots.ts` — `/dashboard`, `/api/`, `/auth/` tarama dışı
-- `sitemap.ts` — ana sayfa, onboarding, SSS
-- `/auth/*` için **noindex** (`app/(auth)/auth/layout.tsx`)
-- Onboarding için canonical + açıklama (`app/(auth)/onboarding/layout.tsx`)
-- Ana sayfa + SSS: JSON-LD (WebSite, Organization, SoftwareApplication, FAQPage)
+## Projede yapılanlar (teknik, güncel)
 
-## Trafik için sizin yapmanız gerekenler
+### Merkezi yapılandırma
 
-1. **Google Search Console** — Mülk ekleyin, sitemap gönderin: `https://thegoallab.com/sitemap.xml`
-2. **SITE_URL / NEXTAUTH_URL** — Canlı domain ile aynı olsun (canonical ve OG URL’leri için)
-3. **İçerik** — Blog zorunlu değil; hedef anahtar kelimeler için 5–10 kaliteli sayfa/yazı zamanla fark yaratır
-4. **Backlink** — Dershane, eğitim siteleri, sosyal profillerden doğal linkler
-5. **Performans** — Core Web Vitals (Lighthouse); mobil deneyim
+- `lib/seo/siteSeo.ts` — varsayılan başlık/açıklama/anahtar kelimeler, kök `metadata`, `viewport`, `buildPublicPageMetadata()` (OG + Twitter + canonical + `hreflang` tr-TR + robots index).
+- `lib/seo/baseUrl.ts` — `SITE_URL` / `NEXTAUTH_URL` / production canonical.
 
-SEO tek başına genelde yavaş büyür; teknik temel + içerik + dağıtım birlikte işe yarar.
+### Sayfa ve dizin
+
+- `app/layout.tsx` — kök metadata `buildRootMetadata()` (yazar, `applicationName`, `formatDetection`, `referrer`, `appleWebApp`, OG/Twitter görselleri, Google doğrulama env ile geçersiz kılınabilir).
+- `app/manifest.ts` — PWA manifest (isim, `theme_color`, `start_url`, ikon); Lighthouse “Installable” ve marka tutarlılığı.
+- `app/(dashboard)/layout.tsx` — tüm `/dashboard/*` için **`noindex, nofollow`** (robots.txt ile çift emniyet).
+- `app/robots.ts` — `host` + disallow `/dashboard`, `/api/`, `/auth/`.
+- `app/sitemap.ts` — ana sayfa, onboarding, SSS, destek.
+- `/auth/*` — `noindex` (`app/(auth)/auth/layout.tsx`).
+
+### Görseller ve şema
+
+- Dinamik OG görseli `app/opengraph-image.tsx` (1200×630).
+- Ana sayfa JSON-LD: `WebSite` + `publisher`, `Organization` + **`sameAs`** (env `ORGANIZATION_SAME_AS` veya varsayılan Instagram), `SoftwareApplication`.
+- `/destek` — `ContactPage` JSON-LD + tam metadata şablonu.
+- `/sss` — `FAQPage` + **`BreadcrumbList`** (`@graph`).
+
+### Güvenlik / performans ile örtüşenler
+
+- `next.config.js` — `poweredByHeader: false`, sıkıştırma, güvenlik başlıkları (HSTS, X-Frame-Options, vb.).
+
+## Sizin yapmanız gerekenler (operasyon)
+
+1. **Google Search Console** — Mülk ekleyin, `https://thegoallab.com/sitemap.xml` gönderin (domain farklıysa `SITE_URL` ile aynı host).
+2. **`SITE_URL` / `NEXTAUTH_URL`** — Canlı tek canonical domain.
+3. **`GOOGLE_SITE_VERIFICATION`** / **`ORGANIZATION_SAME_AS`** — İsteğe bağlı `.env` (şema + doğrulama).
+4. **İçerik** — Hedef kelimeler için kaliteli sayfalar; blog zorunlu değil.
+5. **Core Web Vitals** — Lighthouse (mobil); gerçek kullanıcı verisi Search Console’da.
+
+SEO tek başına yavaş büyür; teknik zemin + içerik + dağıtım birlikte işe yarar.

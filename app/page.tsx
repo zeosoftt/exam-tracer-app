@@ -6,6 +6,7 @@
 import Link from 'next/link';
 import { unstable_cache } from 'next/cache';
 import { getBaseUrl } from '@/lib/seo/baseUrl';
+import { getOrganizationSameAs } from '@/lib/seo/siteSeo';
 import { getSettingBoolean, SITE_KEYS } from '@/lib/siteSettings';
 import { ShopierCheckoutLink } from '@/components/checkout/ShopierCheckoutLink';
 import { MarketingHeader } from '@/components/layout/MarketingHeader';
@@ -57,6 +58,7 @@ export default async function LandingPage() {
         name: 'The Goal Lab',
         description: 'Kurumlar ve bireyler için hedef ve sınav takip platformu. KPSS, ÖABT, ALES sınav hazırlığı.',
         inLanguage: 'tr-TR',
+        publisher: { '@id': `${baseUrl}/#organization` },
       },
       {
         '@type': 'Organization',
@@ -64,6 +66,7 @@ export default async function LandingPage() {
         name: 'The Goal Lab',
         url: baseUrl,
         logo: { '@type': 'ImageObject', url: `${baseUrl}/icon.svg` },
+        sameAs: getOrganizationSameAs(),
       },
       {
         '@type': 'SoftwareApplication',

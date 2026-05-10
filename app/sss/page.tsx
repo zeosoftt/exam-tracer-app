@@ -5,19 +5,15 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getBaseUrl } from '@/lib/seo/baseUrl';
+import { buildPublicPageMetadata } from '@/lib/seo/siteSeo';
 import { MarketingHeader } from '@/components/layout/MarketingHeader';
 import { HelpCircle, ArrowLeft } from 'lucide-react';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const baseUrl = getBaseUrl();
   const title = 'Sıkça Sorulan Sorular';
-  const description = 'The Goal Lab (thegoallab) hakkında sıkça sorulan sorular ve yanıtları. Ücretsiz mi, hangi sınavlar, güvenlik, mobil.';
-  return {
-    title,
-    description,
-    openGraph: { url: `${baseUrl}/sss`, title, description },
-    alternates: { canonical: `${baseUrl}/sss` },
-  };
+  const description =
+    'The Goal Lab (thegoallab) hakkında sıkça sorulan sorular ve yanıtları. Ücretsiz mi, hangi sınavlar, güvenlik, mobil.';
+  return buildPublicPageMetadata({ title, description, path: '/sss' });
 }
 
 const FAQ_ITEMS = [
@@ -29,9 +25,9 @@ const FAQ_ITEMS = [
   { q: 'Kurumsal kullanım için ne yapmalıyım?', a: 'Kurumlar için özel plan ve yönetim paneli mevcuttur. İletişim veya kayıt sırasında kurumsal seçeneği belirleyebilirsiniz.' },
 ];
 
-export default function SSSPage() {
+export default async function SSSPage() {
+  const baseUrl = getBaseUrl();
   const faqJsonLd = {
-    '@context': 'https://schema.org',
     '@type': 'FAQPage',
     mainEntity: FAQ_ITEMS.map(({ q, a }) => ({
       '@type': 'Question',
@@ -39,12 +35,23 @@ export default function SSSPage() {
       acceptedAnswer: { '@type': 'Answer', text: a },
     })),
   };
+  const breadcrumbJsonLd = {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Ana sayfa', item: baseUrl },
+      { '@type': 'ListItem', position: 2, name: 'Sıkça Sorulan Sorular', item: `${baseUrl}/sss` },
+    ],
+  };
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@graph': [breadcrumbJsonLd, faqJsonLd],
+  };
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       <MarketingHeader />
 
