@@ -15,6 +15,8 @@ import { UnauthorizedError } from '@/lib/errors/AppError';
 import { evaluateTopics, calculateRequiredSuccessRate } from '@/lib/services/targetScoreEvaluation';
 import { getRequiredNet } from '@/config/targetScoreMaps';
 
+export const dynamic = 'force-dynamic';
+
 type DetailApiPayload = {
   success: true;
   data: {

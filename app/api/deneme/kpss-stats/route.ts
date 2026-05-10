@@ -12,6 +12,8 @@ import { asyncHandler } from '@/lib/errors/errorHandler';
 import { UnauthorizedError } from '@/lib/errors/AppError';
 import { getKpssPopulationStats } from '@/lib/utils/kpssStats';
 
+export const dynamic = 'force-dynamic';
+
 async function getKpssStatsHandler(): Promise<NextResponse> {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {

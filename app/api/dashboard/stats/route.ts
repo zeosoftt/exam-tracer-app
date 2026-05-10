@@ -9,6 +9,8 @@ import { authOptions } from '@/lib/auth/config';
 import { asyncHandler, handleError } from '@/lib/errors/errorHandler';
 import { prisma } from '@/lib/db/prisma';
 
+export const dynamic = 'force-dynamic';
+
 // Prisma client'ta ExamAttempt modeli schema'da var; generate sonrası examAttempt gelir. Tip için:
 type PrismaWithExamAttempt = typeof prisma & {
   examAttempt: {

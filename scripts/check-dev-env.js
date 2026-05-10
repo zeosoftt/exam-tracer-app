@@ -91,6 +91,30 @@ if (envVars.DATABASE_URL) {
   }
 }
 
+// E-posta (Resend): destek formu + doğrulama — zorunlu değil ama prod için önerilir
+const emailHintVars = [
+  ['RESEND_API_KEY', 'Resend API anahtarı (re_...)'],
+  ['SUPPORT_INBOX_EMAIL', 'Destek formu mesajlarının gideceği adres'],
+  ['EMAIL_FROM', 'Gönderici adresi (doğrulanmış domain üzerinden)'],
+];
+let anyEmailHintMissing = false;
+console.log('\n📧 E-posta (isteğe bağlı, destek + doğrulama için):');
+for (const [key, description] of emailHintVars) {
+  if (envVars[key]) {
+    const display =
+      key === 'RESEND_API_KEY'
+        ? '***' + String(envVars[key]).slice(-4)
+        : envVars[key];
+    console.log(`   ✅ ${key}: ${display}`);
+  } else {
+    console.log(`   ⚠️  ${key}: boş — ${description}`);
+    anyEmailHintMissing = true;
+  }
+}
+if (anyEmailHintMissing) {
+  console.log('   💡 Hepsi dolu değilse /destek formu e-posta gönderemez; doğrulama postası da Resend olmadan gitmez.\n');
+}
+
 // Check Prisma client
 const prismaClientPath = path.join(process.cwd(), 'node_modules', '.prisma', 'client', 'index.js');
 if (fs.existsSync(prismaClientPath)) {
