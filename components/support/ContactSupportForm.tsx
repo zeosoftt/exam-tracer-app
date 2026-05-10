@@ -150,7 +150,7 @@ export function ContactSupportForm({ defaultEmail, lockedEmail }: Props) {
       <button
         type="submit"
         disabled={loading}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 py-3.5 text-sm font-bold text-white shadow-lg shadow-primary-500/25 transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:px-8"
+        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary-700 to-primary-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-primary-500/25 transition-opacity hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:px-8"
       >
         {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
         Gönder

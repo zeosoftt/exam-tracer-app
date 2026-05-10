@@ -41,7 +41,7 @@ export default function NotFound() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-primary-500/25 hover:from-primary-700 hover:to-primary-600 transition-all"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary-700 to-primary-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-primary-500/25 hover:from-primary-800 hover:to-primary-700 transition-all"
             >
               <Home className="h-4 w-4" />
               Ana sayfa

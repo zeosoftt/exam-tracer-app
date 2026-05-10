@@ -218,7 +218,7 @@ export function CreateExamForm({ user: _user }: CreateExamFormProps) {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition-all hover:from-primary-700 hover:to-primary-600 disabled:cursor-not-allowed disabled:opacity-50 dark:shadow-primary-900/40"
+                className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-primary-700 to-primary-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-500/30 transition-all hover:from-primary-800 hover:to-primary-700 disabled:cursor-not-allowed disabled:opacity-50 dark:shadow-primary-900/40"
               >
                 {isLoading ? (
                   <>

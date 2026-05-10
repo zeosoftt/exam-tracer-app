@@ -410,7 +410,7 @@ export default function SettingsPage() {
                     : 'Raporlar, dışa aktarma ve gelişmiş analitik dahil.'}
                 </p>
                 {planInfo.planCode === 'FREE' && (
-                  <ShopierCheckoutLink className="inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 py-3 text-sm font-bold text-white shadow-md transition-opacity hover:opacity-95 sm:w-auto sm:px-6">
+                  <ShopierCheckoutLink className="inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-primary-700 to-primary-600 py-3 text-sm font-bold text-white shadow-md transition-opacity hover:opacity-95 sm:w-auto sm:px-6">
                     Pro planı Shopier&apos;da satın al
                   </ShopierCheckoutLink>
                 )}
@@ -549,7 +549,7 @@ export default function SettingsPage() {
               type="button"
               onClick={handleSaveSettings}
               disabled={saving}
-              className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-primary-600 to-primary-500 text-white font-bold rounded-xl hover:shadow-xl transition-all disabled:opacity-70"
+              className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-primary-700 to-primary-600 text-white font-bold rounded-xl hover:shadow-xl transition-all disabled:opacity-70"
             >
               {saving ? (
                 <Loader2 className="h-5 w-5 animate-spin" />

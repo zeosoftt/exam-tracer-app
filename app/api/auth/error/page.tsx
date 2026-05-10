@@ -28,7 +28,7 @@ function AuthErrorContent() {
         <p className="mb-6 text-stone-600 dark:text-stone-400">{message}</p>
         <Link
           href="/auth/login"
-          className="inline-flex items-center justify-center px-6 py-3 text-base font-semibold text-white bg-gradient-to-r from-primary-600 to-primary-500 rounded-xl shadow-lg shadow-primary-500/30 hover:from-primary-700 hover:to-primary-600 transition-all"
+          className="inline-flex items-center justify-center px-6 py-3 text-base font-semibold text-white bg-gradient-to-r from-primary-700 to-primary-600 rounded-xl shadow-lg shadow-primary-500/30 hover:from-primary-800 hover:to-primary-700 transition-all"
         >
           Giriş Sayfasına Dön
         </Link>

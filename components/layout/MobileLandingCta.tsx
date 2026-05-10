@@ -10,7 +10,7 @@ export function MobileLandingCta() {
       <div className="mx-auto flex max-w-lg items-center gap-2">
         <Link
           href="/onboarding"
-          className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 py-3 text-sm font-bold text-white shadow-lg shadow-primary-500/25"
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary-700 to-primary-600 py-3 text-sm font-bold text-white shadow-lg shadow-primary-600/25"
         >
           Ücretsiz başla
           <ArrowRight className="h-4 w-4" />

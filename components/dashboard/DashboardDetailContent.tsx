@@ -388,11 +388,11 @@ export function DashboardDetailContent({
                         </div>
                       </div>
                       <div className="flex-shrink-0 text-left sm:text-right">
-                        <div className="bg-gradient-to-r from-primary-500 to-primary-600 bg-clip-text text-3xl font-extrabold text-transparent sm:text-4xl dark:from-primary-400 dark:to-primary-500">
+                        <div className="text-3xl font-extrabold text-primary-800 dark:text-primary-200 sm:text-4xl">
                           %{selectedSection.progressPercentage}
                         </div>
-                        <p className="text-xs font-medium text-stone-500 dark:text-stone-400">Tamamlanma</p>
-                        <p className="mt-1 text-xs text-stone-400 dark:text-stone-500">
+                        <p className="text-xs font-medium text-stone-600 dark:text-stone-300">Tamamlanma</p>
+                        <p className="mt-1 text-xs text-stone-600 dark:text-stone-400">
                           {selectedSection.completedTopics + selectedSection.reviewedTopics} / {selectedSection.totalTopics} konu
                         </p>
                       </div>

@@ -111,23 +111,23 @@ export default async function LandingPage() {
             {/* Left: Copy */}
             <div className="flex flex-col justify-center text-center lg:text-left order-1">
               <div className="mx-auto mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-primary-200 bg-white/90 px-3 py-1.5 text-sm font-medium text-primary-700 shadow-sm backdrop-blur-sm dark:border-primary-800 dark:bg-stone-900/90 dark:text-primary-300 sm:mb-6 lg:mx-0">
-                <Sparkles className="h-4 w-4 text-amber-500" />
+                <Sparkles className="h-4 w-4 text-amber-800 dark:text-amber-400" aria-hidden />
                 <span>Sınav takibi artık tek ekranda</span>
               </div>
               <h1 className="font-display text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight text-stone-900 dark:text-stone-100 mb-4 sm:mb-5">
                 Konuları takip et.
                 <br />
-                <span className="bg-gradient-to-r from-primary-600 via-primary-500 to-teal-500 bg-clip-text text-transparent">
+                <span className="text-primary-800 dark:text-primary-200">
                   Hedefe ulaş.
                 </span>
               </h1>
-              <p className="text-lg sm:text-xl text-stone-600 dark:text-stone-400 leading-relaxed mb-6 sm:mb-8 max-w-xl mx-auto lg:mx-0">
+              <p className="text-lg sm:text-xl text-stone-600 dark:text-stone-300 leading-relaxed mb-6 sm:mb-8 max-w-xl mx-auto lg:mx-0">
                 KPSS, ÖABT, ALES ve tüm sınavlar için ders ve konu takibinizi yapın. İlerlemeniz tek ekranda, net ve motive edici.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 mb-6">
                 <Link
                   href="/onboarding"
-                  className="group w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 sm:px-8 sm:py-4 text-base font-bold text-white bg-gradient-to-r from-primary-600 to-primary-500 rounded-2xl hover:from-primary-700 hover:to-primary-600 transition-all shadow-xl shadow-primary-500/30 hover:shadow-primary-500/40 hover:scale-[1.02] active:scale-[0.98]"
+                  className="group w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 sm:px-8 sm:py-4 text-base font-bold text-white bg-gradient-to-r from-primary-700 to-primary-600 rounded-2xl hover:from-primary-800 hover:to-primary-700 transition-all shadow-xl shadow-primary-500/30 hover:shadow-primary-500/40 hover:scale-[1.02] active:scale-[0.98]"
                 >
                   Ücretsiz Başla
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-0.5 transition-transform" />
@@ -139,11 +139,15 @@ export default async function LandingPage() {
                   Giriş Yap
                 </Link>
               </div>
-              <p className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-stone-500 dark:text-stone-400 lg:justify-start">
+              <p className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-stone-500 dark:text-stone-300 lg:justify-start">
                 <span>Kredi kartı yok</span>
-                <span className="text-stone-300 dark:text-stone-600">•</span>
+                <span className="text-stone-500 dark:text-stone-500" aria-hidden>
+                  •
+                </span>
                 <span>2 dk kurulum</span>
-                <span className="text-stone-300 dark:text-stone-600">•</span>
+                <span className="text-stone-500 dark:text-stone-500" aria-hidden>
+                  •
+                </span>
                 <span>Ücretsiz başla</span>
               </p>
             </div>
@@ -155,11 +159,11 @@ export default async function LandingPage() {
                 <div className="relative overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-soft-lg dark:border-stone-700 dark:bg-stone-900/95">
                   {/* Fake app header */}
                   <div className="flex items-center gap-3 border-b border-stone-100 bg-stone-50/80 px-4 py-3 dark:border-stone-800 dark:bg-stone-950/80 sm:px-5">
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-600 to-primary-700 flex items-center justify-center">
                       <BookOpen className="h-4 w-4 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs font-medium text-stone-500 dark:text-stone-400">Dashboard</div>
+                      <div className="text-xs font-medium text-stone-500 dark:text-stone-300">Dashboard</div>
                       <div className="text-sm font-semibold text-stone-900 dark:text-stone-100 truncate">Sınav Takibim</div>
                     </div>
                   </div>
@@ -170,7 +174,7 @@ export default async function LandingPage() {
                       <span className="text-xs font-semibold text-primary-600">5/7 gün</span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800">
-                      <div className="h-full w-[72%] bg-gradient-to-r from-primary-500 to-primary-600 rounded-full" />
+                      <div className="h-full w-[72%] bg-gradient-to-r from-primary-600 to-primary-700 rounded-full" />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       {[
@@ -201,7 +205,7 @@ export default async function LandingPage() {
       {/* Güven bandı + değer özetleri (satış odaklı, yanıltıcı rakam yok) */}
       <section className="border-y border-stone-100 bg-white py-10 dark:border-stone-800 dark:bg-stone-900 sm:py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-sm text-stone-600 dark:text-stone-400">
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-sm text-stone-600 dark:text-stone-300">
             <div className="flex items-center gap-2">
               <Shield className="h-5 w-5 shrink-0 text-primary-600" aria-hidden />
               <span>Şeffaf ilerleme takibi</span>
@@ -219,7 +223,7 @@ export default async function LandingPage() {
             <h2 className="font-display text-2xl font-bold text-stone-900 dark:text-stone-100 sm:text-3xl lg:text-4xl">
               Planınız net, risk yok
             </h2>
-            <p className="mt-3 text-base text-stone-600 dark:text-stone-400 sm:text-lg">
+            <p className="mt-3 text-base text-stone-600 dark:text-stone-300 sm:text-lg">
               Kredi kartı olmadan deneyin. İhtiyaç duyduğunuzda Pro&apos;yu Shopier üzerinden satın alarak pomodoro geçmişi ve gelişmiş analitiklere geçebilirsiniz.
             </p>
           </div>
@@ -250,11 +254,11 @@ export default async function LandingPage() {
                 key={title}
                 className="rounded-2xl border border-stone-100 bg-stone-50/80 p-6 dark:border-stone-800 dark:bg-stone-950/60"
               >
-                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/20">
+                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary-600 to-primary-700 text-white shadow-lg shadow-primary-500/20">
                   <Icon className="h-6 w-6" />
                 </div>
                 <h3 className="font-display text-lg font-bold text-stone-900 dark:text-stone-100">{title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-stone-600 dark:text-stone-400">{desc}</p>
+                <p className="mt-2 text-sm leading-relaxed text-stone-600 dark:text-stone-300">{desc}</p>
               </div>
             ))}
           </div>
@@ -268,7 +272,7 @@ export default async function LandingPage() {
             <h2 className="font-display text-2xl sm:text-3xl font-bold text-stone-900 dark:text-stone-100 mb-2">
               Desteklenen Sınavlar
             </h2>
-            <p className="text-stone-600 dark:text-stone-400 text-sm sm:text-base max-w-xl mx-auto">
+            <p className="text-stone-600 dark:text-stone-300 text-sm sm:text-base max-w-xl mx-auto">
               KPSS, öğretmenlik, lisansüstü ve yabancı dil sınavları dahil tüm yapıyı kendiniz tanımlayıp takip edebilirsiniz.
             </p>
           </div>
@@ -293,7 +297,7 @@ export default async function LandingPage() {
             <h2 className="font-display text-2xl font-bold text-stone-900 dark:text-stone-100 sm:text-3xl lg:text-4xl">
               Kimler için?
             </h2>
-            <p className="mt-2 text-stone-600 dark:text-stone-400 sm:text-lg">
+            <p className="mt-2 text-stone-600 dark:text-stone-300 sm:text-lg">
               Bireysel adaydan kurumsal ekibe kadar aynı net panel; rolünüze göre derinleşir.
             </p>
           </div>
@@ -323,7 +327,7 @@ export default async function LandingPage() {
                   <Icon className="h-5 w-5" />
                 </div>
                 <h3 className="font-display text-lg font-bold text-stone-900 dark:text-stone-100">{title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-stone-600 dark:text-stone-400">{desc}</p>
+                <p className="mt-2 text-sm leading-relaxed text-stone-600 dark:text-stone-300">{desc}</p>
               </div>
             ))}
           </div>
@@ -337,7 +341,7 @@ export default async function LandingPage() {
             <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-900 dark:text-stone-100 mb-3 sm:mb-4">
               Neden The Goal Lab?
             </h2>
-            <p className="text-lg sm:text-xl text-stone-600 dark:text-stone-400 max-w-2xl mx-auto">
+            <p className="text-lg sm:text-xl text-stone-600 dark:text-stone-300 max-w-2xl mx-auto">
               Modern araçlarla sınav hazırlığınızı bir üst seviyeye taşıyın
             </p>
           </div>
@@ -345,11 +349,11 @@ export default async function LandingPage() {
             <div className="group relative rounded-3xl border border-stone-100 bg-white p-6 transition-all duration-300 hover:border-primary-200 hover:shadow-soft-lg dark:border-stone-800 dark:bg-stone-900/90 dark:hover:border-primary-800 sm:p-8">
               <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative">
-                <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl mb-5 sm:mb-6 shadow-lg shadow-primary-500/25 text-white">
+                <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-primary-600 to-primary-700 rounded-2xl mb-5 sm:mb-6 shadow-lg shadow-primary-500/25 text-white">
                   <Target className="h-6 w-6 sm:h-7 sm:w-7" />
                 </div>
                 <h3 className="font-display text-xl sm:text-2xl font-bold text-stone-900 dark:text-stone-100 mb-2 sm:mb-3">Hedefli Takip</h3>
-                <p className="text-stone-600 dark:text-stone-400 leading-relaxed text-sm sm:text-base">
+                <p className="text-stone-600 dark:text-stone-300 leading-relaxed text-sm sm:text-base">
                   Her konuyu detaylı takip edin. Tamamlanan, devam eden ve henüz başlanmamış konuları bir bakışta görün.
                 </p>
               </div>
@@ -357,11 +361,11 @@ export default async function LandingPage() {
             <div className="group relative rounded-3xl border border-stone-100 bg-white p-6 transition-all duration-300 hover:border-primary-200 hover:shadow-soft-lg dark:border-stone-800 dark:bg-stone-900/90 dark:hover:border-primary-800 sm:p-8">
               <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative">
-                <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl mb-5 sm:mb-6 shadow-lg shadow-amber-500/25 text-white">
+                <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-amber-700 to-amber-800 rounded-2xl mb-5 sm:mb-6 shadow-lg shadow-amber-700/25 text-white">
                   <BarChart3 className="h-6 w-6 sm:h-7 sm:w-7" />
                 </div>
                 <h3 className="font-display text-xl sm:text-2xl font-bold text-stone-900 dark:text-stone-100 mb-2 sm:mb-3">Görsel İstatistikler</h3>
-                <p className="text-stone-600 dark:text-stone-400 leading-relaxed text-sm sm:text-base">
+                <p className="text-stone-600 dark:text-stone-300 leading-relaxed text-sm sm:text-base">
                   İlerlemenizi grafikler ve istatistiklerle görselleştirin. Hangi konularda ne kadar ilerleme kaydettiğinizi anında görün.
                 </p>
               </div>
@@ -369,11 +373,11 @@ export default async function LandingPage() {
             <div className="group relative rounded-3xl border border-stone-100 bg-white p-6 transition-all duration-300 hover:border-primary-200 hover:shadow-soft-lg dark:border-stone-800 dark:bg-stone-900/90 dark:hover:border-primary-800 sm:p-8">
               <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-amber-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative">
-                <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-primary-600 to-teal-500 rounded-2xl mb-5 sm:mb-6 shadow-lg shadow-primary-500/25 text-white">
+                <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-primary-700 to-primary-800 rounded-2xl mb-5 sm:mb-6 shadow-lg shadow-primary-700/25 text-white">
                   <Users className="h-6 w-6 sm:h-7 sm:w-7" />
                 </div>
                 <h3 className="font-display text-xl sm:text-2xl font-bold text-stone-900 dark:text-stone-100 mb-2 sm:mb-3">Ekip Yönetimi</h3>
-                <p className="text-stone-600 dark:text-stone-400 leading-relaxed text-sm sm:text-base">
+                <p className="text-stone-600 dark:text-stone-300 leading-relaxed text-sm sm:text-base">
                   Kurumlar için özel yönetim paneli. Tüm ekibinizin ilerlemesini merkezi olarak takip edin ve raporlayın.
                 </p>
               </div>
@@ -389,7 +393,7 @@ export default async function LandingPage() {
             <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-900 dark:text-stone-100 mb-3 sm:mb-4">
               Nasıl Çalışır?
             </h2>
-            <p className="text-lg sm:text-xl text-stone-600 dark:text-stone-400 max-w-2xl mx-auto">
+            <p className="text-lg sm:text-xl text-stone-600 dark:text-stone-300 max-w-2xl mx-auto">
               Üç adımda sınav takibinize başlayın
             </p>
           </div>
@@ -400,21 +404,21 @@ export default async function LandingPage() {
               { step: 3, title: 'Takip et, hedefe ulaş', desc: 'İlerlemenizi güncelleyin, istatistikleri görün ve hedefe doğru ilerleyin.', icon: Target },
             ].map(({ step, title, desc, icon: Icon }) => (
               <div key={step} className="relative flex flex-col items-center text-center">
-                <div className="flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/25 mb-4">
+                <div className="flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-primary-600 to-primary-700 text-white shadow-lg shadow-primary-500/25 mb-4">
                   <Icon className="h-7 w-7 sm:h-8 sm:w-8" />
                 </div>
-                <div className="absolute -top-1 -right-1 flex items-center justify-center w-7 h-7 rounded-full bg-amber-500 text-white text-sm font-bold">
+                <div className="absolute -top-1 -right-1 flex items-center justify-center w-7 h-7 rounded-full bg-amber-800 text-white text-sm font-bold">
                   {step}
                 </div>
                 <h3 className="font-display text-xl sm:text-2xl font-bold text-stone-900 dark:text-stone-100 mb-2">{title}</h3>
-                <p className="text-stone-600 dark:text-stone-400 text-sm sm:text-base max-w-xs">{desc}</p>
+                <p className="text-stone-600 dark:text-stone-300 text-sm sm:text-base max-w-xs">{desc}</p>
               </div>
             ))}
           </div>
           <div className="mt-10 text-center">
             <Link
               href="/onboarding"
-              className="inline-flex items-center gap-2 text-primary-600 font-semibold hover:text-primary-700 transition-colors"
+              className="inline-flex items-center gap-2 text-primary-700 font-semibold hover:text-primary-800 dark:text-primary-300 dark:hover:text-primary-200 transition-colors"
             >
               Hemen başla
               <ArrowRight className="h-4 w-4" />
@@ -430,15 +434,15 @@ export default async function LandingPage() {
             <h2 className="font-display text-3xl font-bold text-stone-900 dark:text-stone-100 sm:text-4xl lg:text-5xl">
               Ücretsiz başlayın, büyüdükçe Pro
             </h2>
-            <p className="mt-3 text-lg text-stone-600 dark:text-stone-400">
+            <p className="mt-3 text-lg text-stone-600 dark:text-stone-300">
               Temel sınav ve konu takibi her zaman ücretsiz. Pro ve gelişmiş özellikler için ödeme güvenli şekilde Shopier üzerinden yapılır.
             </p>
           </div>
           <div className="mx-auto grid max-w-4xl grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
             <div className="flex flex-col rounded-3xl border-2 border-stone-200 bg-white p-8 dark:border-stone-700 dark:bg-stone-900/90">
-              <p className="text-sm font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">Ücretsiz</p>
+              <p className="text-sm font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-300">Ücretsiz</p>
               <p className="font-display mt-2 text-3xl font-bold text-stone-900 dark:text-stone-100">0 ₺</p>
-              <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">Sınav, ders ve konu takibi; dashboard; deneme kayıtları.</p>
+              <p className="mt-2 text-sm text-stone-600 dark:text-stone-300">Sınav, ders ve konu takibi; dashboard; deneme kayıtları.</p>
               <ul className="mt-6 flex flex-1 flex-col gap-3 text-sm text-stone-700 dark:text-stone-300">
                 {['Sınırsız sınav / ders / konu (politikaya tabi)', 'İlerleme ve temel istatistikler', 'Mobil uyumlu arayüz'].map((line) => (
                   <li key={line} className="flex gap-2">
@@ -458,7 +462,7 @@ export default async function LandingPage() {
               <div className="absolute right-4 top-4 rounded-full bg-primary-600 px-2.5 py-0.5 text-xs font-bold text-white">Pro</div>
               <p className="text-sm font-semibold uppercase tracking-wide text-primary-800 dark:text-primary-300">Profesyonel</p>
               <p className="font-display mt-2 text-3xl font-bold text-stone-900 dark:text-stone-100">İhtiyaca göre</p>
-              <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">Pomodoro geçmişi ve gelişmiş analitik; yüksek kullanım limitleri.</p>
+              <p className="mt-2 text-sm text-stone-600 dark:text-stone-300">Pomodoro geçmişi ve gelişmiş analitik; yüksek kullanım limitleri.</p>
               <ul className="mt-6 flex flex-1 flex-col gap-3 text-sm text-stone-700 dark:text-stone-300">
                 {['Ücretsiz plandaki her şey', 'Pomodoro oturum geçmişi ve istatistikleri', 'Öncelikli kullanım kotası ve özellikler'].map((line) => (
                   <li key={line} className="flex gap-2">
@@ -467,12 +471,12 @@ export default async function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <ShopierCheckoutLink className="mt-8 inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-primary-600 to-primary-500 py-3.5 text-sm font-bold text-white shadow-lg shadow-primary-500/25 transition-transform hover:scale-[1.01] active:scale-[0.99]">
+              <ShopierCheckoutLink className="mt-8 inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-primary-700 to-primary-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-primary-500/25 transition-transform hover:scale-[1.01] active:scale-[0.99]">
                 Pro&apos;yu Shopier&apos;da satın al
               </ShopierCheckoutLink>
             </div>
           </div>
-          <p className="mx-auto mt-8 max-w-2xl text-center text-xs text-stone-500 dark:text-stone-400">
+          <p className="mx-auto mt-8 max-w-2xl text-center text-xs text-stone-500 dark:text-stone-300">
             Pro satın alma Shopier üzerinden tamamlanır. Ücretsiz hesap için kayıt yeterlidir; taahhüt yoktur.
           </p>
         </div>
@@ -486,7 +490,7 @@ export default async function LandingPage() {
               <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-900 dark:text-stone-100 mb-4 sm:mb-6">
                 Her detayı kontrol edin
               </h2>
-              <p className="text-lg sm:text-xl text-stone-600 dark:text-stone-400 mb-6 sm:mb-8 leading-relaxed">
+              <p className="text-lg sm:text-xl text-stone-600 dark:text-stone-300 mb-6 sm:mb-8 leading-relaxed">
                 Karmaşık sınav yapılarını bile kolayca yönetin. Her sınav için dersleri, her ders için konuları tanımlayın ve ilerlemenizi anlık takip edin.
               </p>
               <ul className="space-y-3 sm:space-y-4">
@@ -500,7 +504,7 @@ export default async function LandingPage() {
                 ].map((feature) => (
                   <li key={feature} className="flex items-start gap-3 sm:gap-4">
                     <div className="flex-shrink-0 mt-0.5">
-                      <div className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 bg-primary-500 rounded-lg text-white">
+                      <div className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 bg-primary-600 rounded-lg text-white">
                         <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
                       </div>
                     </div>
@@ -518,21 +522,21 @@ export default async function LandingPage() {
                       <p className="font-display font-bold text-stone-900 dark:text-stone-100 text-base sm:text-lg mb-0.5">Aktif Sınavlar</p>
                       <p className="text-xs sm:text-sm text-stone-500">Şu anda devam eden</p>
                     </div>
-                    <span className="font-display text-3xl sm:text-4xl font-extrabold text-primary-600">12</span>
+                    <span className="font-display text-3xl sm:text-4xl font-extrabold text-primary-700">12</span>
                   </div>
                   <div className="flex items-center justify-between rounded-2xl border border-amber-100 bg-white p-4 dark:border-amber-900/40 dark:bg-stone-900/90 sm:p-6">
                     <div>
                       <p className="font-display font-bold text-stone-900 dark:text-stone-100 text-base sm:text-lg mb-0.5">Tamamlanan Konular</p>
                       <p className="text-xs sm:text-sm text-stone-500">Bu ay içinde</p>
                     </div>
-                    <span className="font-display text-3xl sm:text-4xl font-extrabold text-amber-600">247</span>
+                    <span className="font-display text-3xl sm:text-4xl font-extrabold text-amber-800 dark:text-amber-400">247</span>
                   </div>
                   <div className="flex items-center justify-between rounded-2xl border border-primary-100 bg-white p-4 dark:border-primary-900/50 dark:bg-stone-900/90 sm:p-6">
                     <div>
                       <p className="font-display font-bold text-stone-900 dark:text-stone-100 text-base sm:text-lg mb-0.5">Genel İlerleme</p>
                       <p className="text-xs sm:text-sm text-stone-500">Tüm sınavlar için</p>
                     </div>
-                    <span className="font-display text-3xl sm:text-4xl font-extrabold text-primary-600">84%</span>
+                    <span className="font-display text-3xl sm:text-4xl font-extrabold text-primary-700">84%</span>
                   </div>
                 </div>
               </div>
@@ -548,7 +552,7 @@ export default async function LandingPage() {
             <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-900 dark:text-stone-100 mb-3 sm:mb-4">
               Kullanıcılarımız Ne Diyor?
             </h2>
-            <p className="text-lg sm:text-xl text-stone-600 dark:text-stone-400 max-w-2xl mx-auto">
+            <p className="text-lg sm:text-xl text-stone-600 dark:text-stone-300 max-w-2xl mx-auto">
               Adaylar ve kurumlar sınav takibini The Goal Lab ile sadeleştiriyor
             </p>
           </div>
@@ -559,7 +563,7 @@ export default async function LandingPage() {
               { quote: 'Kurum olarak deneme ve konu takibini tek platformda topladık. Raporlama da çok işimize yarıyor.', name: 'Eğitim Koordinatörü', role: 'Özel dersane' },
             ].map(({ quote, name, role }, i) => (
               <div key={i} className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-soft dark:border-stone-700 dark:bg-stone-900/90 sm:p-8">
-                <MessageCircle className="h-8 w-8 text-primary-500/70 mb-4" />
+                <MessageCircle className="h-8 w-8 text-primary-700 dark:text-primary-400 mb-4" aria-hidden />
                 <p className="text-stone-700 leading-relaxed mb-4">&ldquo;{quote}&rdquo;</p>
                 <div>
                   <span className="font-semibold text-stone-900 dark:text-stone-100">{name}</span>
@@ -579,7 +583,7 @@ export default async function LandingPage() {
               <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-900 dark:text-stone-100 mb-3 sm:mb-4">
                 Birlikte Çalıştığımız Kurumlar
               </h2>
-              <p className="text-lg sm:text-xl text-stone-600 dark:text-stone-400 max-w-2xl mx-auto">
+              <p className="text-lg sm:text-xl text-stone-600 dark:text-stone-300 max-w-2xl mx-auto">
                 Türkiye&apos;nin önde gelen kurumları sınav takiplerini The Goal Lab ile yönetiyor
               </p>
             </div>
@@ -599,10 +603,10 @@ export default async function LandingPage() {
                   className="group rounded-2xl border border-stone-200 bg-white p-6 transition-all duration-300 hover:border-primary-300 hover:shadow-soft dark:border-stone-700 dark:bg-stone-900/90 dark:hover:border-primary-700 sm:p-8"
                 >
                   <div className="flex flex-col items-center justify-center text-center">
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 mb-3 sm:mb-4 flex items-center justify-center bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl text-white font-display font-bold text-sm sm:text-lg shadow-lg shadow-primary-500/20 group-hover:scale-105 transition-transform">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 mb-3 sm:mb-4 flex items-center justify-center bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl text-white font-display font-bold text-sm sm:text-lg shadow-lg shadow-primary-500/20 group-hover:scale-105 transition-transform">
                       {institution.initials}
                     </div>
-                    <p className="text-xs sm:text-sm font-semibold text-stone-600 transition-colors group-hover:text-stone-900 dark:text-stone-400 dark:group-hover:text-stone-100">
+                    <p className="text-xs sm:text-sm font-semibold text-stone-600 transition-colors group-hover:text-stone-900 dark:text-stone-300 dark:group-hover:text-stone-100">
                       {institution.name}
                     </p>
                   </div>
@@ -623,7 +627,7 @@ export default async function LandingPage() {
             <h2 className="font-display text-2xl sm:text-3xl font-bold text-stone-900 dark:text-stone-100 mb-2">
               Sıkça Sorulan Sorular
             </h2>
-            <p className="text-stone-600 dark:text-stone-400 text-sm sm:text-base">
+            <p className="text-stone-600 dark:text-stone-300 text-sm sm:text-base">
               Merak ettiklerinizin yanıtları
             </p>
           </div>
@@ -637,14 +641,14 @@ export default async function LandingPage() {
                   <HelpCircle className="h-5 w-5 text-primary-600 shrink-0 mt-0.5" />
                   <div>
                     <h3 className="font-semibold text-stone-900 dark:text-stone-100 mb-1">{q}</h3>
-                    <p className="text-stone-600 dark:text-stone-400 text-sm sm:text-base leading-relaxed">{a}</p>
+                    <p className="text-stone-600 dark:text-stone-300 text-sm sm:text-base leading-relaxed">{a}</p>
                   </div>
                 </div>
               </div>
             ))}
           </div>
           <p className="text-center">
-            <Link href="/sss" className="text-primary-600 font-semibold hover:text-primary-700 transition-colors inline-flex items-center gap-1">
+            <Link href="/sss" className="text-primary-700 font-semibold hover:text-primary-800 dark:text-primary-300 dark:hover:text-primary-200 transition-colors inline-flex items-center gap-1">
               Tüm sorular
               <ArrowRight className="h-4 w-4" />
             </Link>
@@ -653,19 +657,19 @@ export default async function LandingPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 sm:py-24 lg:py-32 bg-gradient-to-br from-primary-600 via-primary-500 to-teal-400 relative overflow-hidden">
+      <section className="py-16 sm:py-24 lg:py-32 bg-gradient-to-br from-primary-900 via-primary-800 to-primary-700 relative overflow-hidden">
         <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:24px_24px]" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-white mb-4 sm:mb-6">
               Hemen Başlayın
             </h2>
-            <p className="mx-auto max-w-2xl text-lg sm:text-xl text-primary-100 mb-10 sm:mb-12 leading-relaxed">
+            <p className="mx-auto max-w-2xl text-lg sm:text-xl text-primary-50 mb-10 sm:mb-12 leading-relaxed">
               Ücretsiz hesap oluşturun ve sınav takibinize bugün başlayın. Kredi kartı gerektirmez, sadece 30 saniye sürer.
             </p>
             <Link
               href="/onboarding"
-              className="group inline-flex items-center justify-center rounded-2xl bg-white px-6 py-3.5 text-base font-bold text-primary-600 shadow-xl transition-all hover:scale-[1.02] hover:bg-stone-50 hover:shadow-2xl active:scale-[0.98] dark:bg-white dark:text-primary-600 dark:hover:bg-stone-100 sm:px-8 sm:py-4 sm:text-lg"
+              className="group inline-flex items-center justify-center rounded-2xl bg-white px-6 py-3.5 text-base font-bold text-primary-800 shadow-xl transition-all hover:scale-[1.02] hover:bg-stone-50 hover:shadow-2xl active:scale-[0.98] dark:bg-white dark:text-primary-800 dark:hover:bg-stone-100 sm:px-8 sm:py-4 sm:text-lg"
             >
               Ücretsiz Hesap Oluştur
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-0.5 transition-transform" />
@@ -680,28 +684,28 @@ export default async function LandingPage() {
           <div className="flex flex-col gap-6 sm:gap-8">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
               <Link href="/" className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary-500 text-white">
+                <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary-600 text-white">
                   <BookOpen className="h-5 w-5" />
                 </div>
                 <span className="font-display text-lg sm:text-xl font-bold text-stone-900 dark:text-stone-100">The Goal Lab</span>
               </Link>
               <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-                <Link href="/sss" className="text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-primary-600 transition-colors">
+                <Link href="/sss" className="text-sm font-medium text-stone-600 dark:text-stone-300 hover:text-primary-600 transition-colors">
                   Sıkça Sorulan Sorular
                 </Link>
-                <Link href="/destek" className="text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-primary-600 transition-colors">
+                <Link href="/destek" className="text-sm font-medium text-stone-600 dark:text-stone-300 hover:text-primary-600 transition-colors">
                   Destek
                 </Link>
-                <Link href="/auth/login" className="text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-primary-600 transition-colors hidden sm:block">
+                <Link href="/auth/login" className="text-sm font-medium text-stone-600 dark:text-stone-300 hover:text-primary-600 transition-colors hidden sm:block">
                   Giriş Yap
                 </Link>
-                <Link href="/onboarding" className="text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-primary-600 transition-colors hidden sm:block">
+                <Link href="/onboarding" className="text-sm font-medium text-stone-600 dark:text-stone-300 hover:text-primary-600 transition-colors hidden sm:block">
                   Başla
                 </Link>
               </div>
             </div>
             <div className="flex flex-col items-center justify-between gap-4 border-t border-stone-100 pt-4 dark:border-stone-800 sm:flex-row">
-              <p className="text-stone-600 dark:text-stone-400 text-sm sm:text-base order-last sm:order-first">
+              <p className="text-stone-600 dark:text-stone-300 text-sm sm:text-base order-last sm:order-first">
                 © {new Date().getFullYear()} The Goal Lab. Tüm hakları saklıdır.
               </p>
               <div className="flex items-center gap-2">

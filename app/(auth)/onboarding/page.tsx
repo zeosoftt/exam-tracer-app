@@ -194,7 +194,7 @@ export default function OnboardingPage() {
               {/* Selected indicator */}
               {selectedExam?.id === exam?.id && (
                 <div className="absolute top-3 right-3">
-                  <div className="w-6 h-6 bg-gradient-to-br from-primary-600 to-primary-500 rounded-full flex items-center justify-center shadow-lg">
+                  <div className="w-6 h-6 bg-gradient-to-br from-primary-700 to-primary-600 rounded-full flex items-center justify-center shadow-lg">
                     <CheckCircle className="h-4 w-4 text-white" />
                   </div>
                 </div>
@@ -251,7 +251,7 @@ export default function OnboardingPage() {
             }
           }}
           disabled={!selectedExam}
-          className="inline-flex items-center rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:from-primary-700 hover:to-primary-600 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex items-center rounded-xl bg-gradient-to-r from-primary-700 to-primary-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:from-primary-800 hover:to-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Devam Et
           <ArrowRight className="ml-2 h-4 w-4" />
@@ -281,7 +281,7 @@ export default function OnboardingPage() {
           <div className="rounded-2xl border border-primary-200 bg-gradient-to-br bg-primary-50 p-8 dark:border-primary-800 dark:bg-primary-950/30">
             <div className="mb-6 text-center">
               <div className="mb-4 inline-flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-lg dark:bg-stone-900">
-                <span className="bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-4xl font-extrabold text-transparent">
+                <span className="text-4xl font-extrabold text-primary-800 dark:text-primary-200">
                   {currentScore}
                 </span>
               </div>
@@ -345,7 +345,7 @@ export default function OnboardingPage() {
               }
             }}
             disabled={targetScore === null}
-            className="inline-flex items-center rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:from-primary-700 hover:to-primary-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center rounded-xl bg-gradient-to-r from-primary-700 to-primary-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:from-primary-800 hover:to-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Devam Et
             <ArrowRight className="ml-2 h-4 w-4" />
@@ -382,7 +382,7 @@ export default function OnboardingPage() {
             >
               {dailyStudyHours === hours && (
                 <div className="absolute right-3 top-3">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-primary-600 to-primary-500 shadow-lg">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-primary-700 to-primary-600 shadow-lg">
                     <CheckCircle className="h-4 w-4 text-white" />
                   </div>
                 </div>
@@ -422,7 +422,7 @@ export default function OnboardingPage() {
               }
             }}
             disabled={dailyStudyHours === null}
-            className="inline-flex items-center rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:from-primary-700 hover:to-primary-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center rounded-xl bg-gradient-to-r from-primary-700 to-primary-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:from-primary-800 hover:to-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Devam Et
             <ArrowRight className="ml-2 h-4 w-4" />
@@ -508,7 +508,7 @@ export default function OnboardingPage() {
         <button
           type="button"
           onClick={() => setStep(6)}
-          className="inline-flex items-center rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:from-primary-700 hover:to-primary-600"
+          className="inline-flex items-center rounded-xl bg-gradient-to-r from-primary-700 to-primary-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:from-primary-800 hover:to-primary-700"
         >
           Devam Et
           <ArrowRight className="ml-2 h-4 w-4" />
@@ -600,7 +600,7 @@ export default function OnboardingPage() {
           <button
             type="button"
             onClick={handleComplete}
-            className="inline-flex items-center rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:from-primary-700 hover:to-primary-600 disabled:opacity-50"
+            className="inline-flex items-center rounded-xl bg-gradient-to-r from-primary-700 to-primary-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:from-primary-800 hover:to-primary-700 disabled:opacity-50"
           >
             Kayıt Ol
             <ArrowRight className="ml-2 h-4 w-4" />
@@ -621,7 +621,7 @@ export default function OnboardingPage() {
           </div>
           <div className="h-2 w-full rounded-full bg-stone-200 dark:bg-stone-800">
             <div
-              className="h-2 rounded-full bg-gradient-to-r from-primary-600 to-primary-500 transition-all duration-300"
+              className="h-2 rounded-full bg-gradient-to-r from-primary-700 to-primary-600 transition-all duration-300"
               style={{ width: `${(step / 6) * 100}%` }}
             ></div>
           </div>
