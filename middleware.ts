@@ -9,6 +9,20 @@ import type { NextRequest } from 'next/server';
 
 export default withAuth(
   function middleware(req: NextRequest) {
+    /** Kendi sunucunuzda TLS sonlandırma arkasında HTTP kalırsa (Vercel’de gerekmez) */
+    if (process.env.FORCE_HTTPS_REDIRECT === 'true') {
+      const host = req.headers.get('host') ?? '';
+      const local = host.startsWith('localhost') || host.startsWith('127.0.0.1');
+      if (!local) {
+        const proto = req.headers.get('x-forwarded-proto');
+        if (proto === 'http') {
+          const url = req.nextUrl.clone();
+          url.protocol = 'https:';
+          return NextResponse.redirect(url, 308);
+        }
+      }
+    }
+
     // Add security headers
     const response = NextResponse.next();
     

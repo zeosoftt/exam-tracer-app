@@ -8,6 +8,11 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
   :root {
     --color-primary: 20 184 166; /* teal-500 */
     --color-primary-dark: 13 148 136;

@@ -4,13 +4,18 @@
  */
 
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { unstable_cache } from 'next/cache';
 import { getBaseUrl } from '@/lib/seo/baseUrl';
 import { getOrganizationSameAs } from '@/lib/seo/siteSeo';
 import { getSettingBoolean, SITE_KEYS } from '@/lib/siteSettings';
 import { ShopierCheckoutLink } from '@/components/checkout/ShopierCheckoutLink';
 import { MarketingHeader } from '@/components/layout/MarketingHeader';
-import { MobileLandingCta } from '@/components/layout/MobileLandingCta';
+
+const MobileLandingCta = dynamic(
+  () => import('@/components/layout/MobileLandingCta').then((m) => ({ default: m.MobileLandingCta })),
+  { ssr: false, loading: () => null },
+);
 import {
   BookOpen,
   Users,

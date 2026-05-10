@@ -27,7 +27,24 @@
 
 ### Güvenlik / performans ile örtüşenler
 
-- `next.config.js` — `poweredByHeader: false`, sıkıştırma, güvenlik başlıkları (HSTS, X-Frame-Options, vb.).
+- `next.config.js` — `poweredByHeader: false`, sıkıştırma, güvenlik başlıkları (HSTS, X-Frame-Options, vb.), üretimde `removeConsole` (error/warn hariç), `images.formats` (AVIF/WebP), `experimental.optimizePackageImports: ['lucide-react']`, isteğe bağlı `ASSET_PREFIX` (CDN’den `_next/static` ön eki).
+- Ana sayfa — `MobileLandingCta` `next/dynamic` ile ayrı chunk (ilk yüklemede gereksiz client JS azalır).
+- `middleware.ts` — `FORCE_HTTPS_REDIRECT=true` ile (localhost hariç) `x-forwarded-proto: http` → HTTPS 308; Vercel’de TLS zaten edge’de sonlanır, bu değişken çoğu kurulumda kapalı kalabilir.
+
+## Kontrol listesi (hız, mobil, HTTPS, SEO, CDN)
+
+| İstenen | Projede / barındırıcıda |
+|--------|-------------------------|
+| Hızlı açılma | `compress`, görsel formatları, lucide tree-shake, dinamik CTA chunk’ı, Lighthouse ile ölçüm |
+| Mobil uyum | `viewport` kök metadata, responsive Tailwind; `globals.css` içinde `text-size-adjust` |
+| HTTPS | Üretimde HSTS başlığı; Vercel’de HTTPS varsayılan; kendi sunucuda `FORCE_HTTPS_REDIRECT` |
+| SEO URL | App Router yolları = URL; kebab-case (`/destek`, `/sss`); canonical `SITE_URL` |
+| Sayfa başlıkları | `siteSeo` + sayfa `metadata`; panel `app/(dashboard)/layout.tsx` `title.template` |
+| Sitemap | `app/sitemap.ts` → `/sitemap.xml` |
+| Robots | `app/robots.ts` → `/robots.txt` + middleware muafiyeti |
+| Görseller | `next/image` + `images.formats`; uzak domain için `remotePatterns` |
+| Gereksiz JS/CSS | Paket import optimizasyonu, dinamik import, üretim `removeConsole` |
+| CDN | Vercel = edge CDN; ek CDN için `ASSET_PREFIX` (`.env.example`) |
 
 ## Search Console: “404” veya “robots.txt engelledi”
 

@@ -1,14 +1,28 @@
 /** @type {import('next').NextConfig} */
+const isProd = process.env.NODE_ENV === 'production';
+
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
+  /** Cloudflare / özel CDN önünde statik chunk URL’leri için (örn. https://cdn.example.com) */
+  assetPrefix: process.env.ASSET_PREFIX?.trim() || undefined,
   // Standalone output only for production builds
-  ...(process.env.NODE_ENV === 'production' && { output: 'standalone' }),
+  ...(isProd && { output: 'standalone' }),
+  ...(isProd && {
+    compiler: {
+      removeConsole: { exclude: ['error', 'warn'] },
+    },
+  }),
   images: {
-    domains: [],
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256],
+    remotePatterns: [],
   },
   experimental: {
+    /** lucide tree-shake — çok ikonlu sayfalarda JS küçülür */
+    optimizePackageImports: ['lucide-react'],
     serverActions: {
       bodySizeLimit: '2mb',
     },
