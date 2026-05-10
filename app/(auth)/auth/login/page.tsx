@@ -36,6 +36,7 @@ function LoginForm() {
   const [resendLoading, setResendLoading] = useState(false);
   const [resendMessage, setResendMessage] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [pendingVerifyEmail, setPendingVerifyEmail] = useState<string | null>(null);
   const [serviceOutage, setServiceOutage] = useState(false);
   const registered = searchParams.get('registered');
@@ -95,6 +96,7 @@ function LoginForm() {
       const result = await signIn('credentials', {
         email: data.email,
         password: data.password,
+        remember: rememberMe ? 'true' : 'false',
         redirect: false,
       });
 
@@ -300,6 +302,20 @@ function LoginForm() {
               {errors.password && (
                 <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
               )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                id="remember"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                disabled={isLoading}
+                className="h-4 w-4 rounded border-stone-300 text-primary-600 focus:ring-primary-500 dark:border-stone-600 dark:bg-stone-800"
+              />
+              <label htmlFor="remember" className="text-sm text-stone-700 dark:text-stone-300">
+                Beni hatırla (bu cihazda daha uzun oturum)
+              </label>
             </div>
 
             {/* Forgot Password Link */}

@@ -99,19 +99,36 @@ export const RATE_LIMIT = {
 export const BCRYPT_ROUNDS = getEnvInt('BCRYPT_ROUNDS', '12');
 
 export const JWT_CONFIG = {
-  /** Ayrı JWT API’leri için; NextAuth oturumu SESSION_EXPIRES_IN ile belirlenir */
+  /** Ayrı JWT API’leri için; NextAuth’ta doğrudan kullanılmıyor */
   EXPIRES_IN: getEnvString('JWT_EXPIRES_IN', '30d'),
-  /** NextAuth JWT + oturum çerezi maxAge (örn. 7d, 12h, 604800) */
+  /** “Beni hatırla” kapalıyken oturum süresi (örn. 7d) */
   SESSION_EXPIRES_IN: getEnvString('SESSION_EXPIRES_IN', '30d'),
+  /** “Beni hatırla” açıkken üst süre (örn. 30d); çerez maxAge = max(ikisi) */
+  SESSION_REMEMBER_EXPIRES_IN: getEnvString('SESSION_REMEMBER_EXPIRES_IN', '30d'),
 } as const;
 
 const DEFAULT_SESSION_SECONDS = 30 * 24 * 60 * 60;
 
-/** NextAuth: session.maxAge ve jwt.maxAge (saniye) */
-export const NEXTAUTH_SESSION_MAX_AGE_SECONDS = parseDurationToSeconds(
+/** Kısa oturum (beni hatırla kapalı), saniye */
+export const NEXTAUTH_SESSION_SHORT_SECONDS = parseDurationToSeconds(
   JWT_CONFIG.SESSION_EXPIRES_IN,
   DEFAULT_SESSION_SECONDS,
 );
+
+/** Uzun oturum (beni hatırla açık), saniye — kısa süreden kısa olamaz */
+export const NEXTAUTH_SESSION_REMEMBER_SECONDS = Math.max(
+  NEXTAUTH_SESSION_SHORT_SECONDS,
+  parseDurationToSeconds(JWT_CONFIG.SESSION_REMEMBER_EXPIRES_IN, DEFAULT_SESSION_SECONDS),
+);
+
+/** JWT + session çerezi üst sınırı (ikisinin uzunu) */
+export const NEXTAUTH_COOKIE_MAX_AGE_SECONDS = Math.max(
+  NEXTAUTH_SESSION_SHORT_SECONDS,
+  NEXTAUTH_SESSION_REMEMBER_SECONDS,
+);
+
+/** @deprecated Aynı anlama gelir: NEXTAUTH_COOKIE_MAX_AGE_SECONDS */
+export const NEXTAUTH_SESSION_MAX_AGE_SECONDS = NEXTAUTH_COOKIE_MAX_AGE_SECONDS;
 
 /** E-posta doğrulama token süresi (saat), 1–168 */
 export const EMAIL_VERIFICATION_TTL_HOURS = Math.min(

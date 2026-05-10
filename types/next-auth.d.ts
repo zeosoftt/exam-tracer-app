@@ -24,6 +24,8 @@ declare module 'next-auth' {
     id: string;
     email: string;
     name: string;
+    /** Credentials girişinde “beni hatırla” */
+    remember?: boolean;
     emailVerified?: boolean;
     // DEPRECATED: Legacy fields (kept for backward compatibility)
     role?: string;
@@ -35,8 +37,10 @@ declare module 'next-auth' {
 
 declare module 'next-auth/jwt' {
   interface JWT {
-    id: string;
+    id?: string;
     email?: string;
+    remember?: boolean;
+    sessionStartedAt?: number;
     emailVerified?: boolean;
     // DEPRECATED: Legacy fields (kept for backward compatibility)
     role?: string;

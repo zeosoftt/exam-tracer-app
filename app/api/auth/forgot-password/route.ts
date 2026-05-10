@@ -4,13 +4,20 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { createHash, randomBytes } from 'crypto';
 import { prisma } from '@/lib/db/prisma';
-import { randomBytes } from 'crypto';
-import { PASSWORD_RESET_TTL_MINUTES } from '@/config/constants';
+import { PASSWORD_RESET_TTL_MINUTES, RATE_LIMIT } from '@/config/constants';
 import { handleError } from '@/lib/errors/errorHandler';
-import { logInfo } from '@/lib/logger';
+import { logInfo, logError } from '@/lib/logger';
+import { rateLimit } from '@/lib/middleware/rateLimit';
+import { sendPasswordResetEmail } from '@/lib/email/sendPasswordResetEmail';
+
+const limiter = rateLimit(RATE_LIMIT.LOGIN_MAX_REQUESTS, RATE_LIMIT.LOGIN_WINDOW_MS);
 
 export async function POST(req: NextRequest) {
+  const limited = limiter(req);
+  if (limited) return limited;
+
   try {
     const body = await req.json();
     const { email } = body;
@@ -61,27 +68,37 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Generate reset URL
-    const resetUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/reset-password?token=${token}`;
+    const resetUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/reset-password?token=${encodeURIComponent(token)}`;
 
-    // TODO: Send email with reset link
-    // For now, log it (in production, use email service like SendGrid, Resend, etc.)
-    logInfo('Password reset token generated', {
-      userId: user.id,
-      email: user.email,
+    const mailOk = await sendPasswordResetEmail({
+      to: user.email,
+      firstName: user.firstName,
       resetUrl,
-      expiresAt: expiresAt.toISOString(),
       ttlMinutes: PASSWORD_RESET_TTL_MINUTES,
     });
 
-    // In production, uncomment and configure email service:
-    /*
-    await sendPasswordResetEmail({
-      to: user.email,
-      name: `${user.firstName} ${user.lastName}`,
-      resetUrl,
-    });
-    */
+    const tokenFingerprint = createHash('sha256').update(token).digest('hex').slice(0, 12);
+    if (!mailOk) {
+      logError(
+        'Password reset email delivery failed (user should use forgot-password again)',
+        new Error('Resend failed'),
+        {
+          userId: user.id,
+          emailHash: createHash('sha256').update(user.email).digest('hex').slice(0, 12),
+          tokenFingerprint,
+          expiresAt: expiresAt.toISOString(),
+          ttlMinutes: PASSWORD_RESET_TTL_MINUTES,
+        },
+      );
+    } else {
+      logInfo('Password reset flow completed', {
+        userId: user.id,
+        emailHash: createHash('sha256').update(user.email).digest('hex').slice(0, 12),
+        tokenFingerprint,
+        expiresAt: expiresAt.toISOString(),
+        ttlMinutes: PASSWORD_RESET_TTL_MINUTES,
+      });
+    }
 
     return NextResponse.json({
       success: true,

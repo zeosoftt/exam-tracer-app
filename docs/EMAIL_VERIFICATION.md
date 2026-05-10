@@ -28,4 +28,10 @@ psql "$DATABASE_URL" -f scripts/backfill-email-verified.sql
 
 ## Oturum süresi
 
-Giriş sonrası NextAuth JWT / oturum çerezi süresi `SESSION_EXPIRES_IN` ile ayarlanır (örn. `7d`, `12h` veya saniye cinsinden tamsayı). Varsayılan `30d`.
+- `SESSION_EXPIRES_IN` — “Beni hatırla” **kapalıyken** geçerli oturum süresi (`7d`, `12h`, saniye vb.). Varsayılan `30d`.
+- `SESSION_REMEMBER_EXPIRES_IN` — “Beni hatırla” **açıkken** üst süre; kısa süreden kısa olamaz. Varsayılan `30d`.
+- JWT çerezi `maxAge` = ikisinin uzunu; kısa politika sunucuda JWT callback ile uygulanır.
+
+## Şifre sıfırlama
+
+`POST /api/auth/forgot-password` Resend ile (`RESEND_API_KEY`, `EMAIL_FROM`) kullanıcıya sıfırlama linki gönderir. IP başına rate limit uygulanır. Üretim loglarında tam URL/token tutulmaz.

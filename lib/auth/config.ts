@@ -8,7 +8,13 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { prisma } from '@/lib/db/prisma';
 import { comparePassword } from '@/lib/auth/password';
 import { logAuth, logError } from '@/lib/logger';
-import { ERROR_MESSAGES, AUTH_ERROR_CODES, NEXTAUTH_SESSION_MAX_AGE_SECONDS } from '@/config/constants';
+import {
+  ERROR_MESSAGES,
+  AUTH_ERROR_CODES,
+  NEXTAUTH_COOKIE_MAX_AGE_SECONDS,
+  NEXTAUTH_SESSION_SHORT_SECONDS,
+  NEXTAUTH_SESSION_REMEMBER_SECONDS,
+} from '@/config/constants';
 
 function isDatabaseConnectionError(err: unknown): boolean {
   if (!err || typeof err !== 'object') return false;
@@ -26,11 +32,17 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
+        remember: { label: 'Remember me', type: 'text' },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           throw new Error('Email and password are required');
         }
+
+        const remember =
+          credentials.remember === 'true' ||
+          credentials.remember === '1' ||
+          credentials.remember === 'on';
 
         try {
           // Find user by email (excluding soft-deleted users)
@@ -117,6 +129,7 @@ export const authOptions: NextAuthOptions = {
             role: user.role ?? undefined, // DEPRECATED: kept for backward compatibility
             institutionId: user.institutionId ?? undefined, // DEPRECATED: kept for backward compatibility
             activeOrganizationId, // NEW: Active organization ID (null if not migrated yet)
+            remember,
           } as const;
         } catch (error) {
           if (isDatabaseConnectionError(error)) {
@@ -131,10 +144,10 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: 'jwt',
-    maxAge: NEXTAUTH_SESSION_MAX_AGE_SECONDS,
+    maxAge: NEXTAUTH_COOKIE_MAX_AGE_SECONDS,
   },
   jwt: {
-    maxAge: NEXTAUTH_SESSION_MAX_AGE_SECONDS,
+    maxAge: NEXTAUTH_COOKIE_MAX_AGE_SECONDS,
   },
   cookies: {
     sessionToken: {
@@ -160,30 +173,54 @@ export const authOptions: NextAuthOptions = {
           role?: string;
           institutionId?: string | null;
           activeOrganizationId?: string | null;
+          remember?: boolean;
         };
         token.emailVerified = userWithAuth.emailVerified === true;
-        
+        token.remember = userWithAuth.remember === true;
+        token.sessionStartedAt = Date.now();
+
         // DEPRECATED: Legacy fields (kept for backward compatibility)
         token.role = userWithAuth.role;
         token.institutionId = userWithAuth.institutionId;
-        
+
         // NEW: Active organization ID for multi-tenant support
         token.activeOrganizationId = userWithAuth.activeOrganizationId;
       }
-      
+
+      const remember = token.remember === true;
+      const limitSec = remember ? NEXTAUTH_SESSION_REMEMBER_SECONDS : NEXTAUTH_SESSION_SHORT_SECONDS;
+      const startedMs =
+        typeof token.sessionStartedAt === 'number'
+          ? token.sessionStartedAt
+          : typeof token.iat === 'number'
+            ? token.iat * 1000
+            : Date.now();
+      if (token.id && Date.now() - startedMs > limitSec * 1000) {
+        logAuth('JWT expired (session length policy)', String(token.id));
+        return { ...token, id: undefined, exp: Math.floor(Date.now() / 1000) - 10 };
+      }
+
       // Verify token still has valid user ID
       if (!token.id) {
         logAuth('JWT token missing user ID', undefined);
         return token;
       }
-      
+
       return token;
     },
     async session({ session, token }) {
       // Verify token has valid user ID before setting session
       if (!token.id) {
         logAuth('Session callback: Token missing user ID', undefined);
-        return session;
+        return {
+          expires: new Date(0).toISOString(),
+          user: {
+            id: '',
+            email: '',
+            name: '',
+            emailVerified: false,
+          },
+        };
       }
       
       if (session.user) {
