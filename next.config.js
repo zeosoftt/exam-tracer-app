@@ -22,7 +22,7 @@ const nextConfig = {
   },
   experimental: {
     /** lucide tree-shake — çok ikonlu sayfalarda JS küçülür */
-    optimizePackageImports: ['lucide-react'],
+    optimizePackageImports: ['lucide-react', '@hookform/resolvers', 'react-hook-form'],
     serverActions: {
       bodySizeLimit: '2mb',
     },

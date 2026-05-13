@@ -9,6 +9,7 @@ import { useState, Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { BookOpen, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { postVerifyEmail } from '@/lib/client-api/authForms';
 
 function VerifyEmailContent() {
   const router = useRouter();
@@ -28,20 +29,18 @@ function VerifyEmailContent() {
 
     (async () => {
       try {
-        const res = await fetch('/api/auth/verify-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: token.trim() }),
-        });
-        const data = await res.json().catch(() => ({}));
+        const r = await postVerifyEmail(token);
         if (cancelled) return;
-        if (res.ok && data.success) {
+        if (r.ok && r.success) {
           setStatus('success');
-          setMessage(data.message || 'E-posta adresiniz doğrulandı.');
+          setMessage(r.message || 'E-posta adresiniz doğrulandı.');
           setTimeout(() => router.push('/auth/login?verified=1'), 2500);
         } else {
           setStatus('error');
-          setMessage(data.error?.message || 'Doğrulama yapılamadı. Bağlantı geçersiz veya süresi dolmuş olabilir.');
+          setMessage(
+            r.errorMessage ||
+              'Doğrulama yapılamadı. Bağlantı geçersiz veya süresi dolmuş olabilir.',
+          );
         }
       } catch {
         if (!cancelled) {

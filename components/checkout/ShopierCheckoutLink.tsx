@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { SHOPIER_CHECKOUT_URL } from '@/config/constants';
+import { trackShopierCheckoutClick } from '@/lib/client-api/analyticsClient';
 
 type Props = {
   className?: string;
@@ -12,14 +13,7 @@ type Props = {
 };
 
 function trackClick() {
-  try {
-    void fetch('/api/analytics/shopier-checkout-click', {
-      method: 'POST',
-      keepalive: true,
-    });
-  } catch {
-    // yut
-  }
+  void trackShopierCheckoutClick();
 }
 
 export function ShopierCheckoutLink({ className, children, target = '_blank', title }: Props) {

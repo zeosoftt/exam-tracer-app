@@ -5,7 +5,6 @@
 
 'use client';
 
-import { useState, useEffect, useRef, useCallback, useMemo, startTransition } from 'react';
 import { signOut } from 'next-auth/react';
 import Link from 'next/link';
 import {
@@ -27,234 +26,36 @@ import {
   LifeBuoy,
 } from 'lucide-react';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
-
-interface Section {
-  id: string;
-  code: string;
-  name: string;
-  order: number;
-  totalTopics: number;
-  completedTopics: number;
-  inProgressTopics: number;
-  notStartedTopics: number;
-  reviewedTopics: number;
-  progressPercentage: number;
-  subjects: Subject[];
-}
-
-interface TopicEvaluation {
-  topicNet: number;
-  topicSuccessRate: number;
-  requiredSuccessRate: number;
-  requiredNet: number;
-  status: 'GOOD' | 'IMPROVABLE' | 'REPEAT';
-  isGood: boolean;
-  isImprovable: boolean;
-  needsRepeat: boolean;
-}
-
-interface Topic {
-  id: string;
-  code: string;
-  name: string;
-  order: number;
-  examQuestionCount: number | null;
-  status: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED';
-  totalQuestions: number;
-  correctAnswers: number;
-  wrongAnswers: number;
-  evaluation: TopicEvaluation | null;
-}
-
-interface Subject {
-  id: string;
-  code: string;
-  name: string;
-  order: number;
-  totalTopics: number;
-  completedTopics: number;
-  inProgressTopics: number;
-  notStartedTopics: number;
-  reviewedTopics: number;
-  progressPercentage: number;
-  topics: Topic[];
-}
-
-interface DetailData {
-  exam: {
-    id: string;
-    name: string;
-    code: string;
-  } | null;
-  sections: Section[];
-  evaluation: {
-    targetScore: number;
-    totalExamQuestions: number;
-    requiredNet: number | null;
-    requiredSuccessRate: number | null;
-  } | null;
-}
+import { useDashboardDetailData } from '@/components/dashboard/hooks/useDashboardDetailData';
+import { useDashboardDetailTopicActions } from '@/components/dashboard/hooks/useDashboardDetailTopicActions';
 
 export function DashboardDetailContent({
   user,
 }: {
   user: { id: string; name: string; email: string; role?: string };
 }) {
-  const [detailData, setDetailData] = useState<DetailData | null>(null);
-  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [updatingTopicId, setUpdatingTopicId] = useState<string | null>(null);
-  const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
-  const [editValues, setEditValues] = useState<{
-    totalQuestions: number;
-    correctAnswers: number;
-    wrongAnswers: number;
-  } | null>(null);
-  const lastDetailFetchAtRef = useRef(0);
-  const detailFetchInFlightRef = useRef(false);
-  /** İlk yüklemede varsayılan bölüm seçildi; `selectedSectionId` değişince listeyi yeniden çekme */
-  const initialSelectionAppliedRef = useRef(false);
+  const {
+    detailData,
+    isLoading,
+    fetchDetailData,
+    selectedSectionId,
+    setSelectedSectionId,
+    selectedSubjectId,
+    setSelectedSubjectId,
+    selectedSection,
+    selectedSubject,
+  } = useDashboardDetailData();
 
-  const fetchDetailData = useCallback(async (options?: { force?: boolean }) => {
-    const now = Date.now();
-    if (!options?.force && now - lastDetailFetchAtRef.current < 10000) return;
-    if (detailFetchInFlightRef.current) return;
-
-    detailFetchInFlightRef.current = true;
-    try {
-      const response = await fetch(options?.force ? '/api/dashboard/detail?fresh=1' : '/api/dashboard/detail');
-      if (!response.ok) return;
-      const data = await response.json();
-      startTransition(() => {
-        setDetailData(data.data);
-      });
-      lastDetailFetchAtRef.current = Date.now();
-
-      if (data.data?.sections?.length > 0 && !initialSelectionAppliedRef.current) {
-        initialSelectionAppliedRef.current = true;
-        const firstSection = data.data.sections[0];
-        setSelectedSectionId(firstSection.id);
-        if (firstSection.subjects?.length > 0) {
-          setSelectedSubjectId(firstSection.subjects[0].id);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to fetch data:', error);
-    } finally {
-      detailFetchInFlightRef.current = false;
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchDetailData();
-  }, [fetchDetailData]);
-
-  const selectedSection = useMemo(
-    () => detailData?.sections.find((s) => s.id === selectedSectionId) ?? null,
-    [detailData?.sections, selectedSectionId],
-  );
-  const selectedSubject = useMemo(
-    () => selectedSection?.subjects.find((s) => s.id === selectedSubjectId) ?? null,
-    [selectedSection?.subjects, selectedSubjectId],
-  );
-
-  // Bölüm değiştiğinde ilk dersi seç
-  useEffect(() => {
-    if (selectedSection && selectedSection.subjects.length > 0) {
-      const currentSubject = selectedSection.subjects.find((s) => s.id === selectedSubjectId);
-      if (!currentSubject) {
-        setSelectedSubjectId(selectedSection.subjects[0].id);
-      }
-    }
-  }, [selectedSectionId, selectedSection, selectedSubjectId]);
-
-  const updateTopicStatus = useCallback(
-    async (topicId: string, newStatus: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED') => {
-      setUpdatingTopicId(topicId);
-      try {
-        const response = await fetch(`/api/progress/${topicId}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ status: newStatus }),
-        });
-
-        if (response.ok) {
-          await fetchDetailData({ force: true });
-        } else {
-          const error = await response.json();
-          console.error('Failed to update topic status:', error);
-          alert('Durum güncellenirken bir hata oluştu');
-        }
-      } catch (error) {
-        console.error('Error updating topic status:', error);
-        alert('Durum güncellenirken bir hata oluştu');
-      } finally {
-        setUpdatingTopicId(null);
-      }
-    },
-    [fetchDetailData],
-  );
-
-  const updateQuestionStats = useCallback(
-    async (topicId: string) => {
-      if (!editValues) return;
-
-      setUpdatingTopicId(topicId);
-      try {
-        if (editValues.correctAnswers + editValues.wrongAnswers > editValues.totalQuestions) {
-          alert('Doğru + Yanlış sayısı toplam soru sayısını geçemez!');
-          setUpdatingTopicId(null);
-          return;
-        }
-
-        const response = await fetch(`/api/progress/${topicId}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            totalQuestions: editValues.totalQuestions,
-            correctAnswers: editValues.correctAnswers,
-            wrongAnswers: editValues.wrongAnswers,
-          }),
-        });
-
-        if (response.ok) {
-          await fetchDetailData({ force: true });
-          setEditingTopicId(null);
-          setEditValues(null);
-        } else {
-          const error = await response.json();
-          console.error('Failed to update question stats:', error);
-          alert('Soru sayıları güncellenirken bir hata oluştu');
-        }
-      } catch (error) {
-        console.error('Error updating question stats:', error);
-        alert('Soru sayıları güncellenirken bir hata oluştu');
-      } finally {
-        setUpdatingTopicId(null);
-      }
-    },
-    [editValues, fetchDetailData],
-  );
-
-  const startEdit = useCallback((topic: Topic) => {
-    setEditingTopicId(topic.id);
-    setEditValues({
-      totalQuestions: topic.totalQuestions || 0,
-      correctAnswers: topic.correctAnswers || 0,
-      wrongAnswers: topic.wrongAnswers || 0,
-    });
-  }, []);
-
-  const cancelEdit = useCallback(() => {
-    setEditingTopicId(null);
-    setEditValues(null);
-  }, []);
+  const {
+    updatingTopicId,
+    editingTopicId,
+    editValues,
+    setEditValues,
+    updateTopicStatus,
+    updateQuestionStats,
+    startEdit,
+    cancelEdit,
+  } = useDashboardDetailTopicActions(fetchDetailData);
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">

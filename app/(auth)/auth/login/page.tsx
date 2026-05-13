@@ -27,6 +27,7 @@ import {
   CloudOff,
   RefreshCw,
 } from 'lucide-react';
+import { postResendVerification } from '@/lib/client-api/authForms';
 
 function LoginForm() {
   const router = useRouter();
@@ -63,13 +64,8 @@ function LoginForm() {
     setResendLoading(true);
     setResendMessage(null);
     try {
-      const res = await fetch('/api/auth/resend-verification', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json().catch(() => ({}));
-      setResendMessage(data.message || 'İstek alındı.');
+      const { message } = await postResendVerification(email);
+      setResendMessage(message || 'İstek alındı.');
     } catch {
       setResendMessage('İstek gönderilemedi. Daha sonra tekrar deneyin.');
     } finally {

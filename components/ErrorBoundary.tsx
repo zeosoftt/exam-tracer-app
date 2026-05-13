@@ -6,6 +6,7 @@
 'use client';
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { postClientError } from '@/lib/client-api/logErrorClient';
 
 interface Props {
   children: ReactNode;
@@ -31,16 +32,10 @@ export class ErrorBoundary extends Component<Props, State> {
     // Only log in production or if API is available
     if (typeof window !== 'undefined') {
       // Send error to logging API
-      fetch('/api/log-error', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: error.message,
-          stack: error.stack,
-          componentStack: errorInfo.componentStack,
-        }),
-      }).catch(() => {
-        // Silently fail if logging API is not available
+      void postClientError({
+        message: error.message,
+        stack: error.stack ?? undefined,
+        componentStack: errorInfo.componentStack ?? undefined,
       });
 
       // Development: also log to console

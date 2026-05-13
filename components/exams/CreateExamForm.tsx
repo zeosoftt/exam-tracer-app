@@ -6,6 +6,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { createExamRequest } from '@/components/exams/api/examsClient';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -45,23 +46,12 @@ export function CreateExamForm({ user: _user }: CreateExamFormProps) {
       try {
         setIsLoading(true);
         setError(null);
-
-        const response = await fetch('/api/exams', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-          setError(result.error?.message || 'Sınav oluşturulurken bir hata oluştu');
+        const result = await createExamRequest(data);
+        if (!result.ok) {
+          setError(result.message);
           return;
         }
-
-        router.push(`/dashboard/exams/${result.data.id}`);
+        router.push(`/dashboard/exams/${result.examId}`);
         router.refresh();
       } catch {
         setError('Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.');

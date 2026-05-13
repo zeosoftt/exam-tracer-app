@@ -4,45 +4,13 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, startTransition } from 'react';
 import Link from 'next/link';
 import { BookOpen, Plus, Calendar } from 'lucide-react';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
-
-interface Exam {
-  id: string;
-  name: string;
-  code: string;
-  description: string | null;
-  status: string;
-  startDate: string | null;
-  endDate: string | null;
-  createdAt: string;
-}
+import { useExamsList } from '@/components/exams/hooks/useExamsList';
 
 export function ExamsList({ user }: { user: { id: string; role?: string } }) {
-  const [exams, setExams] = useState<Exam[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchExams = useCallback(async () => {
-    try {
-      const response = await fetch('/api/exams');
-      if (!response.ok) {
-        throw new Error('Failed to fetch exams');
-      }
-      const data = await response.json();
-      startTransition(() => setExams(data.data || []));
-    } catch {
-      setError('Sınavlar yüklenirken bir hata oluştu');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void fetchExams();
-  }, [fetchExams]);
+  const { exams, isLoading, error } = useExamsList();
 
   const canCreateExam = user.role === 'ADMIN' || user.role === 'INSTITUTION_ADMIN';
 

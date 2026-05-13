@@ -12,6 +12,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { BookOpen, Lock, Loader2, ArrowLeft, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { postResetPassword } from '@/lib/client-api/authForms';
 
 const resetPasswordSchema = z.object({
   password: z
@@ -64,21 +65,12 @@ function ResetPasswordForm() {
       setError(null);
       setSuccess(false);
 
-      const response = await fetch('/api/auth/reset-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          token,
-          password: data.password,
-        }),
+      const { ok, errorMessage } = await postResetPassword({
+        token,
+        password: data.password,
       });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        setError(result.error?.message || 'Bir hata oluştu. Lütfen tekrar deneyin.');
+      if (!ok) {
+        setError(errorMessage || 'Bir hata oluştu. Lütfen tekrar deneyin.');
         return;
       }
 

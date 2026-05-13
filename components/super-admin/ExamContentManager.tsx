@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect, useCallback, startTransition } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -17,298 +16,38 @@ import {
   GripVertical,
 } from 'lucide-react';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
-
-interface TopicNode {
-  id: string;
-  subjectId: string;
-  name: string;
-  code: string;
-  description: string | null;
-  order: number;
-  examQuestionCount: number | null;
-}
-
-interface SubjectNode {
-  id: string;
-  sectionId: string;
-  name: string;
-  code: string;
-  description: string | null;
-  order: number;
-  topics: TopicNode[];
-}
-
-interface SectionNode {
-  id: string;
-  examId: string;
-  name: string;
-  code: string;
-  description: string | null;
-  order: number;
-  subjects: SubjectNode[];
-}
-
-interface ExamNode {
-  id: string;
-  name: string;
-  code: string;
-  description: string | null;
-  status: string;
-  startDate: string | null;
-  sections: SectionNode[];
-}
-
-type EntityType = 'exam' | 'section' | 'subject' | 'topic';
+import { useExamContentManager } from '@/components/super-admin/hooks/useExamContentManager';
 
 export function ExamContentManager() {
-  const [exams, setExams] = useState<ExamNode[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [expandedExam, setExpandedExam] = useState<Set<string>>(new Set());
-  const [expandedSection, setExpandedSection] = useState<Set<string>>(new Set());
-  const [expandedSubject, setExpandedSubject] = useState<Set<string>>(new Set());
-  const [modal, setModal] = useState<{
-    type: EntityType;
-    parentId?: string;
-    parentExamId?: string;
-    parentSectionId?: string;
-    edit?: ExamNode | SectionNode | SubjectNode | TopicNode;
-  } | null>(null);
-  const [form, setForm] = useState<Record<string, string | number | null>>({});
-  const [saving, setSaving] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [draggedTopicId, setDraggedTopicId] = useState<string | null>(null);
-  const [reorderingSubjectId, setReorderingSubjectId] = useState<string | null>(null);
-
-  const fetchTree = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch('/api/super-admin/exam-content');
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Yüklenemedi');
-      }
-      const data = await res.json();
-      startTransition(() => setExams(data.data?.exams ?? []));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'İçerik ağacı yüklenemedi.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void fetchTree();
-  }, [fetchTree]);
-
-  const toggleExam = (id: string) => {
-    setExpandedExam((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-  const toggleSection = (id: string) => {
-    setExpandedSection((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-  const toggleSubject = (id: string) => {
-    setExpandedSubject((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  const openAdd = (type: EntityType, parentId?: string, parentExamId?: string, parentSectionId?: string) => {
-    setModal({ type, parentId, parentExamId, parentSectionId });
-    setForm(type === 'exam' ? { name: '', code: '', description: '', status: 'ACTIVE', startDate: '' } : { name: '', code: '', description: '', order: 0 });
-    if (type === 'topic') setForm((f) => ({ ...f, examQuestionCount: '' }));
-    setActionError(null);
-  };
-
-  const openEdit = (type: EntityType, entity: ExamNode | SectionNode | SubjectNode | TopicNode, parentId?: string) => {
-    setModal({ type, parentId, edit: entity });
-    const e = entity as unknown as Record<string, unknown>;
-    const startDateVal = e.startDate != null ? (typeof e.startDate === 'string' ? e.startDate.slice(0, 10) : new Date(e.startDate as Date).toISOString().slice(0, 10)) : '';
-    setForm({
-      name: String(e.name ?? ''),
-      code: String(e.code ?? ''),
-      description: e.description != null ? String(e.description) : '',
-      order: typeof e.order === 'number' ? e.order : 0,
-      status: type === 'exam' ? String(e.status ?? '') : '',
-      startDate: type === 'exam' ? startDateVal : '',
-      examQuestionCount: type === 'topic' ? (typeof e.examQuestionCount === 'number' ? e.examQuestionCount : '') : '',
-    });
-    setActionError(null);
-  };
-
-  const closeModal = () => {
-    setModal(null);
-    setForm({});
-    setActionError(null);
-  };
-
-  const save = async () => {
-    if (!modal) return;
-    setSaving(true);
-    setActionError(null);
-    try {
-      if (modal.edit) {
-        const id = (modal.edit as { id: string }).id;
-        const url =
-          modal.type === 'exam'
-            ? `/api/super-admin/exam-content/exams/${id}`
-            : modal.type === 'section'
-              ? `/api/super-admin/exam-content/sections/${id}`
-              : modal.type === 'subject'
-                ? `/api/super-admin/exam-content/subjects/${id}`
-                : `/api/super-admin/exam-content/topics/${id}`;
-        const body: Record<string, unknown> = {};
-        if (modal.type === 'exam') {
-          body.name = form.name;
-          body.code = form.code;
-          body.description = form.description || null;
-          if (form.status) body.status = form.status;
-          body.startDate = form.startDate && String(form.startDate).trim() ? String(form.startDate).trim() : null;
-        } else {
-          body.name = form.name;
-          body.code = form.code;
-          body.description = form.description || null;
-          body.order = typeof form.order === 'number' ? form.order : 0;
-          if (modal.type === 'topic' && form.examQuestionCount !== '' && form.examQuestionCount !== undefined) {
-            body.examQuestionCount = typeof form.examQuestionCount === 'number' ? form.examQuestionCount : parseInt(String(form.examQuestionCount), 10) || null;
-          }
-        }
-        const res = await fetch(url, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || 'Güncellenemedi');
-      } else {
-        const url =
-          modal.type === 'exam'
-            ? '/api/super-admin/exam-content/exams'
-            : modal.type === 'section'
-              ? '/api/super-admin/exam-content/sections'
-              : modal.type === 'subject'
-                ? '/api/super-admin/exam-content/subjects'
-                : '/api/super-admin/exam-content/topics';
-        const body: Record<string, unknown> = {
-          name: form.name,
-          code: form.code,
-          description: form.description || null,
-          order: typeof form.order === 'number' ? form.order : 0,
-        };
-        if (modal.type === 'exam') {
-          body.status = form.status || 'ACTIVE';
-          body.startDate = form.startDate && String(form.startDate).trim() ? String(form.startDate).trim() : null;
-        } else if (modal.type === 'section') {
-          body.examId = modal.parentId;
-        } else if (modal.type === 'subject') {
-          body.sectionId = modal.parentId;
-        } else if (modal.type === 'topic') {
-          body.subjectId = modal.parentId;
-          body.examQuestionCount = form.examQuestionCount !== '' && form.examQuestionCount !== undefined ? (typeof form.examQuestionCount === 'number' ? form.examQuestionCount : parseInt(String(form.examQuestionCount), 10)) : null;
-        }
-        const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || 'Oluşturulamadı');
-      }
-      closeModal();
-      await fetchTree();
-    } catch (e) {
-      setActionError(e instanceof Error ? e.message : 'İşlem başarısız.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const remove = async (type: EntityType, id: string) => {
-    if (!confirm('Silmek istediğinize emin misiniz? Alt öğeler de etkilenebilir.')) return;
-    setDeletingId(id);
-    setActionError(null);
-    try {
-      const url =
-        type === 'exam'
-          ? `/api/super-admin/exam-content/exams/${id}`
-          : type === 'section'
-            ? `/api/super-admin/exam-content/sections/${id}`
-            : type === 'subject'
-              ? `/api/super-admin/exam-content/subjects/${id}`
-              : `/api/super-admin/exam-content/topics/${id}`;
-      const res = await fetch(url, { method: 'DELETE' });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'Silinemedi');
-      await fetchTree();
-    } catch (e) {
-      setActionError(e instanceof Error ? e.message : 'Silinemedi.');
-    } finally {
-      setDeletingId(null);
-    }
-  };
-
-  function reorderTopics<T>(arr: T[], fromIndex: number, toIndex: number): T[] {
-    if (fromIndex === toIndex) return arr;
-    const out = [...arr];
-    const [item] = out.splice(fromIndex, 1);
-    out.splice(toIndex, 0, item);
-    return out;
-  }
-
-  const handleTopicDragStart = (e: React.DragEvent, topicId: string) => {
-    setDraggedTopicId(topicId);
-    e.dataTransfer.setData('text/plain', topicId);
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleTopicDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleTopicDrop = async (e: React.DragEvent, subject: SubjectNode, dropTargetTopicId: string) => {
-    e.preventDefault();
-    setDraggedTopicId(null);
-    const draggedId = e.dataTransfer.getData('text/plain');
-    if (!draggedId || draggedId === dropTargetTopicId) return;
-    const fromIndex = subject.topics.findIndex((t) => t.id === draggedId);
-    const toIndex = subject.topics.findIndex((t) => t.id === dropTargetTopicId);
-    if (fromIndex === -1 || toIndex === -1) return;
-    const reordered = reorderTopics(subject.topics, fromIndex, toIndex);
-    setReorderingSubjectId(subject.id);
-    setActionError(null);
-    try {
-      for (let i = 0; i < reordered.length; i++) {
-        const topic = reordered[i] as TopicNode;
-        if (topic.order === i) continue;
-        const res = await fetch(`/api/super-admin/exam-content/topics/${topic.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ order: i }),
-        });
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || 'Sıra güncellenemedi');
-        }
-      }
-      await fetchTree();
-    } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Sıra güncellenemedi.');
-    } finally {
-      setReorderingSubjectId(null);
-    }
-  };
-
-  const handleTopicDragEnd = () => {
-    setDraggedTopicId(null);
-  };
+  const {
+    exams,
+    loading,
+    error,
+    expandedExam,
+    expandedSection,
+    expandedSubject,
+    modal,
+    form,
+    setForm,
+    saving,
+    actionError,
+    setActionError,
+    deletingId,
+    draggedTopicId,
+    reorderingSubjectId,
+    toggleExam,
+    toggleSection,
+    toggleSubject,
+    openAdd,
+    openEdit,
+    closeModal,
+    save,
+    remove,
+    handleTopicDragStart,
+    handleTopicDragOver,
+    handleTopicDrop,
+    handleTopicDragEnd,
+  } = useExamContentManager();
 
   const renderModal = () => {
     if (!modal) return null;

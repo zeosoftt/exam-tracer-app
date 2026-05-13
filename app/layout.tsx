@@ -4,12 +4,16 @@
  */
 
 import Script from 'next/script';
+import dynamic from 'next/dynamic';
 import { Inter } from 'next/font/google';
-import { Analytics } from '@vercel/analytics/next';
 import { buildRootMetadata, GA_MEASUREMENT_ID, viewport } from '@/lib/seo/siteSeo';
 import './globals.css';
 import { Providers } from './providers';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+
+const Analytics = dynamic(() => import('@/components/analytics/VercelAnalyticsLazy'), {
+  ssr: false,
+});
 
 /** Tek aile + latin-ext: kritik istek zinciri ve blokaj azalır; başlıklar `font-display` ile aynı değişken */
 const inter = Inter({

@@ -1,6 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback, startTransition } from 'react';
+import { useSuperAdminPanel } from '@/components/super-admin/hooks/useSuperAdminPanel';
+import {
+  DENEME_SHOW_ADVANCED_KEY,
+  LANDING_SHOW_PARTNERS_KEY,
+  ROLE_LABELS,
+} from '@/components/super-admin/domain/superAdminTypes';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -16,158 +21,22 @@ import {
 } from 'lucide-react';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
 
-const LANDING_SHOW_PARTNERS_KEY = 'landing_show_partners';
-const DENEME_SHOW_ADVANCED_KEY = 'deneme_show_advanced';
-
-interface AdminStats {
-  usersCount: number;
-  activeUsersCount: number;
-  examsCount: number;
-  pomodoroSessionsCount: number;
-  examAssignmentsCount: number;
-  /** Shopier “satın al” bağlantısına yapılan toplam tıklama (client-side sayım) */
-  shopierCheckoutClicks: number;
-  planStats?: Array<{
-    planId: string | null;
-    planCode: string;
-    planName: string;
-    planType: string;
-    userCount: number;
-  }>;
-}
-
-interface AdminUser {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: string | null;
-  isActive: boolean;
-  lastLoginAt: string | null;
-  createdAt: string;
-  /** Aktif kullanıcı atamalı sınavlar (silinmemiş atama ve sınav) */
-  exams: { id: string; name: string; code: string }[];
-  hearAboutLabel?: string;
-}
-
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN: 'Admin',
-  INSTITUTION_ADMIN: 'Kurum Admin',
-  INDIVIDUAL: 'Bireysel',
-  VIEWER: 'İzleyici',
-};
-
 export function SuperAdminPanel() {
-  const [stats, setStats] = useState<AdminStats | null>(null);
-  const [users, setUsers] = useState<AdminUser[]>([]);
-  const [page, setPage] = useState(1);
-  const [pagination, setPagination] = useState({ limit: 10, total: 0, totalPages: 0 });
-  const [isLoadingStats, setIsLoadingStats] = useState(true);
-  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
-  const [usersLoadError, setUsersLoadError] = useState<string | null>(null);
-  const [siteSettings, setSiteSettings] = useState<Record<string, boolean> | null>(null);
-  const [siteSettingsLoading, setSiteSettingsLoading] = useState(true);
-  const [siteSettingsPatching, setSiteSettingsPatching] = useState(false);
-
-  const fetchSiteSettings = useCallback(async () => {
-    try {
-      const res = await fetch('/api/super-admin/site-settings');
-      if (res.ok) {
-        const json = await res.json();
-        startTransition(() => setSiteSettings(json.data));
-      }
-    } catch {
-      // ignore
-    } finally {
-      setSiteSettingsLoading(false);
-    }
-  }, []);
-
-  const patchSiteSettings = useCallback(
-    async (patch: { landing_show_partners?: boolean; deneme_show_advanced?: boolean }) => {
-      setSiteSettingsPatching(true);
-      try {
-        const res = await fetch('/api/super-admin/site-settings', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(patch),
-        });
-        if (res.ok) {
-          const json = await res.json();
-          startTransition(() => setSiteSettings(json.data));
-        }
-      } finally {
-        setSiteSettingsPatching(false);
-      }
-    },
-    [],
-  );
-
-  const fetchStats = useCallback(async () => {
-    try {
-      const res = await fetch('/api/super-admin/stats');
-      if (res.ok) {
-        const json = await res.json();
-        startTransition(() => setStats(json.data));
-      }
-    } catch {
-      // ignore
-    } finally {
-      setIsLoadingStats(false);
-    }
-  }, []);
-
-  const fetchUsers = useCallback(async (pageNum: number) => {
-    setIsLoadingUsers(true);
-    setUsersLoadError(null);
-    try {
-      const res = await fetch(`/api/super-admin/users?page=${pageNum}&limit=10`);
-      const json = await res.json().catch(() => ({}));
-      if (res.ok && json.success && Array.isArray(json.data?.users)) {
-        startTransition(() => {
-          setUsers(json.data.users);
-          const p = json.data.pagination;
-          setPagination({ limit: p.limit, total: p.total, totalPages: p.totalPages });
-        });
-        setUsersLoadError(null);
-      } else {
-        setUsers([]);
-        setPagination({ limit: 10, total: 0, totalPages: 0 });
-        const msg =
-          typeof json.error === 'string'
-            ? json.error
-            : json.error?.message ?? `Liste yüklenemedi (HTTP ${res.status}).`;
-        setUsersLoadError(msg);
-      }
-    } catch {
-      setUsers([]);
-      setPagination({ limit: 10, total: 0, totalPages: 0 });
-      setUsersLoadError('Bağlantı hatası. Ağı kontrol edip yenileyin.');
-    } finally {
-      setIsLoadingUsers(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void fetchStats();
-    void fetchSiteSettings();
-  }, [fetchStats, fetchSiteSettings]);
-
-  useEffect(() => {
-    void fetchUsers(page);
-  }, [page, fetchUsers]);
-
-  const formatDate = useCallback((dateStr: string | null) => {
-    if (!dateStr) return '—';
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('tr-TR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }, []);
+  const {
+    stats,
+    users,
+    page,
+    setPage,
+    pagination,
+    isLoadingStats,
+    isLoadingUsers,
+    usersLoadError,
+    siteSettings,
+    siteSettingsLoading,
+    siteSettingsPatching,
+    patchSiteSettings,
+    formatAdminDateTime,
+  } = useSuperAdminPanel();
 
   return (
     <div className="min-h-screen bg-gradient-to-br bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
@@ -359,8 +228,8 @@ export function SuperAdminPanel() {
                               <span className="text-sm text-stone-400 dark:text-stone-500">Pasif</span>
                             )}
                           </td>
-                          <td className="px-5 py-3 text-sm text-stone-500 dark:text-stone-400">{formatDate(u.lastLoginAt)}</td>
-                          <td className="px-5 py-3 text-sm text-stone-500 dark:text-stone-400">{formatDate(u.createdAt)}</td>
+                          <td className="px-5 py-3 text-sm text-stone-500 dark:text-stone-400">{formatAdminDateTime(u.lastLoginAt)}</td>
+                          <td className="px-5 py-3 text-sm text-stone-500 dark:text-stone-400">{formatAdminDateTime(u.createdAt)}</td>
                         </tr>
                       ))
                     )}

@@ -13,6 +13,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { registerSchema } from '@/lib/validation/schemas';
 import type { z } from 'zod';
 import { BookOpen, ArrowLeft, Loader2, User, Mail, Lock, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { postAuthRegister } from '@/lib/client-api/authForms';
 
 function RegisterForm() {
   const router = useRouter();
@@ -91,18 +92,9 @@ function RegisterForm() {
           acquisitionSourceDetail: onboardingData?.acquisitionSourceDetail ?? undefined,
         };
 
-        const response = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(registrationData),
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-          setError(result.error?.message || 'Kayıt işlemi başarısız oldu');
+        const { ok, errorMessage } = await postAuthRegister(registrationData as Record<string, unknown>);
+        if (!ok) {
+          setError(errorMessage || 'Kayıt işlemi başarısız oldu');
           return;
         }
 

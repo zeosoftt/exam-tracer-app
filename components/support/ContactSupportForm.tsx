@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { Loader2, Send } from 'lucide-react';
 import { SUPPORT_CATEGORY_LABELS } from '@/lib/support/supportContactCategories';
+import { submitSupportContact } from '@/components/support/api/supportContactClient';
 
 type Props = {
   defaultEmail?: string | null;
@@ -31,29 +32,18 @@ export function ContactSupportForm({ defaultEmail, lockedEmail }: Props) {
       setLoading(true);
       setFeedback(null);
       try {
-        const res = await fetch('/api/support/contact', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: lockedEmail ? defaultEmail : email,
-            category,
-            subject,
-            message,
-          }),
+        const result = await submitSupportContact({
+          email: lockedEmail ? defaultEmail : email,
+          category,
+          subject,
+          message,
         });
-        const data = await res.json().catch(() => ({}));
-        if (res.ok && data.success) {
-          setFeedback({ type: 'ok', text: data.message ?? 'Teşekkürler.' });
+        if (result.ok) {
+          setFeedback({ type: 'ok', text: result.message ?? 'Teşekkürler.' });
           setSubject('');
           setMessage('');
         } else {
-          const errText =
-            typeof data.error === 'string'
-              ? data.error
-              : data.error && typeof data.error === 'object' && 'message' in data.error
-                ? String((data.error as { message?: string }).message)
-                : 'Gönderilemedi. Tekrar deneyin.';
-          setFeedback({ type: 'err', text: errText });
+          setFeedback({ type: 'err', text: result.message });
         }
       } catch {
         setFeedback({ type: 'err', text: 'Bağlantı hatası.' });

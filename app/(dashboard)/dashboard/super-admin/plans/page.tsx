@@ -3,11 +3,17 @@
  * Plan listesi, kullanıcı dağılımı. Sadece ADMIN.
  */
 
+import dynamic from 'next/dynamic';
 import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
 import { USER_ROLES } from '@/config/constants';
-import { PlansContent } from '@/components/super-admin/PlansContent';
+import { RouteShellSkeleton } from '@/components/ui/RouteShellSkeleton';
+
+const PlansContent = dynamic(
+  () => import('@/components/super-admin/PlansContent').then((m) => m.PlansContent),
+  { loading: () => <RouteShellSkeleton /> },
+);
 
 export default async function PlansPage() {
   const session = await getServerSession(authOptions);

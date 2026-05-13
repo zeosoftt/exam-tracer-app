@@ -5,7 +5,6 @@
 
 'use client';
 
-import { useState, useEffect, useRef, useCallback, useMemo, startTransition } from 'react';
 import { signOut } from 'next-auth/react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -36,437 +35,37 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
+import { WEEK_DAY_LABELS } from '@/components/dashboard/domain/dashboardConstants';
+import { useDashboardStats } from '@/components/dashboard/hooks/useDashboardStats';
+import { usePlanBadge } from '@/components/dashboard/hooks/usePlanBadge';
+import { useEvaluationTopicEditor } from '@/components/dashboard/hooks/useEvaluationTopicEditor';
+import { useDashboardViewModel } from '@/components/dashboard/hooks/useDashboardViewModel';
 
 const ShopierCheckoutLink = dynamic(
   () => import('@/components/checkout/ShopierCheckoutLink').then((m) => m.ShopierCheckoutLink),
   { ssr: false },
 );
 
-const WEEK_DAY_LABELS = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'] as const;
-
-interface StudyDay {
-  date: string;
-  dayName: string;
-  minutesStudied: number;
-  goalMinutes: number;
-  completed: boolean;
-  hoursStudied: number;
-}
-
-interface DashboardStats {
-  totalExams: number;
-  activeExams: number;
-  completedTopics: number;
-  inProgressTopics: number;
-  notStartedTopics: number;
-  reviewedTopics: number;
-  totalTopics: number;
-  totalSubjects: number;
-  totalStudyHours: number;
-  totalPomodoroSessions: number;
-  activeExam: {
-    id: string;
-    name: string;
-    code: string;
-    startDate: string | null;
-  } | null;
-  user?: {
-    targetScore: number | null;
-    dailyStudyHours: number | null;
-  };
-  study?: {
-    dailyStudyHoursGoal: number;
-    weeklySummary: StudyDay[];
-  };
-  deneme?: {
-    totalAttempts: number;
-    lastAttemptAt: string | null;
-    lastAttemptScore: number | null;
-    lastAttemptNet: number | null;
-    lastAttemptExamName: string | null;
-    recentAttempts: Array<{
-      attemptedAt: string;
-      totalScore: number | null;
-      netScore: number | null;
-    }>;
-  };
-  spacedRepetition?: {
-    summary: { overdue: number; dueWithinWeek: number; totalScheduled: number };
-    scheduleExplanation: string;
-    items: Array<{
-      topicId: string;
-      topicName: string;
-      subjectName: string;
-      sectionName: string;
-      nextReviewAt: string;
-      overdue: boolean;
-      daysUntil: number;
-      level: number;
-    }>;
-  } | null;
-  evaluation?: {
-    totalTopics: number;
-    goodTopics: number;
-    improvableTopics: number;
-    repeatTopics: number;
-    averageSuccessRate: number;
-    averageNet: number;
-    targetScore: number;
-    requiredNet: number;
-    requiredSuccessRate: number;
-    topics?: Array<{
-      topicId: string;
-      topicName: string;
-      sectionName: string;
-      subjectName: string;
-      totalQuestions: number;
-      correctAnswers: number;
-      wrongAnswers: number;
-      status?: string | null;
-      topicSuccessRate?: number | null;
-      topicNet?: number | null;
-    }>;
-  } | null;
-}
-
 export function DashboardContent({ user }: { user: { id: string; name: string; email: string; role?: string } }) {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [planBadge, setPlanBadge] = useState<{
-    code: string;
-    label: string;
-    bgClass: string;
-    textClass: string;
-    dotClass: string;
-  } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
-  const [editValues, setEditValues] = useState<{
-    totalQuestions: number;
-    correctAnswers: number;
-    wrongAnswers: number;
-  } | null>(null);
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
-  const [evaluationFilter, setEvaluationFilter] = useState<'GOOD' | 'IMPROVABLE' | 'REPEAT' | null>(null);
-  const [reviewAckTopicId, setReviewAckTopicId] = useState<string | null>(null);
-  const [statsRefreshing, setStatsRefreshing] = useState(false);
-  const [statsUpdatedAt, setStatsUpdatedAt] = useState<Date | null>(null);
-  const lastLiteStatsFetchAtRef = useRef(0);
-  const lastFullStatsFetchAtRef = useRef(0);
-  const statsFetchInFlightRef = useRef(false);
+  const { stats, isLoading, statsRefreshing, statsUpdatedAt, fetchStats } = useDashboardStats();
+  const planBadge = usePlanBadge();
+  const {
+    editingTopicId,
+    editValues,
+    setEditValues,
+    expandedSections,
+    evaluationFilter,
+    setEvaluationFilter,
+    reviewAckTopicId,
+    updateQuestionStats,
+    startEdit,
+    cancelEdit,
+    toggleSection,
+    acknowledgeTopicReview,
+  } = useEvaluationTopicEditor(fetchStats);
+  const vm = useDashboardViewModel(stats, evaluationFilter, user.name);
 
-  const fetchStats = useCallback(async (options?: { manual?: boolean; force?: boolean; lite?: boolean }) => {
-    const lite = options?.lite ?? true;
-    const now = Date.now();
-    const lastFetchAt = lite ? lastLiteStatsFetchAtRef.current : lastFullStatsFetchAtRef.current;
-    if (!options?.force && !options?.manual && now - lastFetchAt < 10000) {
-      return;
-    }
-    if (statsFetchInFlightRef.current) return;
-    statsFetchInFlightRef.current = true;
-    if (options?.manual) setStatsRefreshing(true);
-    try {
-      const params = new URLSearchParams();
-      params.set('scope', lite ? 'core' : 'full');
-      if (options?.force || options?.manual) params.set('fresh', '1');
-      const url = params.size > 0 ? `/api/dashboard/stats?${params.toString()}` : '/api/dashboard/stats';
-      const response = await fetch(url);
-      if (response.ok) {
-        const data = await response.json();
-        startTransition(() => {
-          setStats((prev) => {
-            if (lite && prev?.evaluation && !data.data?.evaluation) {
-              return { ...data.data, evaluation: prev.evaluation };
-            }
-            return data.data;
-          });
-        });
-        setStatsUpdatedAt(new Date());
-        if (lite) {
-          lastLiteStatsFetchAtRef.current = Date.now();
-        } else {
-          lastFullStatsFetchAtRef.current = Date.now();
-        }
-      }
-    } catch (error) {
-      console.error('Failed to fetch stats:', error);
-    } finally {
-      statsFetchInFlightRef.current = false;
-      setIsLoading(false);
-      if (options?.manual) setStatsRefreshing(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    const load = async () => {
-      await fetchStats({ lite: true });
-      void fetchStats({ force: true, lite: false });
-    };
-    void load();
-  }, [fetchStats]);
-
-  // Kullanıcının planını yükle (FREE / PRO / ENTERPRISE) ve header'da rozet olarak göster
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch('/api/billing/plan');
-        if (!res.ok) return;
-        const json = await res.json();
-        if (!json.success || !json.data) return;
-        const code: string = json.data.planCode ?? '';
-        let badge:
-          | {
-              code: string;
-              label: string;
-              bgClass: string;
-              textClass: string;
-              dotClass: string;
-            }
-          | null = null;
-
-        if (code === 'FREE') {
-          badge = {
-            code,
-            label: 'Free',
-            bgClass: 'bg-stone-100 dark:bg-stone-800',
-            textClass: 'text-stone-700 dark:text-stone-200',
-            dotClass: 'bg-stone-400 dark:bg-stone-500',
-          };
-        } else if (code === 'PRO') {
-          badge = {
-            code,
-            label: 'Pro',
-            bgClass: 'bg-accent-100 dark:bg-accent-950/50',
-            textClass: 'text-accent-800 dark:text-accent-200',
-            dotClass: 'bg-accent-500',
-          };
-        } else if (code === 'ENTERPRISE') {
-          badge = {
-            code,
-            label: 'Enterprise',
-            bgClass: 'bg-violet-100 dark:bg-violet-950/50',
-            textClass: 'text-violet-800 dark:text-violet-200',
-            dotClass: 'bg-violet-500',
-          };
-        }
-
-        if (!cancelled && badge) {
-          setPlanBadge(badge);
-        }
-      } catch {
-        // sessizce yut – plan rozeti opsiyonel
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // Sayfaya odaklanıldığında veya görünür olduğunda verileri yenile
-  useEffect(() => {
-    const handleFocus = () => {
-      fetchStats({ lite: true });
-    };
-
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        fetchStats({ lite: true });
-      }
-    };
-
-    window.addEventListener('focus', handleFocus);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [fetchStats]);
-
-  const totalTopics = useMemo(
-    () => stats?.totalTopics || (stats?.completedTopics || 0) + (stats?.inProgressTopics || 0) + (stats?.notStartedTopics || 0),
-    [stats?.totalTopics, stats?.completedTopics, stats?.inProgressTopics, stats?.notStartedTopics],
-  );
-
-  const completionRate = useMemo(
-    () => (totalTopics > 0 ? Math.round(((stats?.completedTopics || 0) / totalTopics) * 100) : 0),
-    [totalTopics, stats?.completedTopics],
-  );
-
-  const studyHours = stats?.totalStudyHours || 0;
-
-  const weeklyStudyByLabel = useMemo(() => {
-    const rows = stats?.study?.weeklySummary;
-    if (!rows?.length) return null;
-    return new Map(rows.map((d) => [d.dayName, d]));
-  }, [stats?.study?.weeklySummary]);
-
-  const denemeSparkline = useMemo(() => {
-    const attempts = stats?.deneme?.recentAttempts;
-    if (!attempts?.length) return null;
-    const slice = [...attempts].reverse().slice(0, 8);
-    const nets = slice.map((a) => a.netScore ?? 0);
-    const minNet = Math.min(...nets);
-    const maxNet = Math.max(...nets);
-    const range = maxNet - minNet || 1;
-    return { slice, minNet, maxNet, range };
-  }, [stats?.deneme?.recentAttempts]);
-
-  const examCountdown = useMemo(() => {
-    const start = stats?.activeExam?.startDate;
-    if (!start) return { kind: 'nodate' as const };
-    const examDate = new Date(start);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    examDate.setHours(0, 0, 0, 0);
-    const diffMs = examDate.getTime() - today.getTime();
-    const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-    if (daysLeft > 0) return { kind: 'future' as const, daysLeft };
-    if (daysLeft === 0) return { kind: 'today' as const };
-    return { kind: 'past' as const };
-  }, [stats?.activeExam?.startDate]);
-
-  const evaluationTopics = useMemo(() => stats?.evaluation?.topics ?? [], [stats?.evaluation?.topics]);
-
-  const filteredEvaluationTopics = useMemo(
-    () =>
-      evaluationFilter ? evaluationTopics.filter((t) => t.status === evaluationFilter) : evaluationTopics,
-    [evaluationTopics, evaluationFilter],
-  );
-
-  const groupedTopics = useMemo(() => {
-    if (filteredEvaluationTopics.length === 0) {
-      return {} as Record<
-        string,
-        {
-          sectionName: string;
-          subjectName: string;
-          topics: Array<{
-            topicId: string;
-            topicName: string;
-            sectionName: string;
-            subjectName: string;
-            totalQuestions: number;
-            correctAnswers: number;
-            wrongAnswers: number;
-            status?: string | null;
-          }>;
-        }
-      >;
-    }
-    return filteredEvaluationTopics.reduce(
-      (acc, topic) => {
-        const key = `${topic.sectionName}|${topic.subjectName}`;
-        if (!acc[key]) {
-          acc[key] = {
-            sectionName: topic.sectionName,
-            subjectName: topic.subjectName,
-            topics: [],
-          };
-        }
-        acc[key].topics.push(topic);
-        return acc;
-      },
-      {} as Record<
-        string,
-        {
-          sectionName: string;
-          subjectName: string;
-          topics: Array<{
-            topicId: string;
-            topicName: string;
-            sectionName: string;
-            subjectName: string;
-            totalQuestions: number;
-            correctAnswers: number;
-            wrongAnswers: number;
-            status?: string | null;
-          }>;
-        }
-      >,
-    );
-  }, [filteredEvaluationTopics]);
-
-  const todayLabel = useMemo(
-    () =>
-      new Date().toLocaleDateString('tr-TR', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-      }),
-    [],
-  );
-
-  const firstName = useMemo(() => user.name.split(' ')[0] ?? user.name, [user.name]);
-
-  const updateQuestionStats = useCallback(
-    async (topicId: string) => {
-      if (!editValues) return;
-
-      try {
-        if (editValues.correctAnswers + editValues.wrongAnswers > editValues.totalQuestions) {
-          alert('Doğru + Yanlış sayısı toplam soru sayısını geçemez!');
-          return;
-        }
-
-        const response = await fetch(`/api/progress/${topicId}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            totalQuestions: editValues.totalQuestions,
-            correctAnswers: editValues.correctAnswers,
-            wrongAnswers: editValues.wrongAnswers,
-          }),
-        });
-
-        if (response.ok) {
-          await fetchStats({ force: true, lite: false });
-          setEditingTopicId(null);
-          setEditValues(null);
-        } else {
-          const error = await response.json();
-          console.error('Failed to update question stats:', error);
-          alert('Soru sayıları güncellenirken bir hata oluştu');
-        }
-      } catch (error) {
-        console.error('Error updating question stats:', error);
-        alert('Soru sayıları güncellenirken bir hata oluştu');
-      }
-    },
-    [editValues, fetchStats],
-  );
-
-  const startEdit = useCallback(
-    (topic: { topicId: string; totalQuestions: number; correctAnswers: number; wrongAnswers: number }) => {
-      setEditingTopicId(topic.topicId);
-      setEditValues({
-        totalQuestions: topic.totalQuestions || 0,
-        correctAnswers: topic.correctAnswers || 0,
-        wrongAnswers: topic.wrongAnswers || 0,
-      });
-    },
-    [],
-  );
-
-  const cancelEdit = useCallback(() => {
-    setEditingTopicId(null);
-    setEditValues(null);
-  }, []);
-
-  const toggleSection = useCallback((key: string) => {
-    setExpandedSections((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
-      } else {
-        next.add(key);
-      }
-      return next;
-    });
-  }, []);
+  const denemeSparkline = vm.denemeSparkline;
   const srsOverdue = stats?.spacedRepetition?.summary.overdue ?? 0;
   const srsDueWeek = stats?.spacedRepetition?.summary.dueWithinWeek ?? 0;
 
@@ -580,9 +179,9 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
         >
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0 flex-1">
-              <p className="text-sm text-stone-500 dark:text-stone-400">{todayLabel}</p>
+              <p className="text-sm text-stone-500 dark:text-stone-400">{vm.todayLabel}</p>
               <h1 id="dashboard-hero-title" className="mt-1 font-display text-2xl font-bold tracking-tight sm:text-3xl">
-                Merhaba, {firstName}
+                Merhaba, {vm.firstName}
               </h1>
               <p className="mt-2 max-w-xl text-sm leading-relaxed text-stone-600 dark:text-stone-400">
                 Önce bugünkü rutininizi seçin: konu çalışması, tekrar veya deneme. Sayılar aşağıda; detay için
@@ -698,7 +297,7 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
                 </div>
                 <div className="flex justify-between gap-2">
                   <dt className="text-stone-500 dark:text-stone-400">Konu</dt>
-                  <dd className="tabular-nums font-semibold text-stone-900 dark:text-stone-100">{stats?.totalTopics ?? 0}</dd>
+                  <dd className="tabular-nums font-semibold text-stone-900 dark:text-stone-100">{vm.totalTopics}</dd>
                 </div>
                 <div className="flex justify-between gap-2">
                   <dt className="text-stone-500 dark:text-stone-400">Tamam</dt>
@@ -713,7 +312,7 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
               </dl>
               <div className="mt-4 flex items-center justify-between border-t border-stone-100 pt-3 dark:border-stone-800">
                 <span className="text-xs text-stone-500 dark:text-stone-400">Tamamlanma</span>
-                <span className="text-lg font-bold tabular-nums text-primary-700 dark:text-primary-400">{completionRate}%</span>
+                <span className="text-lg font-bold tabular-nums text-primary-700 dark:text-primary-400">{vm.completionRate}%</span>
               </div>
             </div>
 
@@ -724,7 +323,7 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
                 </div>
                 <div>
                   <p className="text-xs font-medium text-stone-500 dark:text-stone-400">Çalışma süresi</p>
-                  <p className="text-2xl font-bold tabular-nums text-stone-900 dark:text-stone-50">{studyHours}</p>
+                  <p className="text-2xl font-bold tabular-nums text-stone-900 dark:text-stone-50">{vm.studyHours}</p>
                   <p className="text-xs text-stone-500 dark:text-stone-400">toplam saat</p>
                 </div>
               </div>
@@ -738,7 +337,7 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
                   <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-stone-400 dark:text-stone-500">Bu hafta</p>
                   <div className="grid grid-cols-7 gap-0.5">
                     {WEEK_DAY_LABELS.map((label) => {
-                      const day = weeklyStudyByLabel?.get(label);
+                      const day = vm.weeklyStudyByLabel?.get(label);
                       const goalHours = day ? day.goalMinutes / 60 : 0;
                       const met = day?.completed ?? false;
                       const hoursStudied = day?.hoursStudied ?? 0;
@@ -834,15 +433,15 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
                     {stats.activeExam.name}
                   </p>
                   {stats.activeExam.startDate ? (
-                    examCountdown.kind === 'future' ? (
+                    vm.examCountdown.kind === 'future' ? (
                       <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
                         Sınava{' '}
                         <span className="font-bold tabular-nums text-stone-900 dark:text-stone-100">
-                          {examCountdown.daysLeft}
+                          {vm.examCountdown.daysLeft}
                         </span>{' '}
                         gün
                       </p>
-                    ) : examCountdown.kind === 'today' ? (
+                    ) : vm.examCountdown.kind === 'today' ? (
                       <p className="mt-2 text-sm font-semibold text-accent-700 dark:text-accent-400">Sınav bugün</p>
                     ) : (
                       <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">Sınav tarihi geçti</p>
@@ -953,19 +552,7 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
                         <button
                           type="button"
                           disabled={reviewAckTopicId === item.topicId}
-                          onClick={async () => {
-                            setReviewAckTopicId(item.topicId);
-                            try {
-                              const res = await fetch(`/api/progress/${item.topicId}`, {
-                                method: 'PATCH',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ reviewCompleted: true }),
-                              });
-                              if (res.ok) await fetchStats({ force: true, lite: false });
-                            } finally {
-                              setReviewAckTopicId(null);
-                            }
-                          }}
+                          onClick={() => void acknowledgeTopicReview(item.topicId)}
                           className="btn btn-secondary text-xs !px-3 !py-2"
                         >
                           {reviewAckTopicId === item.topicId ? 'Kaydediliyor…' : 'Tekrar ettim'}
@@ -1127,7 +714,7 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
                       <h3 className="font-display text-lg font-bold text-stone-900 dark:text-stone-100">Konu bazında soru istatistikleri</h3>
                       <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
                         {evaluationFilter
-                          ? `${evaluationFilter === 'GOOD' ? 'İyi' : evaluationFilter === 'IMPROVABLE' ? 'Geliştirilebilir' : 'Tekrar'} konuları (${filteredEvaluationTopics.length} konu)`
+                          ? `${evaluationFilter === 'GOOD' ? 'İyi' : evaluationFilter === 'IMPROVABLE' ? 'Geliştirilebilir' : 'Tekrar'} konuları (${vm.filteredEvaluationTopics.length} konu)`
                           : 'Konu satırından doğru / yanlış sayılarını güncelleyebilirsiniz'}
                       </p>
                     </div>
@@ -1143,10 +730,10 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
                   </div>
                 </div>
                 <div className="custom-scrollbar max-h-96 overflow-y-auto">
-                  {evaluationFilter && filteredEvaluationTopics.length === 0 ? (
+                  {evaluationFilter && vm.filteredEvaluationTopics.length === 0 ? (
                     <div className="p-10 text-center text-sm text-stone-500 dark:text-stone-400">Bu kategoride konu bulunmuyor.</div>
                   ) : (
-                    Object.entries(groupedTopics).map(([key, group]) => (
+                    Object.entries(vm.groupedTopics).map(([key, group]) => (
                       <div key={key} className="border-b border-stone-100 last:border-b-0 dark:border-stone-800">
                         <button
                           type="button"

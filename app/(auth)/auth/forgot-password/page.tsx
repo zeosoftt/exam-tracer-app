@@ -11,6 +11,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { BookOpen, Mail, Loader2, ArrowLeft, CheckCircle } from 'lucide-react';
+import { postForgotPassword } from '@/lib/client-api/authForms';
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Geçerli bir e-posta adresi giriniz'),
@@ -35,18 +36,9 @@ function ForgotPasswordForm() {
       setError(null);
       setSuccess(false);
 
-      const response = await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email: data.email.toLowerCase() }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        setError(result.error?.message || 'Bir hata oluştu. Lütfen tekrar deneyin.');
+      const { ok, errorMessage } = await postForgotPassword(data.email);
+      if (!ok) {
+        setError(errorMessage || 'Bir hata oluştu. Lütfen tekrar deneyin.');
         return;
       }
 

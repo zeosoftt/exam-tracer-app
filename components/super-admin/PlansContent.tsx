@@ -1,42 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback, startTransition } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, CreditCard } from 'lucide-react';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
-
-interface PlanStat {
-  planId: string | null;
-  planCode: string;
-  planName: string;
-  planType: string;
-  userCount: number;
-}
+import { usePlansContent } from '@/components/super-admin/hooks/usePlansContent';
 
 export function PlansContent() {
-  const [planStats, setPlanStats] = useState<PlanStat[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchStats = useCallback(async () => {
-    try {
-      const res = await fetch('/api/super-admin/stats');
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Yüklenemedi');
-      }
-      const data = await res.json();
-      startTransition(() => setPlanStats(data.data?.planStats ?? []));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Plan verileri yüklenemedi.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void fetchStats();
-  }, [fetchStats]);
+  const { planStats, loading, error } = usePlansContent();
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">

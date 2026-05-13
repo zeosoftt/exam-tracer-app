@@ -3,10 +3,16 @@
  * Form to create a new exam
  */
 
+import dynamic from 'next/dynamic';
 import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
-import { CreateExamForm } from '@/components/exams/CreateExamForm';
+import { RouteShellSkeleton } from '@/components/ui/RouteShellSkeleton';
+
+const CreateExamForm = dynamic(
+  () => import('@/components/exams/CreateExamForm').then((m) => m.CreateExamForm),
+  { loading: () => <RouteShellSkeleton /> },
+);
 
 export default async function NewExamPage() {
   const session = await getServerSession(authOptions);
@@ -15,7 +21,6 @@ export default async function NewExamPage() {
     redirect('/auth/login');
   }
 
-  // Check if user has permission to create exams
   const canCreate = session.user.role === 'ADMIN' || session.user.role === 'INSTITUTION_ADMIN';
 
   if (!canCreate) {
