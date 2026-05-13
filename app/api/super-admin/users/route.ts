@@ -25,6 +25,7 @@ const examAssignmentsSelect = {
 const userSelectBase = {
   id: true,
   email: true,
+  emailVerified: true,
   firstName: true,
   lastName: true,
   role: true,
@@ -84,6 +85,7 @@ export async function GET(req: NextRequest) {
     let rawUsers: Array<{
       id: string;
       email: string;
+      emailVerified: boolean;
       firstName: string;
       lastName: string;
       role: string | null;

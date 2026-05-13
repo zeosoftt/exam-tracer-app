@@ -18,6 +18,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  Mail,
+  MailCheck,
+  MailX,
 } from 'lucide-react';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
 
@@ -156,6 +159,14 @@ export function SuperAdminPanel() {
                 <table className="w-full text-left">
                   <thead>
                     <tr className="bg-stone-50 text-xs font-semibold uppercase tracking-wider text-stone-600 dark:bg-stone-900/80 dark:text-stone-400">
+                      <th
+                        scope="col"
+                        className="w-14 px-2 py-3 text-center"
+                        title="E-posta doğrulama"
+                      >
+                        <span className="sr-only">E-posta doğrulama</span>
+                        <Mail className="mx-auto h-4 w-4 opacity-70" aria-hidden />
+                      </th>
                       <th className="px-5 py-3">Ad Soyad</th>
                       <th className="px-5 py-3">E-posta</th>
                       <th className="min-w-[120px] max-w-[200px] px-5 py-3">Kaynak</th>
@@ -169,19 +180,38 @@ export function SuperAdminPanel() {
                   <tbody>
                     {usersLoadError ? (
                       <tr>
-                        <td colSpan={8} className="px-5 py-8 text-center text-stone-500 dark:text-stone-400">
+                        <td colSpan={9} className="px-5 py-8 text-center text-stone-500 dark:text-stone-400">
                           Liste yüklenemedi. Yukarıdaki mesaja bakın veya sayfayı yenileyin.
                         </td>
                       </tr>
                     ) : users.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="px-5 py-8 text-center text-stone-500 dark:text-stone-400">
+                        <td colSpan={9} className="px-5 py-8 text-center text-stone-500 dark:text-stone-400">
                           Kullanıcı bulunamadı.
                         </td>
                       </tr>
                     ) : (
                       users.map((u) => (
                         <tr key={u.id} className="border-t border-stone-100 hover:bg-stone-50/50 dark:border-stone-800 dark:hover:bg-stone-800/40">
+                          <td className="px-2 py-3 text-center align-middle">
+                            {u.emailVerified ? (
+                              <span
+                                className="inline-flex rounded-full bg-emerald-100 p-2 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400"
+                                title="E-posta doğrulandı"
+                              >
+                                <MailCheck className="h-4 w-4" aria-hidden />
+                                <span className="sr-only">E-posta doğrulandı</span>
+                              </span>
+                            ) : (
+                              <span
+                                className="inline-flex rounded-full bg-amber-100 p-2 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
+                                title="E-posta doğrulanmadı"
+                              >
+                                <MailX className="h-4 w-4" aria-hidden />
+                                <span className="sr-only">E-posta doğrulanmadı</span>
+                              </span>
+                            )}
+                          </td>
                           <td className="px-5 py-3 font-medium text-stone-900 dark:text-stone-100">
                             {u.firstName} {u.lastName}
                           </td>

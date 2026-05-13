@@ -22,6 +22,7 @@ export type PlanStat = NonNullable<AdminStats['planStats']>[number];
 export interface AdminUser {
   id: string;
   email: string;
+  emailVerified: boolean;
   firstName: string;
   lastName: string;
   role: string | null;
