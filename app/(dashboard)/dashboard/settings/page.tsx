@@ -5,9 +5,10 @@
 
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, startTransition } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import {
   ArrowLeft,
   User,
@@ -24,7 +25,11 @@ import {
   LifeBuoy,
 } from 'lucide-react';
 import { ThemeSelect } from '@/components/theme/ThemeSelect';
-import { ShopierCheckoutLink } from '@/components/checkout/ShopierCheckoutLink';
+
+const ShopierCheckoutLink = dynamic(
+  () => import('@/components/checkout/ShopierCheckoutLink').then((m) => m.ShopierCheckoutLink),
+  { ssr: false, loading: () => null },
+);
 
 type ExamOption = { id: string; name: string; code: string };
 type SettingsData = {
@@ -88,24 +93,26 @@ export default function SettingsPage() {
       if (settingsRes.ok) {
         const data = await settingsRes.json();
         if (data.success && data.data) {
-          setSettings(data.data);
-          setFirstName(data.data.user?.firstName ?? '');
-          setLastName(data.data.user?.lastName ?? '');
-          setTargetScore(data.data.user?.targetScore != null ? String(data.data.user.targetScore) : '');
-          setDailyStudyHours(data.data.user?.dailyStudyHours != null ? String(data.data.user.dailyStudyHours) : '');
-          setExamId(data.data.activeExam?.id ?? '');
+          startTransition(() => {
+            setSettings(data.data);
+            setFirstName(data.data.user?.firstName ?? '');
+            setLastName(data.data.user?.lastName ?? '');
+            setTargetScore(data.data.user?.targetScore != null ? String(data.data.user.targetScore) : '');
+            setDailyStudyHours(data.data.user?.dailyStudyHours != null ? String(data.data.user.dailyStudyHours) : '');
+            setExamId(data.data.activeExam?.id ?? '');
+          });
         }
       }
       if (examsRes.ok) {
         const examsData = await examsRes.json();
         if (examsData.success && Array.isArray(examsData.data)) {
-          setExams(examsData.data);
+          startTransition(() => setExams(examsData.data));
         }
       }
       if (planRes.ok) {
         const planData = await planRes.json();
         if (planData.success && planData.data) {
-          setPlanInfo(planData.data);
+          startTransition(() => setPlanInfo(planData.data));
         }
       }
     } catch (e) {
@@ -121,7 +128,7 @@ export default function SettingsPage() {
     void fetchSettingsPageData();
   }, [fetchSettingsPageData]);
 
-  const handleSaveSettings = async () => {
+  const handleSaveSettings = useCallback(async () => {
     setMessage(null);
     setSaving(true);
     try {
@@ -144,20 +151,20 @@ export default function SettingsPage() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setSettings(data.data);
+        startTransition(() => setSettings(data.data));
         setMessage({ type: 'success', text: 'Ayarlar kaydedildi.' });
         updateSession?.({ user: { name: data.data?.user?.name } });
       } else {
         setMessage({ type: 'error', text: data?.error?.message || 'Kaydetme başarısız.' });
       }
-    } catch (e) {
+    } catch {
       setMessage({ type: 'error', text: 'Kaydetme başarısız.' });
     } finally {
       setSaving(false);
     }
-  };
+  }, [firstName, lastName, examId, targetScore, dailyStudyHours, updateSession]);
 
-  const handleChangePassword = async (e: React.FormEvent) => {
+  const handleChangePassword = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordMessage(null);
     if (newPassword !== confirmPassword) {
@@ -190,7 +197,7 @@ export default function SettingsPage() {
     } finally {
       setChangingPassword(false);
     }
-  };
+  }, [newPassword, confirmPassword, currentPassword]);
 
   if (loading) {
     return (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, startTransition } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, CreditCard } from 'lucide-react';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
@@ -18,24 +18,25 @@ export function PlansContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchStats() {
-      try {
-        const res = await fetch('/api/super-admin/stats');
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || 'Yüklenemedi');
-        }
-        const data = await res.json();
-        setPlanStats(data.data?.planStats ?? []);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : 'Plan verileri yüklenemedi.');
-      } finally {
-        setLoading(false);
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await fetch('/api/super-admin/stats');
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Yüklenemedi');
       }
+      const data = await res.json();
+      startTransition(() => setPlanStats(data.data?.planStats ?? []));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Plan verileri yüklenemedi.');
+    } finally {
+      setLoading(false);
     }
-    fetchStats();
   }, []);
+
+  useEffect(() => {
+    void fetchStats();
+  }, [fetchStats]);
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">

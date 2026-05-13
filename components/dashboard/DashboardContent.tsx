@@ -5,9 +5,10 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, startTransition } from 'react';
 import { signOut } from 'next-auth/react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import {
   BookOpen,
   CheckCircle,
@@ -34,8 +35,14 @@ import {
   LifeBuoy,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
-import { ShopierCheckoutLink } from '@/components/checkout/ShopierCheckoutLink';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
+
+const ShopierCheckoutLink = dynamic(
+  () => import('@/components/checkout/ShopierCheckoutLink').then((m) => m.ShopierCheckoutLink),
+  { ssr: false },
+);
+
+const WEEK_DAY_LABELS = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'] as const;
 
 interface StudyDay {
   date: string;
@@ -147,7 +154,7 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
   const lastFullStatsFetchAtRef = useRef(0);
   const statsFetchInFlightRef = useRef(false);
 
-  const fetchStats = async (options?: { manual?: boolean; force?: boolean; lite?: boolean }) => {
+  const fetchStats = useCallback(async (options?: { manual?: boolean; force?: boolean; lite?: boolean }) => {
     const lite = options?.lite ?? true;
     const now = Date.now();
     const lastFetchAt = lite ? lastLiteStatsFetchAtRef.current : lastFullStatsFetchAtRef.current;
@@ -165,11 +172,13 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
       const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
-        setStats((prev) => {
-          if (lite && prev?.evaluation && !data.data?.evaluation) {
-            return { ...data.data, evaluation: prev.evaluation };
-          }
-          return data.data;
+        startTransition(() => {
+          setStats((prev) => {
+            if (lite && prev?.evaluation && !data.data?.evaluation) {
+              return { ...data.data, evaluation: prev.evaluation };
+            }
+            return data.data;
+          });
         });
         setStatsUpdatedAt(new Date());
         if (lite) {
@@ -185,7 +194,7 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
       setIsLoading(false);
       if (options?.manual) setStatsRefreshing(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -193,7 +202,7 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
       void fetchStats({ force: true, lite: false });
     };
     void load();
-  }, []);
+  }, [fetchStats]);
 
   // Kullanıcının planını yükle (FREE / PRO / ENTERPRISE) ve header'da rozet olarak göster
   useEffect(() => {
@@ -273,118 +282,181 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, []);
+  }, [fetchStats]);
 
-  // API'den gelen totalTopics kullanılıyor
-  // Eğer totalTopics yoksa, mevcut progress kayıtlarından hesaplanıyor
-  const totalTopics = stats?.totalTopics || (stats?.completedTopics || 0) + (stats?.inProgressTopics || 0) + (stats?.notStartedTopics || 0);
-  const completionRate = totalTopics > 0 
-    ? Math.round(((stats?.completedTopics || 0) / totalTopics) * 100)
-    : 0;
+  const totalTopics = useMemo(
+    () => stats?.totalTopics || (stats?.completedTopics || 0) + (stats?.inProgressTopics || 0) + (stats?.notStartedTopics || 0),
+    [stats?.totalTopics, stats?.completedTopics, stats?.inProgressTopics, stats?.notStartedTopics],
+  );
 
-  // Çalışma saatleri artık backend'den geliyor
+  const completionRate = useMemo(
+    () => (totalTopics > 0 ? Math.round(((stats?.completedTopics || 0) / totalTopics) * 100) : 0),
+    [totalTopics, stats?.completedTopics],
+  );
+
   const studyHours = stats?.totalStudyHours || 0;
 
-  // Soru sayılarını güncelle
-  const updateQuestionStats = async (topicId: string) => {
-    if (!editValues) return;
+  const weeklyStudyByLabel = useMemo(() => {
+    const rows = stats?.study?.weeklySummary;
+    if (!rows?.length) return null;
+    return new Map(rows.map((d) => [d.dayName, d]));
+  }, [stats?.study?.weeklySummary]);
 
-    try {
-      // Validasyon
-      if (editValues.correctAnswers + editValues.wrongAnswers > editValues.totalQuestions) {
-        alert('Doğru + Yanlış sayısı toplam soru sayısını geçemez!');
-        return;
-      }
+  const denemeSparkline = useMemo(() => {
+    const attempts = stats?.deneme?.recentAttempts;
+    if (!attempts?.length) return null;
+    const slice = [...attempts].reverse().slice(0, 8);
+    const nets = slice.map((a) => a.netScore ?? 0);
+    const minNet = Math.min(...nets);
+    const maxNet = Math.max(...nets);
+    const range = maxNet - minNet || 1;
+    return { slice, minNet, maxNet, range };
+  }, [stats?.deneme?.recentAttempts]);
 
-      const response = await fetch(`/api/progress/${topicId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          totalQuestions: editValues.totalQuestions,
-          correctAnswers: editValues.correctAnswers,
-          wrongAnswers: editValues.wrongAnswers,
-        }),
-      });
+  const examCountdown = useMemo(() => {
+    const start = stats?.activeExam?.startDate;
+    if (!start) return { kind: 'nodate' as const };
+    const examDate = new Date(start);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    examDate.setHours(0, 0, 0, 0);
+    const diffMs = examDate.getTime() - today.getTime();
+    const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    if (daysLeft > 0) return { kind: 'future' as const, daysLeft };
+    if (daysLeft === 0) return { kind: 'today' as const };
+    return { kind: 'past' as const };
+  }, [stats?.activeExam?.startDate]);
 
-      if (response.ok) {
-        // Verileri yeniden yükle
-        await fetchStats({ force: true, lite: false });
-        setEditingTopicId(null);
-        setEditValues(null);
-      } else {
-        const error = await response.json();
-        console.error('Failed to update question stats:', error);
-        alert('Soru sayıları güncellenirken bir hata oluştu');
-      }
-    } catch (error) {
-      console.error('Error updating question stats:', error);
-      alert('Soru sayıları güncellenirken bir hata oluştu');
+  const evaluationTopics = useMemo(() => stats?.evaluation?.topics ?? [], [stats?.evaluation?.topics]);
+
+  const filteredEvaluationTopics = useMemo(
+    () =>
+      evaluationFilter ? evaluationTopics.filter((t) => t.status === evaluationFilter) : evaluationTopics,
+    [evaluationTopics, evaluationFilter],
+  );
+
+  const groupedTopics = useMemo(() => {
+    if (filteredEvaluationTopics.length === 0) {
+      return {} as Record<
+        string,
+        {
+          sectionName: string;
+          subjectName: string;
+          topics: Array<{
+            topicId: string;
+            topicName: string;
+            sectionName: string;
+            subjectName: string;
+            totalQuestions: number;
+            correctAnswers: number;
+            wrongAnswers: number;
+            status?: string | null;
+          }>;
+        }
+      >;
     }
-  };
-
-  // Edit modunu başlat
-  const startEdit = (topic: { topicId: string; totalQuestions: number; correctAnswers: number; wrongAnswers: number }) => {
-    setEditingTopicId(topic.topicId);
-    setEditValues({
-      totalQuestions: topic.totalQuestions || 0,
-      correctAnswers: topic.correctAnswers || 0,
-      wrongAnswers: topic.wrongAnswers || 0,
-    });
-  };
-
-  // Edit modunu iptal et
-  const cancelEdit = () => {
-    setEditingTopicId(null);
-    setEditValues(null);
-  };
-
-  // Filter topics by selected evaluation category (İYİ / Geliştirilebilir / Tekrar)
-  const evaluationTopics = stats?.evaluation?.topics ?? [];
-  const filteredEvaluationTopics = evaluationFilter
-    ? evaluationTopics.filter((t) => t.status === evaluationFilter)
-    : evaluationTopics;
-
-  // Group topics by section and subject
-  const groupedTopics = filteredEvaluationTopics.length > 0
-    ? filteredEvaluationTopics.reduce((acc, topic) => {
+    return filteredEvaluationTopics.reduce(
+      (acc, topic) => {
         const key = `${topic.sectionName}|${topic.subjectName}`;
         if (!acc[key]) {
           acc[key] = {
             sectionName: topic.sectionName,
             subjectName: topic.subjectName,
-            topics: [] as Array<{
-              topicId: string;
-              topicName: string;
-              sectionName: string;
-              subjectName: string;
-              totalQuestions: number;
-              correctAnswers: number;
-              wrongAnswers: number;
-              status?: string | null;
-            }>,
+            topics: [],
           };
         }
         acc[key].topics.push(topic);
         return acc;
-      }, {} as Record<string, {
-        sectionName: string;
-        subjectName: string;
-        topics: Array<{
-          topicId: string;
-          topicName: string;
+      },
+      {} as Record<
+        string,
+        {
           sectionName: string;
           subjectName: string;
-          totalQuestions: number;
-          correctAnswers: number;
-          wrongAnswers: number;
-          status?: string | null;
-        }>;
-      }>)
-    : {};
+          topics: Array<{
+            topicId: string;
+            topicName: string;
+            sectionName: string;
+            subjectName: string;
+            totalQuestions: number;
+            correctAnswers: number;
+            wrongAnswers: number;
+            status?: string | null;
+          }>;
+        }
+      >,
+    );
+  }, [filteredEvaluationTopics]);
 
-  const toggleSection = (key: string) => {
+  const todayLabel = useMemo(
+    () =>
+      new Date().toLocaleDateString('tr-TR', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+      }),
+    [],
+  );
+
+  const firstName = useMemo(() => user.name.split(' ')[0] ?? user.name, [user.name]);
+
+  const updateQuestionStats = useCallback(
+    async (topicId: string) => {
+      if (!editValues) return;
+
+      try {
+        if (editValues.correctAnswers + editValues.wrongAnswers > editValues.totalQuestions) {
+          alert('Doğru + Yanlış sayısı toplam soru sayısını geçemez!');
+          return;
+        }
+
+        const response = await fetch(`/api/progress/${topicId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            totalQuestions: editValues.totalQuestions,
+            correctAnswers: editValues.correctAnswers,
+            wrongAnswers: editValues.wrongAnswers,
+          }),
+        });
+
+        if (response.ok) {
+          await fetchStats({ force: true, lite: false });
+          setEditingTopicId(null);
+          setEditValues(null);
+        } else {
+          const error = await response.json();
+          console.error('Failed to update question stats:', error);
+          alert('Soru sayıları güncellenirken bir hata oluştu');
+        }
+      } catch (error) {
+        console.error('Error updating question stats:', error);
+        alert('Soru sayıları güncellenirken bir hata oluştu');
+      }
+    },
+    [editValues, fetchStats],
+  );
+
+  const startEdit = useCallback(
+    (topic: { topicId: string; totalQuestions: number; correctAnswers: number; wrongAnswers: number }) => {
+      setEditingTopicId(topic.topicId);
+      setEditValues({
+        totalQuestions: topic.totalQuestions || 0,
+        correctAnswers: topic.correctAnswers || 0,
+        wrongAnswers: topic.wrongAnswers || 0,
+      });
+    },
+    [],
+  );
+
+  const cancelEdit = useCallback(() => {
+    setEditingTopicId(null);
+    setEditValues(null);
+  }, []);
+
+  const toggleSection = useCallback((key: string) => {
     setExpandedSections((prev) => {
       const next = new Set(prev);
       if (next.has(key)) {
@@ -394,14 +466,7 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
       }
       return next;
     });
-  };
-
-  const todayLabel = new Date().toLocaleDateString('tr-TR', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  });
-  const firstName = user.name.split(' ')[0] ?? user.name;
+  }, []);
   const srsOverdue = stats?.spacedRepetition?.summary.overdue ?? 0;
   const srsDueWeek = stats?.spacedRepetition?.summary.dueWithinWeek ?? 0;
 
@@ -672,8 +737,8 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
                 <div>
                   <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-stone-400 dark:text-stone-500">Bu hafta</p>
                   <div className="grid grid-cols-7 gap-0.5">
-                    {(['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'] as const).map((label) => {
-                      const day = stats?.study?.weeklySummary?.find((d) => d.dayName === label);
+                    {WEEK_DAY_LABELS.map((label) => {
+                      const day = weeklyStudyByLabel?.get(label);
                       const goalHours = day ? day.goalMinutes / 60 : 0;
                       const met = day?.completed ?? false;
                       const hoursStudied = day?.hoursStudied ?? 0;
@@ -730,29 +795,22 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
                       })}
                     </p>
                   )}
-                  {stats.deneme.recentAttempts && stats.deneme.recentAttempts.length > 0 && (() => {
-                    const slice = [...stats.deneme.recentAttempts].reverse().slice(0, 8);
-                    const nets = slice.map((a) => a.netScore ?? 0);
-                    const minNet = Math.min(...nets);
-                    const maxNet = Math.max(...nets);
-                    const range = maxNet - minNet || 1;
-                    return (
-                      <div className="mt-3 flex h-10 items-end gap-0.5" aria-hidden>
-                        {slice.map((a, i) => {
-                          const net = a.netScore ?? 0;
-                          const h = Math.max(8, ((net - minNet) / range) * 100);
-                          return (
-                            <div
-                              key={`${a.attemptedAt}-${i}`}
-                              className="min-w-0 flex-1 rounded-t bg-accent-500/40 dark:bg-accent-500/30"
-                              style={{ height: `${Math.min(100, h)}%` }}
-                              title={`${new Date(a.attemptedAt).toLocaleDateString('tr-TR')}: ${net} net`}
-                            />
-                          );
-                        })}
-                      </div>
-                    );
-                  })()}
+                  {stats.deneme.recentAttempts && stats.deneme.recentAttempts.length > 0 && denemeSparkline && (
+                    <div className="mt-3 flex h-10 items-end gap-0.5" aria-hidden>
+                      {denemeSparkline.slice.map((a, i) => {
+                        const net = a.netScore ?? 0;
+                        const h = Math.max(8, ((net - denemeSparkline.minNet) / denemeSparkline.range) * 100);
+                        return (
+                          <div
+                            key={`${a.attemptedAt}-${i}`}
+                            className="min-w-0 flex-1 rounded-t bg-accent-500/40 dark:bg-accent-500/30"
+                            style={{ height: `${Math.min(100, h)}%` }}
+                            title={`${new Date(a.attemptedAt).toLocaleDateString('tr-TR')}: ${net} net`}
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
                   <p className="mt-3 text-xs font-medium text-primary-600 dark:text-primary-400">Detaya git →</p>
                 </>
               ) : (
@@ -775,25 +833,21 @@ export function DashboardContent({ user }: { user: { id: string; name: string; e
                   <p className="line-clamp-2 text-sm font-medium text-stone-900 dark:text-stone-100" title={stats.activeExam.name}>
                     {stats.activeExam.name}
                   </p>
-                  {stats.activeExam.startDate ? (() => {
-                    const examDate = new Date(stats.activeExam.startDate);
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    examDate.setHours(0, 0, 0, 0);
-                    const diffMs = examDate.getTime() - today.getTime();
-                    const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-                    if (daysLeft > 0) {
-                      return (
-                        <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
-                          Sınava <span className="font-bold tabular-nums text-stone-900 dark:text-stone-100">{daysLeft}</span> gün
-                        </p>
-                      );
-                    }
-                    if (daysLeft === 0) {
-                      return <p className="mt-2 text-sm font-semibold text-accent-700 dark:text-accent-400">Sınav bugün</p>;
-                    }
-                    return <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">Sınav tarihi geçti</p>;
-                  })() : (
+                  {stats.activeExam.startDate ? (
+                    examCountdown.kind === 'future' ? (
+                      <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
+                        Sınava{' '}
+                        <span className="font-bold tabular-nums text-stone-900 dark:text-stone-100">
+                          {examCountdown.daysLeft}
+                        </span>{' '}
+                        gün
+                      </p>
+                    ) : examCountdown.kind === 'today' ? (
+                      <p className="mt-2 text-sm font-semibold text-accent-700 dark:text-accent-400">Sınav bugün</p>
+                    ) : (
+                      <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">Sınav tarihi geçti</p>
+                    )
+                  ) : (
                     <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">Tarih atanmadı</p>
                   )}
                 </>

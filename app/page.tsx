@@ -9,13 +9,7 @@ import { unstable_cache } from 'next/cache';
 import { getBaseUrl } from '@/lib/seo/baseUrl';
 import { getOrganizationSameAs } from '@/lib/seo/siteSeo';
 import { getSettingBoolean, SITE_KEYS } from '@/lib/siteSettings';
-import { ShopierCheckoutLink } from '@/components/checkout/ShopierCheckoutLink';
 import { MarketingHeader } from '@/components/layout/MarketingHeader';
-
-const MobileLandingCta = dynamic(
-  () => import('@/components/layout/MobileLandingCta').then((m) => ({ default: m.MobileLandingCta })),
-  { ssr: false, loading: () => null },
-);
 import {
   BookOpen,
   Users,
@@ -42,6 +36,16 @@ import {
   Zap,
   Building2,
 } from 'lucide-react';
+
+const MobileLandingCta = dynamic(
+  () => import('@/components/layout/MobileLandingCta').then((m) => ({ default: m.MobileLandingCta })),
+  { ssr: false, loading: () => null },
+);
+
+const ShopierCheckoutLink = dynamic(
+  () => import('@/components/checkout/ShopierCheckoutLink').then((m) => m.ShopierCheckoutLink),
+  { ssr: false, loading: () => null },
+);
 
 const getShowPartnersCached = () =>
   unstable_cache(
@@ -121,7 +125,7 @@ export default async function LandingPage() {
                   Hedefe ulaş.
                 </span>
               </h1>
-              <p className="text-lg sm:text-xl text-stone-600 dark:text-stone-300 leading-relaxed mb-6 sm:mb-8 max-w-xl mx-auto lg:mx-0">
+              <p className="text-lg sm:text-xl text-stone-600 dark:text-stone-300 leading-relaxed mb-6 sm:mb-8 max-w-xl mx-auto lg:mx-0 min-h-[5.25rem] sm:min-h-[4.75rem]">
                 KPSS, ÖABT, ALES ve tüm sınavlar için ders ve konu takibinizi yapın. İlerlemeniz tek ekranda, net ve motive edici.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 mb-6">
@@ -459,7 +463,9 @@ export default async function LandingPage() {
               </Link>
             </div>
             <div className="relative flex flex-col overflow-hidden rounded-3xl border-2 border-primary-500 bg-gradient-to-b from-primary-50/90 to-white p-8 dark:from-primary-950/40 dark:to-stone-900/90 dark:border-primary-600">
-              <div className="absolute right-4 top-4 rounded-full bg-primary-600 px-2.5 py-0.5 text-xs font-bold text-white">Pro</div>
+              <div className="absolute right-4 top-4 rounded-full bg-primary-800 px-2.5 py-0.5 text-xs font-bold text-white dark:bg-primary-700">
+                Pro
+              </div>
               <p className="text-sm font-semibold uppercase tracking-wide text-primary-800 dark:text-primary-300">Profesyonel</p>
               <p className="font-display mt-2 text-3xl font-bold text-stone-900 dark:text-stone-100">İhtiyaca göre</p>
               <p className="mt-2 text-sm text-stone-600 dark:text-stone-300">Pomodoro geçmişi ve gelişmiş analitik; yüksek kullanım limitleri.</p>

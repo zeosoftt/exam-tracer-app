@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -40,35 +40,37 @@ export function CreateExamForm({ user: _user }: CreateExamFormProps) {
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof createExamSchema>) => {
-    try {
-      setIsLoading(true);
-      setError(null);
+  const onSubmit = useCallback(
+    async (data: z.infer<typeof createExamSchema>) => {
+      try {
+        setIsLoading(true);
+        setError(null);
 
-      const response = await fetch('/api/exams', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
+        const response = await fetch('/api/exams', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
 
-      const result = await response.json();
+        const result = await response.json();
 
-      if (!response.ok) {
-        setError(result.error?.message || 'Sınav oluşturulurken bir hata oluştu');
-        return;
+        if (!response.ok) {
+          setError(result.error?.message || 'Sınav oluşturulurken bir hata oluştu');
+          return;
+        }
+
+        router.push(`/dashboard/exams/${result.data.id}`);
+        router.refresh();
+      } catch {
+        setError('Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.');
+      } finally {
+        setIsLoading(false);
       }
-
-      // Redirect to exam detail page
-      router.push(`/dashboard/exams/${result.data.id}`);
-      router.refresh();
-    } catch (err) {
-      setError('Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    [router],
+  );
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">

@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -74,52 +74,55 @@ function RegisterForm() {
     resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = async (data: z.infer<typeof registerSchema>) => {
-    try {
-      setIsLoading(true);
-      setError(null);
+  const onSubmit = useCallback(
+    async (data: z.infer<typeof registerSchema>) => {
+      try {
+        setIsLoading(true);
+        setError(null);
 
-      // Include onboarding data in registration
-      const registrationData = {
-        ...data,
-        targetScore: onboardingData?.targetScore,
-        dailyStudyHours: onboardingData?.dailyStudyHours,
-        examCode: onboardingData?.examCode,
-        examName: onboardingData?.examName,
-        acquisitionSource: onboardingData?.acquisitionSource ?? undefined,
-        acquisitionSourceDetail: onboardingData?.acquisitionSourceDetail ?? undefined,
-      };
+        // Include onboarding data in registration
+        const registrationData = {
+          ...data,
+          targetScore: onboardingData?.targetScore,
+          dailyStudyHours: onboardingData?.dailyStudyHours,
+          examCode: onboardingData?.examCode,
+          examName: onboardingData?.examName,
+          acquisitionSource: onboardingData?.acquisitionSource ?? undefined,
+          acquisitionSourceDetail: onboardingData?.acquisitionSourceDetail ?? undefined,
+        };
 
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(registrationData),
-      });
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(registrationData),
+        });
 
-      const result = await response.json();
+        const result = await response.json();
 
-      if (!response.ok) {
-        setError(result.error?.message || 'Kayıt işlemi başarısız oldu');
-        return;
+        if (!response.ok) {
+          setError(result.error?.message || 'Kayıt işlemi başarısız oldu');
+          return;
+        }
+
+        // Clear onboarding data
+        sessionStorage.removeItem('onboarding');
+
+        // If exam was selected during onboarding, redirect to dashboard
+        if (onboardingData?.examId) {
+          router.push('/dashboard?examAssigned=true');
+        } else {
+          router.push('/auth/login?registered=true');
+        }
+      } catch {
+        setError('Bir hata oluştu. Lütfen tekrar deneyin.');
+      } finally {
+        setIsLoading(false);
       }
-
-      // Clear onboarding data
-      sessionStorage.removeItem('onboarding');
-
-      // If exam was selected during onboarding, redirect to dashboard
-      if (onboardingData?.examId) {
-        router.push('/dashboard?examAssigned=true');
-      } else {
-        router.push('/auth/login?registered=true');
-      }
-    } catch (err) {
-      setError('Bir hata oluştu. Lütfen tekrar deneyin.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    [router, onboardingData],
+  );
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-stone-50 px-4 py-12 text-stone-900 dark:bg-stone-950 dark:text-stone-100">

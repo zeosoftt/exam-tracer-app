@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useCallback } from 'react';
 import { signIn, signOut, getSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -54,7 +54,7 @@ function LoginForm() {
 
   const emailValue = watch('email');
 
-  const handleResendVerification = async () => {
+  const handleResendVerification = useCallback(async () => {
     const email = pendingVerifyEmail || emailValue?.trim();
     if (!email) {
       setResendMessage('Önce e-posta adresinizi girin.');
@@ -75,61 +75,64 @@ function LoginForm() {
     } finally {
       setResendLoading(false);
     }
-  };
+  }, [pendingVerifyEmail, emailValue]);
 
-  const onSubmit = async (data: z.infer<typeof loginSchema>) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      setServiceOutage(false);
-      setPendingVerifyEmail(null);
-      setResendMessage(null);
+  const onSubmit = useCallback(
+    async (data: z.infer<typeof loginSchema>) => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        setServiceOutage(false);
+        setPendingVerifyEmail(null);
+        setResendMessage(null);
 
-      // OWASP / standart: Yeni girişte önceki oturum geçersiz kılınmalı (session replacement).
-      // Sadece mevcut oturum varken signOut çağırıyoruz; böylece farklı hesapla girişte
-      // yeni session oluşur, gereksiz signOut çağrısı yapılmaz.
-      const session = await getSession();
-      if (session?.user) {
-        await signOut({ redirect: false });
-      }
+        // OWASP / standart: Yeni girişte önceki oturum geçersiz kılınmalı (session replacement).
+        // Sadece mevcut oturum varken signOut çağırıyoruz; böylece farklı hesapla girişte
+        // yeni session oluşur, gereksiz signOut çağrısı yapılmaz.
+        const session = await getSession();
+        if (session?.user) {
+          await signOut({ redirect: false });
+        }
 
-      const result = await signIn('credentials', {
-        email: data.email,
-        password: data.password,
-        remember: rememberMe ? 'true' : 'false',
-        redirect: false,
-      });
+        const result = await signIn('credentials', {
+          email: data.email,
+          password: data.password,
+          remember: rememberMe ? 'true' : 'false',
+          redirect: false,
+        });
 
-      if (result?.error) {
-        if (result.error === AUTH_ERROR_CODES.DATABASE_UNAVAILABLE) {
-          setServiceOutage(true);
+        if (result?.error) {
+          if (result.error === AUTH_ERROR_CODES.DATABASE_UNAVAILABLE) {
+            setServiceOutage(true);
+            return;
+          }
+          if (result.error === AUTH_ERROR_CODES.EMAIL_NOT_VERIFIED) {
+            setPendingVerifyEmail(data.email.toLowerCase().trim());
+            setError(
+              'E-posta adresiniz henüz doğrulanmadı. Kayıt sırasında gönderilen bağlantıya tıklayın veya aşağıdan yeni doğrulama e-postası isteyin.'
+            );
+            return;
+          }
+          if (result.error === 'Configuration') {
+            setError('Sunucu yapılandırma hatası. Lütfen yöneticiye başvurun.');
+          } else if (result.error === 'CredentialsSignin') {
+            setError('E-posta veya şifre hatalı');
+          } else {
+            setError('Giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.');
+          }
           return;
         }
-        if (result.error === AUTH_ERROR_CODES.EMAIL_NOT_VERIFIED) {
-          setPendingVerifyEmail(data.email.toLowerCase().trim());
-          setError(
-            'E-posta adresiniz henüz doğrulanmadı. Kayıt sırasında gönderilen bağlantıya tıklayın veya aşağıdan yeni doğrulama e-postası isteyin.'
-          );
-          return;
-        }
-        if (result.error === 'Configuration') {
-          setError('Sunucu yapılandırma hatası. Lütfen yöneticiye başvurun.');
-        } else if (result.error === 'CredentialsSignin') {
-          setError('E-posta veya şifre hatalı');
-        } else {
-          setError('Giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.');
-        }
-        return;
-      }
 
-      router.push('/dashboard');
-      router.refresh();
-    } catch (err) {
-      setError('Bir hata oluştu. Lütfen tekrar deneyin.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        router.push('/dashboard');
+        router.refresh();
+      } catch {
+        setError('Bir hata oluştu. Lütfen tekrar deneyin.');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [rememberMe, router],
+  );
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-stone-50 px-4 py-12 text-stone-900 dark:bg-stone-950 dark:text-stone-100">

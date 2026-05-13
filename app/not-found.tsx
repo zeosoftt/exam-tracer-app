@@ -5,7 +5,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { BookOpen, Home, LogIn, HelpCircle, Search } from 'lucide-react';
-import { PublicThemeCorner } from '@/components/layout/PublicThemeCorner';
+import { PublicThemeCornerLazy } from '@/components/layout/PublicThemeCornerLazy';
 
 export const metadata: Metadata = {
   title: 'Sayfa bulunamadı',
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 export default function NotFound() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-stone-50 px-4 py-16 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
-      <PublicThemeCorner />
+      <PublicThemeCornerLazy />
       <div className="w-full max-w-lg text-center">
         <Link href="/" className="group mb-10 inline-flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/25 transition-shadow group-hover:shadow-primary-500/40">

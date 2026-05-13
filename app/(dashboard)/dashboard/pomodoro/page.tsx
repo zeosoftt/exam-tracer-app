@@ -5,8 +5,9 @@
 
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, startTransition } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import {
   ArrowLeft,
   Timer,
@@ -24,7 +25,11 @@ import {
   ClipboardList,
 } from 'lucide-react';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
-import { ShopierCheckoutLink } from '@/components/checkout/ShopierCheckoutLink';
+
+const ShopierCheckoutLink = dynamic(
+  () => import('@/components/checkout/ShopierCheckoutLink').then((m) => m.ShopierCheckoutLink),
+  { ssr: false, loading: () => null },
+);
 
 const DENEME_PRESETS = [
   { minutes: 40, label: '40 dk' },
@@ -141,16 +146,20 @@ export default function PomodoroPage() {
       const response = await fetch('/api/pomodoro?limit=10&page=1');
       if (response.ok) {
         const data = await response.json();
-        setHistory(data.data.sessions || []);
-        setStats(data.data.stats || null);
-        setStatsPremiumRequired(false);
+        startTransition(() => {
+          setHistory(data.data.sessions || []);
+          setStats(data.data.stats || null);
+          setStatsPremiumRequired(false);
+        });
         lastHistoryFetchAtRef.current = Date.now();
       } else if (response.status === 403) {
         const body = await response.json().catch(() => ({}));
         if (body.code === 'PREMIUM_REQUIRED') {
-          setStatsPremiumRequired(true);
-          setHistory([]);
-          setStats(null);
+          startTransition(() => {
+            setStatsPremiumRequired(true);
+            setHistory([]);
+            setStats(null);
+          });
         }
       }
     } catch (error) {
@@ -162,7 +171,7 @@ export default function PomodoroPage() {
   }, []);
 
   useEffect(() => {
-    fetchHistory();
+    void fetchHistory();
   }, [fetchHistory]);
 
   const handleTimerComplete = useCallback(async () => {
@@ -185,13 +194,17 @@ export default function PomodoroPage() {
     await fetchHistory(true);
 
     if (!isBreak) {
-      setIsBreak(true);
-      setMinutes(5); // 5 dakika mola
-      setSeconds(0);
+      startTransition(() => {
+        setIsBreak(true);
+        setMinutes(5); // 5 dakika mola
+        setSeconds(0);
+      });
     } else {
-      setIsBreak(false);
-      setMinutes(25); // 25 dakika çalışma
-      setSeconds(0);
+      startTransition(() => {
+        setIsBreak(false);
+        setMinutes(25); // 25 dakika çalışma
+        setSeconds(0);
+      });
     }
   }, [currentSessionId, isBreak, fetchHistory, playCompletionSound, soundEnabled]);
 
@@ -255,22 +268,25 @@ export default function PomodoroPage() {
     };
   }, [denemeRunning, soundEnabled, playCompletionSound]);
 
-  const applyDenemePreset = (mins: number) => {
-    if (denemeRunning) return;
-    const sec = Math.min(480, Math.max(1, mins)) * 60;
-    setDenemeInitialSeconds(sec);
-    setDenemeRemainingSec(sec);
-  };
+  const applyDenemePreset = useCallback(
+    (mins: number) => {
+      if (denemeRunning) return;
+      const sec = Math.min(480, Math.max(1, mins)) * 60;
+      setDenemeInitialSeconds(sec);
+      setDenemeRemainingSec(sec);
+    },
+    [denemeRunning],
+  );
 
-  const applyDenemeCustom = () => {
+  const applyDenemeCustom = useCallback(() => {
     if (denemeRunning) return;
     const parsed = parseInt(denemeCustomMinutes, 10);
     if (Number.isNaN(parsed) || parsed < 1) return;
     applyDenemePreset(Math.min(480, parsed));
     setDenemeCustomMinutes('');
-  };
+  }, [denemeRunning, denemeCustomMinutes, applyDenemePreset]);
 
-  const toggleDeneme = () => {
+  const toggleDeneme = useCallback(() => {
     if (!audioContextRef.current && typeof window !== 'undefined') {
       const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
       if (AudioContextClass) audioContextRef.current = new AudioContextClass();
@@ -279,25 +295,28 @@ export default function PomodoroPage() {
 
     if (denemeRemainingSec <= 0) return;
     setDenemeRunning((v) => !v);
-  };
+  }, [denemeRemainingSec]);
 
-  const resetDeneme = () => {
+  const resetDeneme = useCallback(() => {
     setDenemeRunning(false);
     setDenemeRemainingSec(denemeInitialSeconds);
-  };
+  }, [denemeInitialSeconds]);
 
-  const formatDenemeClock = (totalSec: number) => {
+  const formatDenemeClock = useCallback((totalSec: number) => {
     const m = Math.floor(totalSec / 60);
     const s = totalSec % 60;
     return `${m}:${String(s).padStart(2, '0')}`;
-  };
+  }, []);
 
-  const denemeProgress =
-    denemeInitialSeconds > 0
-      ? ((denemeInitialSeconds - denemeRemainingSec) / denemeInitialSeconds) * 100
-      : 0;
+  const denemeProgress = useMemo(
+    () =>
+      denemeInitialSeconds > 0
+        ? ((denemeInitialSeconds - denemeRemainingSec) / denemeInitialSeconds) * 100
+        : 0,
+    [denemeInitialSeconds, denemeRemainingSec],
+  );
 
-  const handleStartPause = async () => {
+  const handleStartPause = useCallback(async () => {
     // Kullanıcı etkileşiminde ses bağlamını hazırla (süre bitince ses çalınabilsin)
     if (!audioContextRef.current && typeof window !== 'undefined') {
       const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
@@ -320,7 +339,7 @@ export default function PomodoroPage() {
         });
         if (response.ok) {
           const data = await response.json();
-          setCurrentSessionId(data.data.id);
+          startTransition(() => setCurrentSessionId(data.data.id));
         }
       } catch (error) {
         console.error('Failed to start pomodoro session:', error);
@@ -328,26 +347,27 @@ export default function PomodoroPage() {
       }
     }
     setIsActive(!isActive);
-  };
+  }, [isActive, currentSessionId, isBreak]);
 
-  const handleReset = async () => {
+  const handleReset = useCallback(() => {
     setIsActive(false);
-    
-    // Cancel current session if exists
+
     if (currentSessionId) {
       setCurrentSessionId(null);
     }
 
-    setIsBreak(false);
-    setMinutes(25);
-    setSeconds(0);
-  };
+    startTransition(() => {
+      setIsBreak(false);
+      setMinutes(25);
+      setSeconds(0);
+    });
+  }, [currentSessionId]);
 
-  const formatTime = (mins: number, secs: number) => {
+  const formatTime = useCallback((mins: number, secs: number) => {
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-  };
+  }, []);
 
-  const formatDate = (dateString: string) => {
+  const formatDate = useCallback((dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('tr-TR', {
       day: 'numeric',
@@ -356,11 +376,15 @@ export default function PomodoroPage() {
       hour: '2-digit',
       minute: '2-digit',
     });
-  };
+  }, []);
 
-  const progress = isBreak
-    ? ((5 * 60 - (minutes * 60 + seconds)) / (5 * 60)) * 100
-    : ((25 * 60 - (minutes * 60 + seconds)) / (25 * 60)) * 100;
+  const progress = useMemo(
+    () =>
+      isBreak
+        ? ((5 * 60 - (minutes * 60 + seconds)) / (5 * 60)) * 100
+        : ((25 * 60 - (minutes * 60 + seconds)) / (25 * 60)) * 100,
+    [isBreak, minutes, seconds],
+  );
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">

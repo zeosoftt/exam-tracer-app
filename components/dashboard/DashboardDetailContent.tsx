@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, startTransition } from 'react';
 import { signOut } from 'next-auth/react';
 import Link from 'next/link';
 import {
@@ -113,6 +113,8 @@ export function DashboardDetailContent({
   } | null>(null);
   const lastDetailFetchAtRef = useRef(0);
   const detailFetchInFlightRef = useRef(false);
+  /** İlk yüklemede varsayılan bölüm seçildi; `selectedSectionId` değişince listeyi yeniden çekme */
+  const initialSelectionAppliedRef = useRef(false);
 
   const fetchDetailData = useCallback(async (options?: { force?: boolean }) => {
     const now = Date.now();
@@ -124,10 +126,13 @@ export function DashboardDetailContent({
       const response = await fetch(options?.force ? '/api/dashboard/detail?fresh=1' : '/api/dashboard/detail');
       if (!response.ok) return;
       const data = await response.json();
-      setDetailData(data.data);
+      startTransition(() => {
+        setDetailData(data.data);
+      });
       lastDetailFetchAtRef.current = Date.now();
 
-      if (data.data?.sections?.length > 0 && !selectedSectionId) {
+      if (data.data?.sections?.length > 0 && !initialSelectionAppliedRef.current) {
+        initialSelectionAppliedRef.current = true;
         const firstSection = data.data.sections[0];
         setSelectedSectionId(firstSection.id);
         if (firstSection.subjects?.length > 0) {
@@ -140,14 +145,20 @@ export function DashboardDetailContent({
       detailFetchInFlightRef.current = false;
       setIsLoading(false);
     }
-  }, [selectedSectionId]);
+  }, []);
 
   useEffect(() => {
     fetchDetailData();
   }, [fetchDetailData]);
 
-  const selectedSection = detailData?.sections.find((s) => s.id === selectedSectionId) || null;
-  const selectedSubject = selectedSection?.subjects.find((s) => s.id === selectedSubjectId) || null;
+  const selectedSection = useMemo(
+    () => detailData?.sections.find((s) => s.id === selectedSectionId) ?? null,
+    [detailData?.sections, selectedSectionId],
+  );
+  const selectedSubject = useMemo(
+    () => selectedSection?.subjects.find((s) => s.id === selectedSubjectId) ?? null,
+    [selectedSection?.subjects, selectedSubjectId],
+  );
 
   // Bölüm değiştiğinde ilk dersi seç
   useEffect(() => {
@@ -159,92 +170,91 @@ export function DashboardDetailContent({
     }
   }, [selectedSectionId, selectedSection, selectedSubjectId]);
 
-  // Konu durumunu güncelle
-  const updateTopicStatus = async (topicId: string, newStatus: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED') => {
-    setUpdatingTopicId(topicId);
-    try {
-      const response = await fetch(`/api/progress/${topicId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
+  const updateTopicStatus = useCallback(
+    async (topicId: string, newStatus: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED') => {
+      setUpdatingTopicId(topicId);
+      try {
+        const response = await fetch(`/api/progress/${topicId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ status: newStatus }),
+        });
 
-      if (response.ok) {
-        // Verileri yeniden yükle
-        await fetchDetailData({ force: true });
-      } else {
-        const error = await response.json();
-        console.error('Failed to update topic status:', error);
+        if (response.ok) {
+          await fetchDetailData({ force: true });
+        } else {
+          const error = await response.json();
+          console.error('Failed to update topic status:', error);
+          alert('Durum güncellenirken bir hata oluştu');
+        }
+      } catch (error) {
+        console.error('Error updating topic status:', error);
         alert('Durum güncellenirken bir hata oluştu');
-      }
-    } catch (error) {
-      console.error('Error updating topic status:', error);
-      alert('Durum güncellenirken bir hata oluştu');
-    } finally {
-      setUpdatingTopicId(null);
-    }
-  };
-
-  // Soru sayılarını güncelle
-  const updateQuestionStats = async (topicId: string) => {
-    if (!editValues) return;
-
-    setUpdatingTopicId(topicId);
-    try {
-      // Validasyon
-      if (editValues.correctAnswers + editValues.wrongAnswers > editValues.totalQuestions) {
-        alert('Doğru + Yanlış sayısı toplam soru sayısını geçemez!');
+      } finally {
         setUpdatingTopicId(null);
-        return;
       }
+    },
+    [fetchDetailData],
+  );
 
-      const response = await fetch(`/api/progress/${topicId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          totalQuestions: editValues.totalQuestions,
-          correctAnswers: editValues.correctAnswers,
-          wrongAnswers: editValues.wrongAnswers,
-        }),
-      });
+  const updateQuestionStats = useCallback(
+    async (topicId: string) => {
+      if (!editValues) return;
 
-      if (response.ok) {
-        // Verileri yeniden yükle
-        await fetchDetailData({ force: true });
-        setEditingTopicId(null);
-        setEditValues(null);
-      } else {
-        const error = await response.json();
-        console.error('Failed to update question stats:', error);
+      setUpdatingTopicId(topicId);
+      try {
+        if (editValues.correctAnswers + editValues.wrongAnswers > editValues.totalQuestions) {
+          alert('Doğru + Yanlış sayısı toplam soru sayısını geçemez!');
+          setUpdatingTopicId(null);
+          return;
+        }
+
+        const response = await fetch(`/api/progress/${topicId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            totalQuestions: editValues.totalQuestions,
+            correctAnswers: editValues.correctAnswers,
+            wrongAnswers: editValues.wrongAnswers,
+          }),
+        });
+
+        if (response.ok) {
+          await fetchDetailData({ force: true });
+          setEditingTopicId(null);
+          setEditValues(null);
+        } else {
+          const error = await response.json();
+          console.error('Failed to update question stats:', error);
+          alert('Soru sayıları güncellenirken bir hata oluştu');
+        }
+      } catch (error) {
+        console.error('Error updating question stats:', error);
         alert('Soru sayıları güncellenirken bir hata oluştu');
+      } finally {
+        setUpdatingTopicId(null);
       }
-    } catch (error) {
-      console.error('Error updating question stats:', error);
-      alert('Soru sayıları güncellenirken bir hata oluştu');
-    } finally {
-      setUpdatingTopicId(null);
-    }
-  };
+    },
+    [editValues, fetchDetailData],
+  );
 
-  // Edit modunu başlat
-  const startEdit = (topic: Topic) => {
+  const startEdit = useCallback((topic: Topic) => {
     setEditingTopicId(topic.id);
     setEditValues({
       totalQuestions: topic.totalQuestions || 0,
       correctAnswers: topic.correctAnswers || 0,
       wrongAnswers: topic.wrongAnswers || 0,
     });
-  };
+  }, []);
 
-  // Edit modunu iptal et
-  const cancelEdit = () => {
+  const cancelEdit = useCallback(() => {
     setEditingTopicId(null);
     setEditValues(null);
-  };
+  }, []);
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">

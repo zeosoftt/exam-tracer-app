@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, startTransition } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -81,7 +81,7 @@ export function ExamContentManager() {
   const [draggedTopicId, setDraggedTopicId] = useState<string | null>(null);
   const [reorderingSubjectId, setReorderingSubjectId] = useState<string | null>(null);
 
-  const fetchTree = async () => {
+  const fetchTree = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -91,17 +91,17 @@ export function ExamContentManager() {
         throw new Error(data.error || 'Yüklenemedi');
       }
       const data = await res.json();
-      setExams(data.data?.exams ?? []);
+      startTransition(() => setExams(data.data?.exams ?? []));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'İçerik ağacı yüklenemedi.');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchTree();
-  }, []);
+    void fetchTree();
+  }, [fetchTree]);
 
   const toggleExam = (id: string) => {
     setExpandedExam((prev) => {

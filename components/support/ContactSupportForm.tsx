@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Loader2, Send } from 'lucide-react';
 import { SUPPORT_CATEGORY_LABELS } from '@/lib/support/supportContactCategories';
 
@@ -25,41 +25,44 @@ export function ContactSupportForm({ defaultEmail, lockedEmail }: Props) {
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setFeedback(null);
-    try {
-      const res = await fetch('/api/support/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: lockedEmail ? defaultEmail : email,
-          category,
-          subject,
-          message,
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok && data.success) {
-        setFeedback({ type: 'ok', text: data.message ?? 'Teşekkürler.' });
-        setSubject('');
-        setMessage('');
-      } else {
-        const errText =
-          typeof data.error === 'string'
-            ? data.error
-            : data.error && typeof data.error === 'object' && 'message' in data.error
-              ? String((data.error as { message?: string }).message)
-              : 'Gönderilemedi. Tekrar deneyin.';
-        setFeedback({ type: 'err', text: errText });
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      setLoading(true);
+      setFeedback(null);
+      try {
+        const res = await fetch('/api/support/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: lockedEmail ? defaultEmail : email,
+            category,
+            subject,
+            message,
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.success) {
+          setFeedback({ type: 'ok', text: data.message ?? 'Teşekkürler.' });
+          setSubject('');
+          setMessage('');
+        } else {
+          const errText =
+            typeof data.error === 'string'
+              ? data.error
+              : data.error && typeof data.error === 'object' && 'message' in data.error
+                ? String((data.error as { message?: string }).message)
+                : 'Gönderilemedi. Tekrar deneyin.';
+          setFeedback({ type: 'err', text: errText });
+        }
+      } catch {
+        setFeedback({ type: 'err', text: 'Bağlantı hatası.' });
+      } finally {
+        setLoading(false);
       }
-    } catch {
-      setFeedback({ type: 'err', text: 'Bağlantı hatası.' });
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [lockedEmail, defaultEmail, email, category, subject, message],
+  );
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">

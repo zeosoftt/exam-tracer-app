@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, startTransition } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -61,7 +61,7 @@ export function SuperAdminPanel() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [page, setPage] = useState(1);
-  const [pagination, setPagination] = useState({ limit: 20, total: 0, totalPages: 0 });
+  const [pagination, setPagination] = useState({ limit: 10, total: 0, totalPages: 0 });
   const [isLoadingStats, setIsLoadingStats] = useState(true);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [usersLoadError, setUsersLoadError] = useState<string | null>(null);
@@ -69,68 +69,70 @@ export function SuperAdminPanel() {
   const [siteSettingsLoading, setSiteSettingsLoading] = useState(true);
   const [siteSettingsPatching, setSiteSettingsPatching] = useState(false);
 
-  const fetchSiteSettings = async () => {
+  const fetchSiteSettings = useCallback(async () => {
     try {
       const res = await fetch('/api/super-admin/site-settings');
       if (res.ok) {
         const json = await res.json();
-        setSiteSettings(json.data);
+        startTransition(() => setSiteSettings(json.data));
       }
     } catch {
       // ignore
     } finally {
       setSiteSettingsLoading(false);
     }
-  };
+  }, []);
 
-  const patchSiteSettings = async (patch: {
-    landing_show_partners?: boolean;
-    deneme_show_advanced?: boolean;
-  }) => {
-    setSiteSettingsPatching(true);
-    try {
-      const res = await fetch('/api/super-admin/site-settings', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(patch),
-      });
-      if (res.ok) {
-        const json = await res.json();
-        setSiteSettings(json.data);
+  const patchSiteSettings = useCallback(
+    async (patch: { landing_show_partners?: boolean; deneme_show_advanced?: boolean }) => {
+      setSiteSettingsPatching(true);
+      try {
+        const res = await fetch('/api/super-admin/site-settings', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(patch),
+        });
+        if (res.ok) {
+          const json = await res.json();
+          startTransition(() => setSiteSettings(json.data));
+        }
+      } finally {
+        setSiteSettingsPatching(false);
       }
-    } finally {
-      setSiteSettingsPatching(false);
-    }
-  };
+    },
+    [],
+  );
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       const res = await fetch('/api/super-admin/stats');
       if (res.ok) {
         const json = await res.json();
-        setStats(json.data);
+        startTransition(() => setStats(json.data));
       }
     } catch {
       // ignore
     } finally {
       setIsLoadingStats(false);
     }
-  };
+  }, []);
 
-  const fetchUsers = async (pageNum: number) => {
+  const fetchUsers = useCallback(async (pageNum: number) => {
     setIsLoadingUsers(true);
     setUsersLoadError(null);
     try {
-      const res = await fetch(`/api/super-admin/users?page=${pageNum}&limit=20`);
+      const res = await fetch(`/api/super-admin/users?page=${pageNum}&limit=10`);
       const json = await res.json().catch(() => ({}));
       if (res.ok && json.success && Array.isArray(json.data?.users)) {
-        setUsers(json.data.users);
-        const p = json.data.pagination;
-        setPagination({ limit: p.limit, total: p.total, totalPages: p.totalPages });
+        startTransition(() => {
+          setUsers(json.data.users);
+          const p = json.data.pagination;
+          setPagination({ limit: p.limit, total: p.total, totalPages: p.totalPages });
+        });
         setUsersLoadError(null);
       } else {
         setUsers([]);
-        setPagination({ limit: 20, total: 0, totalPages: 0 });
+        setPagination({ limit: 10, total: 0, totalPages: 0 });
         const msg =
           typeof json.error === 'string'
             ? json.error
@@ -139,23 +141,23 @@ export function SuperAdminPanel() {
       }
     } catch {
       setUsers([]);
-      setPagination({ limit: 20, total: 0, totalPages: 0 });
+      setPagination({ limit: 10, total: 0, totalPages: 0 });
       setUsersLoadError('Bağlantı hatası. Ağı kontrol edip yenileyin.');
     } finally {
       setIsLoadingUsers(false);
     }
-  };
-
-  useEffect(() => {
-    fetchStats();
-    fetchSiteSettings();
   }, []);
 
   useEffect(() => {
-    fetchUsers(page);
-  }, [page]);
+    void fetchStats();
+    void fetchSiteSettings();
+  }, [fetchStats, fetchSiteSettings]);
 
-  const formatDate = (dateStr: string | null) => {
+  useEffect(() => {
+    void fetchUsers(page);
+  }, [page, fetchUsers]);
+
+  const formatDate = useCallback((dateStr: string | null) => {
     if (!dateStr) return '—';
     const d = new Date(dateStr);
     return d.toLocaleDateString('tr-TR', {
@@ -165,7 +167,7 @@ export function SuperAdminPanel() {
       hour: '2-digit',
       minute: '2-digit',
     });
-  };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">

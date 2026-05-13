@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, startTransition } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, BookOpen, Plus, TrendingUp, Calendar, Clock, Target, Calculator, BarChart3, TrendingDown, Minus } from 'lucide-react';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
@@ -87,7 +87,7 @@ export default function DenemePage() {
       const res = await fetch('/api/deneme?limit=50');
       if (res.ok) {
         const json = await res.json();
-        setAttempts(json.data ?? []);
+        startTransition(() => setAttempts(json.data ?? []));
         lastAttemptsFetchAtRef.current = Date.now();
       }
     } catch (e) {
@@ -107,12 +107,12 @@ export default function DenemePage() {
       .then((r) => r.json())
       .then((json) => {
         if (json.success && json.data) {
-          setDenemeAdvanced(Boolean(json.data.deneme_show_advanced));
+          startTransition(() => setDenemeAdvanced(Boolean(json.data.deneme_show_advanced)));
         } else {
-          setDenemeAdvanced(false);
+          startTransition(() => setDenemeAdvanced(false));
         }
       })
-      .catch(() => setDenemeAdvanced(false));
+      .catch(() => startTransition(() => setDenemeAdvanced(false)));
   }, []);
 
   // Sınav listesi ve kullanıcının kayıtlı olduğu (aktif) sınav (gelişmiş form açıkken)
@@ -123,10 +123,12 @@ export default function DenemePage() {
       fetch('/api/user/settings').then((r) => r.json()),
     ])
       .then(([examsRes, settingsRes]) => {
-        if (examsRes.success && Array.isArray(examsRes.data)) setExams(examsRes.data);
-        if (settingsRes.success && settingsRes.data?.activeExam?.id) {
-          setActiveExamId(settingsRes.data.activeExam.id);
-        }
+        startTransition(() => {
+          if (examsRes.success && Array.isArray(examsRes.data)) setExams(examsRes.data);
+          if (settingsRes.success && settingsRes.data?.activeExam?.id) {
+            setActiveExamId(settingsRes.data.activeExam.id);
+          }
+        });
       })
       .catch(() => {});
   }, [denemeAdvanced]);

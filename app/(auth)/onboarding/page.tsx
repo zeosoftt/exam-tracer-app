@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo, startTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { User, Building2, ArrowRight, ArrowLeft, CheckCircle, Target, Clock, Megaphone } from 'lucide-react';
 import Link from 'next/link';
@@ -35,45 +35,43 @@ export default function OnboardingPage() {
   const [isLoadingExams, setIsLoadingExams] = useState(true);
   const [examError, setExamError] = useState<string | null>(null);
 
-  // Fetch available exams from API
-  useEffect(() => {
-    async function fetchExams() {
-      try {
-        setIsLoadingExams(true);
-        setExamError(null);
-        const response = await fetch('/api/exams/available');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.data) {
-            setAvailableExams(data.data || []);
-          } else {
-            setExamError('Sınavlar yüklenemedi. Lütfen sayfayı yenileyin.');
-          }
+  const fetchExams = useCallback(async () => {
+    try {
+      setIsLoadingExams(true);
+      setExamError(null);
+      const response = await fetch('/api/exams/available');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data) {
+          startTransition(() => setAvailableExams(data.data || []));
         } else {
-          const errorData = await response.json().catch(() => ({}));
-          setExamError(errorData.message || 'Sınavlar yüklenemedi. Lütfen sayfayı yenileyin.');
+          setExamError('Sınavlar yüklenemedi. Lütfen sayfayı yenileyin.');
         }
-      } catch (error) {
-        console.error('Failed to fetch exams:', error);
-        setExamError('Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.');
-      } finally {
-        setIsLoadingExams(false);
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        setExamError(errorData.message || 'Sınavlar yüklenemedi. Lütfen sayfayı yenileyin.');
       }
+    } catch (error) {
+      console.error('Failed to fetch exams:', error);
+      setExamError('Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.');
+    } finally {
+      setIsLoadingExams(false);
     }
-
-    fetchExams();
   }, []);
 
-  // Get score range for selected exam
-  const getScoreRange = () => {
+  useEffect(() => {
+    void fetchExams();
+  }, [fetchExams]);
+
+  const scoreRange = useMemo(() => {
     if (!selectedExam) return { min: 0, max: 100, step: 1 };
-    const exam = availableExams.find(e => e?.id === selectedExam?.id);
+    const exam = availableExams.find((e) => e?.id === selectedExam?.id);
     return {
-      min: exam?.minScore || 0,
-      max: exam?.maxScore || 100,
-      step: exam?.step || 1,
+      min: exam?.minScore ?? 0,
+      max: exam?.maxScore ?? 100,
+      step: exam?.step ?? 1,
     };
-  };
+  }, [selectedExam, availableExams]);
 
   // Step 1: User Type Selection
   const Step1 = () => (
@@ -244,9 +242,7 @@ export default function OnboardingPage() {
         <button
           onClick={() => {
             if (selectedExam) {
-              // Initialize target score with minimum
-              const range = getScoreRange();
-              setTargetScore(range.min);
+              setTargetScore(scoreRange.min);
               setStep(3);
             }
           }}
@@ -262,7 +258,6 @@ export default function OnboardingPage() {
 
   // Step 3: Target Score
   const Step3 = () => {
-    const scoreRange = getScoreRange();
     const currentScore = targetScore ?? scoreRange.min;
 
     return (
