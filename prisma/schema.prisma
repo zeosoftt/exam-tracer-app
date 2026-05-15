@@ -26,6 +26,8 @@ model User {
   acquisitionSourceDetail String? @db.VarChar(200)
   targetScore            Int?
   dailyStudyHours        Int?
+  /// İlk giriş kurulum sihirbazı tamamlandığında (veya atlandığında) set edilir
+  setupWizardCompletedAt DateTime?
   createdAt              DateTime          @default(now())
   updatedAt              DateTime          @updatedAt
   deletedAt              DateTime?
