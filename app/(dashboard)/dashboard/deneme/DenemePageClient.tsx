@@ -413,11 +413,7 @@ export default function DenemePage() {
           <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-100">
             <p className="font-medium">Gelişmiş deneme özellikleri şu an kapalı.</p>
             <p className="mt-1 text-amber-800/90 dark:text-amber-200/90">
-              Deneme analizi ve yeni kayıt formu yalnızca yönetici tarafından açıldığında görünür. Ayar için{' '}
-              <Link href="/dashboard/super-admin" className="font-semibold underline underline-offset-2">
-                Super Admin
-              </Link>{' '}
-              → &quot;Deneme Takibi Sayfası&quot; bölümünden &quot;Gelişmiş deneme özellikleri&quot; anahtarını açın.
+              Deneme analizi ve yeni kayıt formu şu an kullanılamıyor. Bu özellikler etkinleştirildiğinde burada görünecek.
             </p>
           </div>
         )}
