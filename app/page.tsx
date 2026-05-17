@@ -34,7 +34,6 @@ import {
   UserPlus,
   ListChecks,
   MessageCircle,
-  HelpCircle,
   Instagram,
   Linkedin,
   Youtube,
@@ -57,11 +56,6 @@ const LandingScrollProgress = dynamic(
 
 const LandingStickyCta = dynamic(
   () => import('@/components/landing/LandingStickyCta').then((m) => ({ default: m.LandingStickyCta })),
-  { ssr: false, loading: () => null },
-);
-
-const LandingFaqAccordion = dynamic(
-  () => import('@/components/landing/LandingFaqAccordion').then((m) => ({ default: m.LandingFaqAccordion })),
   { ssr: false, loading: () => null },
 );
 
@@ -635,8 +629,6 @@ export default async function LandingPage() {
           </div>
         </section>
       )}
-
-      <LandingFaqAccordion />
 
       {/* CTA */}
       <section className="py-16 sm:py-24 lg:py-32 bg-gradient-to-br from-primary-900 via-primary-800 to-primary-700 relative overflow-hidden">

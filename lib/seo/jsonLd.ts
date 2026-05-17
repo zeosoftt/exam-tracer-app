@@ -2,9 +2,9 @@
  * Schema.org JSON-LD üreticileri
  */
 
+import { PUBLIC_FAQ_ITEMS } from '@/lib/seo/faqData';
 import { getBaseUrl } from '@/lib/seo/baseUrl';
 import { getOrganizationSameAs, SEO_DEFAULT_DESCRIPTION, SEO_SITE_NAME } from '@/lib/seo/siteSeo';
-import { PUBLIC_FAQ_ITEMS } from '@/lib/seo/faqData';
 
 type FaqItem = { q: string; a: string };
 
@@ -92,7 +92,6 @@ export function buildHomeJsonLd() {
           'KPSS, ALES, ÖABT sınav desteği',
         ],
       },
-      buildFaqPageEntity(PUBLIC_FAQ_ITEMS),
     ],
   };
 }

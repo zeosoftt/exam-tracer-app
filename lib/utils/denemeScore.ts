@@ -21,7 +21,6 @@ export { calculateExamScore } from '@/lib/scoring/calculateExamScore';
 
 import { calculateExamScore } from '@/lib/scoring/calculateExamScore';
 import type { BreakdownItem, BreakdownWithNet } from '@/lib/scoring/osymCore';
-import { subjectNet } from '@/lib/scoring/osymCore';
 
 export interface CalculateFromBreakdownOptions {
   maxScore?: number;

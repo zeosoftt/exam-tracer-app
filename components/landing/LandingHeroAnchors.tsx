@@ -4,7 +4,7 @@ const ANCHORS = [
   { href: '#nasil', label: 'Nasıl çalışır', icon: Layers },
   { href: '#ozellikler', label: 'Özellikler', icon: BarChart3 },
   { href: '#paketler', label: 'Paketler', icon: Layers },
-  { href: '#sss', label: 'SSS', icon: HelpCircle },
+  { href: '/sss', label: 'SSS', icon: HelpCircle },
 ] as const;
 
 /** Hero altı hızlı gezinme — scroll derinliği ve süre için. */

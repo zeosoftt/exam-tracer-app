@@ -1,5 +1,5 @@
 /**
- * SSS içeriği — landing + /sss sayfaları ve FAQPage JSON-LD için tek kaynak.
+ * SSS içeriği — /sss sayfası ve FAQPage JSON-LD için tek kaynak.
  */
 
 export const PUBLIC_FAQ_ITEMS = [
