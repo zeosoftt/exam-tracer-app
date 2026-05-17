@@ -7,7 +7,6 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo, startTransition } from 'react';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
 import {
   ArrowLeft,
   Timer,
@@ -20,8 +19,6 @@ import {
   History,
   Volume2,
   VolumeX,
-  Lock,
-  Sparkles,
   ClipboardList,
 } from 'lucide-react';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
@@ -30,11 +27,6 @@ import {
   startPomodoroSession,
   completePomodoroSession,
 } from '@/lib/client-api/pomodoroClient';
-
-const ShopierCheckoutLink = dynamic(
-  () => import('@/components/checkout/ShopierCheckoutLink').then((m) => m.ShopierCheckoutLink),
-  { ssr: false, loading: () => null },
-);
 
 const DENEME_PRESETS = [
   { minutes: 40, label: '40 dk' },
@@ -71,7 +63,6 @@ export default function PomodoroPage() {
   const [history, setHistory] = useState<PomodoroSession[]>([]);
   const [stats, setStats] = useState<PomodoroStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [statsPremiumRequired, setStatsPremiumRequired] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const denemeIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -141,7 +132,6 @@ export default function PomodoroPage() {
     }
   }, []);
 
-  // Fetch history and stats (Premium gerekli; freemium'da 403 döner)
   const fetchHistory = useCallback(async (force = false) => {
     const now = Date.now();
     if (!force && now - lastHistoryFetchAtRef.current < 10000) return;
@@ -153,15 +143,8 @@ export default function PomodoroPage() {
         startTransition(() => {
           setHistory(result.sessions || []);
           setStats(result.stats || null);
-          setStatsPremiumRequired(false);
         });
         lastHistoryFetchAtRef.current = Date.now();
-      } else if (result.premiumRequired) {
-        startTransition(() => {
-          setStatsPremiumRequired(true);
-          setHistory([]);
-          setStats(null);
-        });
       }
     } catch (error) {
       console.error('Failed to fetch pomodoro history:', error);
@@ -679,24 +662,7 @@ export default function PomodoroPage() {
             </div>
           </div>
 
-          {/* Stats & History Section — Freemium'da Premium CTA */}
-            <div className="space-y-6">
-            {statsPremiumRequired ? (
-              <div className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50/50 to-orange-50/50 p-6 shadow-lg dark:border-amber-900/40 dark:from-amber-950/40 dark:to-orange-950/30">
-                <div className="mb-3 flex items-center gap-2">
-                  <Lock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                  <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">İstatistikler Premium&apos;da</h2>
-                </div>
-                <p className="mb-4 text-sm text-stone-600 dark:text-stone-400">
-                  Pomodoro istatistikleri ve oturum geçmişi Premium plan özelliğidir. Görüntülemek için Premium&apos;a yükseltin.
-                </p>
-                <ShopierCheckoutLink className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-amber-600">
-                  <Sparkles className="h-4 w-4" />
-                  Pro&apos;yu Shopier&apos;da satın al
-                </ShopierCheckoutLink>
-              </div>
-            ) : (
-              <>
+          <div className="space-y-6 lg:col-span-1">
             <div className="rounded-2xl border border-stone-100 bg-white p-6 shadow-lg dark:border-stone-800 dark:bg-stone-900/90">
               <div className="mb-4 flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-primary-600 dark:text-primary-400" />
@@ -804,8 +770,6 @@ export default function PomodoroPage() {
                 </p>
               )}
             </div>
-              </>
-            )}
           </div>
         </div>
       </main>

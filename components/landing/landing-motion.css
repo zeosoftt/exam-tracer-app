@@ -1,0 +1,168 @@
+/**
+ * Landing motion — GPU-friendly (transform/opacity only), prefers-reduced-motion safe
+ */
+
+.landing-orb {
+  pointer-events: none;
+  contain: layout style paint;
+  animation: landing-float 20s ease-in-out infinite;
+}
+
+.landing-orb--slow {
+  animation-duration: 26s;
+  animation-delay: -4s;
+}
+
+.landing-orb--amber {
+  animation-name: landing-float-alt;
+  animation-duration: 22s;
+  animation-delay: -8s;
+}
+
+.landing-hero-in {
+  animation: landing-fade-up 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.landing-hero-in-1 {
+  animation-delay: 0.08s;
+}
+.landing-hero-in-2 {
+  animation-delay: 0.16s;
+}
+.landing-hero-in-3 {
+  animation-delay: 0.24s;
+}
+.landing-hero-in-4 {
+  animation-delay: 0.32s;
+}
+
+.landing-card-float {
+  animation: landing-float-card 8s ease-in-out infinite;
+}
+
+.landing-shimmer {
+  background-size: 200% 100%;
+  animation: landing-shimmer 2.8s ease-in-out infinite;
+}
+
+.landing-badge-pulse {
+  animation: landing-pulse-soft 3s ease-in-out infinite;
+}
+
+.landing-reveal {
+  opacity: 0;
+  transform: translate3d(0, 1.25rem, 0);
+  transition:
+    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--landing-reveal-delay, 0ms);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 12rem;
+}
+
+.landing-reveal.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.landing-hover-lift {
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.landing-hover-lift:hover {
+  transform: translate3d(0, -3px, 0);
+}
+
+@keyframes landing-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -14px, 0) scale(1.03);
+  }
+}
+
+@keyframes landing-float-alt {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(8px, 10px, 0) scale(1.02);
+  }
+}
+
+@keyframes landing-float-card {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -6px, 0);
+  }
+}
+
+@keyframes landing-fade-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 1.125rem, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes landing-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+@keyframes landing-pulse-soft {
+  0%,
+  100% {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+  50% {
+    box-shadow: 0 4px 14px rgba(20, 184, 166, 0.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-orb,
+  .landing-orb--slow,
+  .landing-orb--amber,
+  .landing-card-float,
+  .landing-shimmer,
+  .landing-badge-pulse {
+    animation: none !important;
+  }
+
+  .landing-hero-in,
+  .landing-hero-in-1,
+  .landing-hero-in-2,
+  .landing-hero-in-3,
+  .landing-hero-in-4 {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+
+  .landing-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .landing-hover-lift:hover {
+    transform: none;
+  }
+}

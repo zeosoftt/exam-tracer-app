@@ -6,8 +6,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
-import { getBaseUrl } from '@/lib/seo/baseUrl';
-import { buildPublicPageMetadata } from '@/lib/seo/siteSeo';
+import { buildDestekJsonLd, buildPublicPageMetadata } from '@/lib/seo';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { MarketingHeader } from '@/components/layout/MarketingHeader';
 import { ContactSupportForm } from '@/components/support/ContactSupportForm';
 import { LifeBuoy, ArrowLeft } from 'lucide-react';
@@ -23,18 +23,9 @@ export default async function DestekPage() {
   const session = await getServerSession(authOptions);
   const defaultEmail = session?.user?.email ?? null;
   const lockedEmail = Boolean(session?.user?.email);
-  const baseUrl = getBaseUrl();
-  const contactJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'ContactPage',
-    url: `${baseUrl}/destek`,
-    name: 'Destek ve iletişim — The Goal Lab',
-    isPartOf: { '@type': 'WebSite', name: 'The Goal Lab', url: baseUrl },
-  };
-
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(contactJsonLd) }} />
+      <JsonLd data={buildDestekJsonLd()} />
       <MarketingHeader />
       <main className="mx-auto max-w-xl px-4 py-12 sm:px-6 lg:px-8">
         <Link

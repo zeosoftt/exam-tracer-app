@@ -21,18 +21,24 @@ export function MarketingHeader() {
             className="hidden items-center gap-6 text-sm font-medium text-stone-700 dark:text-stone-300 md:flex"
             aria-label="Sayfa bölümleri"
           >
+            <a href="/#sorunlar" className="transition-colors hover:text-primary-700 dark:hover:text-primary-300">
+              Sorunlar
+            </a>
+            <a href="/#nasil" className="transition-colors hover:text-primary-700 dark:hover:text-primary-300">
+              Nasıl çalışır
+            </a>
             <a href="/#ozellikler" className="transition-colors hover:text-primary-700 dark:hover:text-primary-300">
               Özellikler
             </a>
             <a href="/#paketler" className="transition-colors hover:text-primary-700 dark:hover:text-primary-300">
               Paketler
             </a>
+            <a href="/#sss" className="transition-colors hover:text-primary-700 dark:hover:text-primary-300">
+              SSS
+            </a>
             <a href="/#yorumlar" className="transition-colors hover:text-primary-700 dark:hover:text-primary-300">
               Yorumlar
             </a>
-            <Link href="/sss" className="transition-colors hover:text-primary-700 dark:hover:text-primary-300">
-              SSS
-            </Link>
             <Link href="/destek" className="transition-colors hover:text-primary-700 dark:hover:text-primary-300">
               Destek
             </Link>

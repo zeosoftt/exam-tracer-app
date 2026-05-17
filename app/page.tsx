@@ -3,13 +3,21 @@
  * Eğitim içeriği odaklı, yeni nesil UX/UI – responsive & mobil uyumlu
  */
 
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { unstable_cache } from 'next/cache';
-import { getBaseUrl } from '@/lib/seo/baseUrl';
-import { getOrganizationSameAs } from '@/lib/seo/siteSeo';
+import { buildHomeJsonLd, buildHomeMetadata } from '@/lib/seo';
+import { JsonLd } from '@/components/seo/JsonLd';
 import { getSettingBoolean, SITE_KEYS } from '@/lib/siteSettings';
 import { MarketingHeader } from '@/components/layout/MarketingHeader';
+import { LandingReveal } from '@/components/landing/LandingReveal';
+import { LandingPainPoints } from '@/components/landing/LandingPainPoints';
+import { LandingOutcomeStrip } from '@/components/landing/LandingOutcomeStrip';
+import { LandingMidCta } from '@/components/landing/LandingMidCta';
+import { LandingHeroAnchors } from '@/components/landing/LandingHeroAnchors';
+import { LandingInlineCta } from '@/components/landing/LandingInlineCta';
+import { LandingFreeVsPro } from '@/components/landing/LandingFreeVsPro';
 import {
   BookOpen,
   Users,
@@ -42,6 +50,21 @@ const MobileLandingCta = dynamic(
   { ssr: false, loading: () => null },
 );
 
+const LandingScrollProgress = dynamic(
+  () => import('@/components/landing/LandingScrollProgress').then((m) => ({ default: m.LandingScrollProgress })),
+  { ssr: false, loading: () => null },
+);
+
+const LandingStickyCta = dynamic(
+  () => import('@/components/landing/LandingStickyCta').then((m) => ({ default: m.LandingStickyCta })),
+  { ssr: false, loading: () => null },
+);
+
+const LandingFaqAccordion = dynamic(
+  () => import('@/components/landing/LandingFaqAccordion').then((m) => ({ default: m.LandingFaqAccordion })),
+  { ssr: false, loading: () => null },
+);
+
 const ShopierCheckoutLink = dynamic(
   () => import('@/components/checkout/ShopierCheckoutLink').then((m) => m.ShopierCheckoutLink),
   { ssr: false, loading: () => null },
@@ -54,81 +77,54 @@ const getShowPartnersCached = () =>
     { revalidate: 60 }
   )();
 
+export const metadata: Metadata = buildHomeMetadata();
+
 export default async function LandingPage() {
-  const baseUrl = getBaseUrl();
   const showPartners = await getShowPartnersCached();
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@graph': [
-      {
-        '@type': 'WebSite',
-        '@id': `${baseUrl}/#website`,
-        url: baseUrl,
-        name: 'The Goal Lab',
-        description: 'Kurumlar ve bireyler için hedef ve sınav takip platformu. KPSS, ÖABT, ALES sınav hazırlığı.',
-        inLanguage: 'tr-TR',
-        publisher: { '@id': `${baseUrl}/#organization` },
-      },
-      {
-        '@type': 'Organization',
-        '@id': `${baseUrl}/#organization`,
-        name: 'The Goal Lab',
-        url: baseUrl,
-        logo: { '@type': 'ImageObject', url: `${baseUrl}/icon.svg` },
-        sameAs: getOrganizationSameAs(),
-      },
-      {
-        '@type': 'SoftwareApplication',
-        '@id': `${baseUrl}/#software`,
-        name: 'The Goal Lab',
-        applicationCategory: 'EducationalApplication',
-        operatingSystem: 'Web',
-        offers: {
-          '@type': 'Offer',
-          price: '0',
-          priceCurrency: 'TRY',
-        },
-        description:
-          'Sınav ve konu takibi, hedef puan, deneme takibi. KPSS, ÖABT, ALES ve diğer sınavlar için kurumsal ve bireysel kullanım.',
-      },
-    ],
-  };
 
   return (
     <div className="min-h-screen bg-stone-50 pb-24 text-stone-900 dark:bg-stone-950 dark:text-stone-100 sm:pb-0">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <JsonLd data={buildHomeJsonLd()} />
       <MarketingHeader />
+      <LandingScrollProgress />
 
       {/* Hero */}
       <section className="relative overflow-hidden pt-20 pb-12 sm:pt-28 sm:pb-16 lg:pt-24 lg:pb-20">
         {/* Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-stone-50 via-primary-50/40 to-amber-50/50 dark:from-stone-950 dark:via-stone-900 dark:to-stone-950" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(20,184,166,0.12),transparent)] dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(20,184,166,0.08),transparent)]" />
-        <div className="absolute top-20 right-0 w-[min(80vw,420px)] h-[min(60vw,320px)] rounded-full bg-primary-400/10 blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-[min(70vw,380px)] h-[min(50vw,280px)] rounded-full bg-amber-400/15 blur-3xl" />
+        <div
+          className="landing-orb absolute top-20 right-0 h-[min(60vw,320px)] w-[min(80vw,420px)] rounded-full bg-primary-400/10 blur-3xl"
+          aria-hidden
+        />
+        <div
+          className="landing-orb landing-orb--amber absolute bottom-0 left-0 h-[min(50vw,280px)] w-[min(70vw,380px)] rounded-full bg-amber-400/15 blur-3xl"
+          aria-hidden
+        />
+        <div
+          className="landing-orb landing-orb--slow absolute left-1/2 top-1/3 h-48 w-48 -translate-x-1/2 rounded-full bg-primary-300/5 blur-2xl sm:h-64 sm:w-64"
+          aria-hidden
+        />
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 xl:gap-20 items-center min-h-[calc(100vh-6rem)] lg:min-h-[calc(100vh-8rem)]">
             {/* Left: Copy */}
-            <div className="flex flex-col justify-center text-center lg:text-left order-1">
-              <div className="mx-auto mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-primary-200 bg-white/90 px-3 py-1.5 text-sm font-medium text-primary-700 shadow-sm backdrop-blur-sm dark:border-primary-800 dark:bg-stone-900/90 dark:text-primary-300 sm:mb-6 lg:mx-0">
+            <div className="order-1 flex flex-col justify-center text-center lg:text-left">
+              <div className="landing-hero-in landing-badge-pulse mx-auto mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-primary-200 bg-white/90 px-3 py-1.5 text-sm font-medium text-primary-700 shadow-sm backdrop-blur-sm dark:border-primary-800 dark:bg-stone-900/90 dark:text-primary-300 sm:mb-6 lg:mx-0">
                 <Sparkles className="h-4 w-4 text-amber-800 dark:text-amber-400" aria-hidden />
                 <span>Sınav takibi artık tek ekranda</span>
               </div>
-              <h1 className="font-display text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight text-stone-900 dark:text-stone-100 mb-4 sm:mb-5">
+              <h1 className="landing-hero-in landing-hero-in-1 font-display mb-4 text-4xl font-extrabold tracking-tight text-stone-900 dark:text-stone-100 sm:mb-5 sm:text-5xl lg:text-5xl xl:text-6xl">
                 Konuları takip et.
                 <br />
                 <span className="text-primary-800 dark:text-primary-200">
                   Hedefe ulaş.
                 </span>
               </h1>
-              <p className="text-lg sm:text-xl text-stone-600 dark:text-stone-300 leading-relaxed mb-6 sm:mb-8 max-w-xl mx-auto lg:mx-0 min-h-[5.25rem] sm:min-h-[4.75rem]">
-                KPSS, ÖABT, ALES ve tüm sınavlar için ders ve konu takibinizi yapın. İlerlemeniz tek ekranda, net ve motive edici.
+              <p className="landing-hero-in landing-hero-in-2 mx-auto mb-6 max-w-xl text-lg leading-relaxed text-stone-600 dark:text-stone-300 sm:mb-8 sm:text-xl lg:mx-0">
+                Dağınık notlar ve belirsiz ilerleme yerine: konuları işaretleyin, denemeleri kaydedin, net trendinizi görün. KPSS, ÖABT, ALES ve daha fazlası — tek panel.
               </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 mb-6">
+              <div className="landing-hero-in landing-hero-in-3 mb-6 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4 lg:justify-start">
                 <Link
                   href="/onboarding"
                   className="group w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 sm:px-8 sm:py-4 text-base font-bold text-white bg-gradient-to-r from-primary-700 to-primary-600 rounded-2xl hover:from-primary-800 hover:to-primary-700 transition-all shadow-xl shadow-primary-500/30 hover:shadow-primary-500/40 hover:scale-[1.02] active:scale-[0.98]"
@@ -143,7 +139,7 @@ export default async function LandingPage() {
                   Giriş Yap
                 </Link>
               </div>
-              <p className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-stone-500 dark:text-stone-300 lg:justify-start">
+              <p className="landing-hero-in landing-hero-in-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-stone-500 dark:text-stone-300 lg:justify-start">
                 <span>Kredi kartı yok</span>
                 <span className="text-stone-500 dark:text-stone-500" aria-hidden>
                   •
@@ -154,12 +150,13 @@ export default async function LandingPage() {
                 </span>
                 <span>Ücretsiz başla</span>
               </p>
+              <LandingHeroAnchors />
             </div>
 
             {/* Right: App preview card */}
-            <div className="relative order-2 flex justify-center lg:justify-end">
-              <div className="relative w-full max-w-md">
-                <div className="absolute -inset-2 bg-gradient-to-r from-primary-500/20 to-amber-500/20 rounded-[1.75rem] blur-xl" />
+            <div className="landing-hero-in landing-hero-in-2 relative order-2 flex justify-center lg:justify-end">
+              <div className="landing-card-float relative w-full max-w-md">
+                <div className="absolute -inset-2 rounded-[1.75rem] bg-gradient-to-r from-primary-500/20 to-amber-500/20 blur-xl" aria-hidden />
                 <div className="relative overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-soft-lg dark:border-stone-700 dark:bg-stone-900/95">
                   {/* Fake app header */}
                   <div className="flex items-center gap-3 border-b border-stone-100 bg-stone-50/80 px-4 py-3 dark:border-stone-800 dark:bg-stone-950/80 sm:px-5">
@@ -178,7 +175,7 @@ export default async function LandingPage() {
                       <span className="text-xs font-semibold text-primary-600">5/7 gün</span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800">
-                      <div className="h-full w-[72%] bg-gradient-to-r from-primary-600 to-primary-700 rounded-full" />
+                      <div className="landing-shimmer h-full w-[72%] rounded-full bg-gradient-to-r from-primary-600 via-primary-400 to-primary-700" />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       {[
@@ -206,6 +203,10 @@ export default async function LandingPage() {
         </div>
       </section>
 
+      <LandingOutcomeStrip />
+      <LandingPainPoints />
+      <LandingFreeVsPro />
+
       {/* Güven bandı + değer özetleri (satış odaklı, yanıltıcı rakam yok) */}
       <section className="border-y border-stone-100 bg-white py-10 dark:border-stone-800 dark:bg-stone-900 sm:py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -223,14 +224,16 @@ export default async function LandingPage() {
               <span>Dakikalar içinde ilk sınavınız</span>
             </div>
           </div>
-          <div className="mx-auto mt-10 max-w-3xl border-t border-stone-100 pt-10 text-center dark:border-stone-800">
-            <h2 className="font-display text-2xl font-bold text-stone-900 dark:text-stone-100 sm:text-3xl lg:text-4xl">
-              Planınız net, risk yok
-            </h2>
-            <p className="mt-3 text-base text-stone-600 dark:text-stone-300 sm:text-lg">
-              Kredi kartı olmadan deneyin. İhtiyaç duyduğunuzda Pro&apos;yu Shopier üzerinden satın alarak pomodoro geçmişi ve gelişmiş analitiklere geçebilirsiniz.
-            </p>
-          </div>
+          <LandingReveal>
+            <div className="mx-auto mt-10 max-w-3xl border-t border-stone-100 pt-10 text-center dark:border-stone-800">
+              <h2 className="font-display text-2xl font-bold text-stone-900 dark:text-stone-100 sm:text-3xl lg:text-4xl">
+                Planınız net, risk yok
+              </h2>
+              <p className="mt-3 text-base text-stone-600 dark:text-stone-300 sm:text-lg">
+                Kredi kartı olmadan deneyin. İhtiyaç duyduğunuzda Pro&apos;yu Shopier üzerinden satın alarak deneme takibi ve gelişmiş analitiklere geçebilirsiniz.
+              </p>
+            </div>
+          </LandingReveal>
           <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
             {[
               {
@@ -256,7 +259,7 @@ export default async function LandingPage() {
             ].map(({ title, desc, icon: Icon }) => (
               <div
                 key={title}
-                className="rounded-2xl border border-stone-100 bg-stone-50/80 p-6 dark:border-stone-800 dark:bg-stone-950/60"
+                className="landing-hover-lift h-full rounded-2xl border border-stone-100 bg-stone-50/80 p-6 dark:border-stone-800 dark:bg-stone-950/60"
               >
                 <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary-600 to-primary-700 text-white shadow-lg shadow-primary-500/20">
                   <Icon className="h-6 w-6" />
@@ -338,6 +341,11 @@ export default async function LandingPage() {
         </div>
       </section>
 
+      <LandingInlineCta
+        title="Hedef sınavınızı seçin, ilk konuyu işaretleyin"
+        description="Kayıt sonrası kurulum sihirbazı sizi adım adım yönlendirir — ortalama 2 dakika."
+      />
+
       {/* Features */}
       <section id="ozellikler" className="py-16 sm:py-24 lg:py-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -391,7 +399,7 @@ export default async function LandingPage() {
       </section>
 
       {/* Nasıl Çalışır? */}
-      <section className="py-16 sm:py-24 lg:py-32 bg-white dark:bg-stone-900 border-y border-stone-100 dark:border-stone-800">
+      <section id="nasil" className="py-16 sm:py-24 lg:py-32 bg-white dark:bg-stone-900 border-y border-stone-100 dark:border-stone-800">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-900 dark:text-stone-100 mb-3 sm:mb-4">
@@ -431,6 +439,8 @@ export default async function LandingPage() {
         </div>
       </section>
 
+      <LandingMidCta />
+
       {/* Paket özeti */}
       <section id="paketler" className="border-y border-stone-100 bg-stone-50 py-16 dark:border-stone-800 dark:bg-stone-950 sm:py-20 lg:py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -468,9 +478,9 @@ export default async function LandingPage() {
               </div>
               <p className="text-sm font-semibold uppercase tracking-wide text-primary-800 dark:text-primary-300">Profesyonel</p>
               <p className="font-display mt-2 text-3xl font-bold text-stone-900 dark:text-stone-100">İhtiyaca göre</p>
-              <p className="mt-2 text-sm text-stone-600 dark:text-stone-300">Pomodoro geçmişi ve gelişmiş analitik; yüksek kullanım limitleri.</p>
+              <p className="mt-2 text-sm text-stone-600 dark:text-stone-300">Deneme takibi, ÖSYM uyumlu puan hesaplama ve gelişmiş analitik.</p>
               <ul className="mt-6 flex flex-1 flex-col gap-3 text-sm text-stone-700 dark:text-stone-300">
-                {['Ücretsiz plandaki her şey', 'Pomodoro oturum geçmişi ve istatistikleri', 'Öncelikli kullanım kotası ve özellikler'].map((line) => (
+                {['Ücretsiz plandaki her şey', 'Deneme kaydı ve ÖSYM uyumlu puan hesaplama', 'Net trendi ve gelişmiş deneme analizi'].map((line) => (
                   <li key={line} className="flex gap-2">
                     <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary-600" aria-hidden />
                     <span>{line}</span>
@@ -626,41 +636,7 @@ export default async function LandingPage() {
         </section>
       )}
 
-      {/* SSS (kısa özet + link) */}
-      <section className="py-12 sm:py-16 bg-white dark:bg-stone-900 border-y border-stone-100 dark:border-stone-800">
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h2 className="font-display text-2xl sm:text-3xl font-bold text-stone-900 dark:text-stone-100 mb-2">
-              Sıkça Sorulan Sorular
-            </h2>
-            <p className="text-stone-600 dark:text-stone-300 text-sm sm:text-base">
-              Merak ettiklerinizin yanıtları
-            </p>
-          </div>
-          <div className="space-y-4 mb-8">
-            {[
-              { q: 'The Goal Lab ücretsiz mi?', a: 'Evet. Ücretsiz plan ile kayıt olup sınav ve konu takibinizi yapabilirsiniz.' },
-              { q: 'Hangi sınavları destekliyorsunuz?', a: 'KPSS, ÖABT, ALES, DGS, YDS ve daha fazlası. Sınav yapısını siz tanımlayabilir veya hazır şablonlardan seçebilirsiniz.' },
-            ].map(({ q, a }, i) => (
-              <div key={i} className="rounded-xl border border-stone-100 bg-stone-50 p-4 dark:border-stone-800 dark:bg-stone-950/60 sm:p-5">
-                <div className="flex gap-3">
-                  <HelpCircle className="h-5 w-5 text-primary-600 shrink-0 mt-0.5" />
-                  <div>
-                    <h3 className="font-semibold text-stone-900 dark:text-stone-100 mb-1">{q}</h3>
-                    <p className="text-stone-600 dark:text-stone-300 text-sm sm:text-base leading-relaxed">{a}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="text-center">
-            <Link href="/sss" className="text-primary-700 font-semibold hover:text-primary-800 dark:text-primary-300 dark:hover:text-primary-200 transition-colors inline-flex items-center gap-1">
-              Tüm sorular
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </p>
-        </div>
-      </section>
+      <LandingFaqAccordion />
 
       {/* CTA */}
       <section className="py-16 sm:py-24 lg:py-32 bg-gradient-to-br from-primary-900 via-primary-800 to-primary-700 relative overflow-hidden">
@@ -740,6 +716,7 @@ export default async function LandingPage() {
       </footer>
 
       <MobileLandingCta />
+      <LandingStickyCta />
     </div>
   );
 }

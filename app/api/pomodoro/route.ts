@@ -7,8 +7,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
-import { getActiveOrganizationId } from '@/lib/auth/authorization';
-import { hasFeatureAccess } from '@/lib/auth/planLimits';
 import { asyncHandler, handleError } from '@/lib/errors/errorHandler';
 import { prisma } from '@/lib/db/prisma';
 import { logApi } from '@/lib/logger';
@@ -62,20 +60,6 @@ async function getPomodoroHistoryHandler(req: NextRequest): Promise<NextResponse
     }
 
     const userId = session.user.id;
-    const organizationId = await getActiveOrganizationId(userId);
-    const canViewStats = organizationId
-      ? await hasFeatureAccess(organizationId, 'ADVANCED_ANALYTICS')
-      : false;
-    if (!canViewStats) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Pomodoro istatistikleri Premium plan özelliğidir.',
-          code: 'PREMIUM_REQUIRED',
-        },
-        { status: HTTP_STATUS.FORBIDDEN }
-      );
-    }
 
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get('limit') || '20');

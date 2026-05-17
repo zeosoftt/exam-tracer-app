@@ -1,42 +1,39 @@
 /**
- * Deneme net ve puan hesaplama
- * Net = Doğru - Yanlış/4 (standart formül)
- * KPSS: GY/GK bölüm netleri → z skoru → standart puan (SP) → P1, P2, P3
+ * Deneme net ve puan hesaplama (ÖSYM uyumlu)
+ * @see lib/scoring/ — çekirdek motor
  */
 
-export interface BreakdownItem {
-  subjectId: string;
-  subjectName: string;
-  right: number;
-  wrong: number;
-  empty: number;
-}
+export type {
+  BreakdownItem,
+  BreakdownWithNet,
+} from '@/lib/scoring/osymCore';
 
-export interface BreakdownWithNet extends BreakdownItem {
-  net: number;
-}
+export {
+  subjectNet,
+  standardDeviation,
+  zScore,
+  standardScore,
+  breakdownWithNets,
+} from '@/lib/scoring/osymCore';
 
-const YANLIS_CEZASI = 4; // 4 yanlış 1 doğru götürür
+export type { ExamScoreInput, ExamScoreResult } from '@/lib/scoring/calculateExamScore';
+export { calculateExamScore } from '@/lib/scoring/calculateExamScore';
 
-/**
- * Ders bazlı net: Doğru - (Yanlış / 4)
- */
-export function subjectNet(right: number, wrong: number): number {
-  return right - wrong / YANLIS_CEZASI;
-}
+import { calculateExamScore } from '@/lib/scoring/calculateExamScore';
+import type { BreakdownItem, BreakdownWithNet } from '@/lib/scoring/osymCore';
+import { subjectNet } from '@/lib/scoring/osymCore';
 
 export interface CalculateFromBreakdownOptions {
-  /** Sınav türüne göre üst puan (örn. 100 veya 500). Varsayılan 100. */
   maxScore?: number;
+  examCode?: string;
 }
 
 /**
- * Breakdown dizisinden toplam net, toplam soru ve hesaplanan puan
- * KPSS dışı sınavlar için kullanılır; KPSS için calculateKpssFromBreakdown kullanın.
+ * Ders breakdown → net ve puan (sınav kodu verilirse ÖSYM profili uygulanır)
  */
 export function calculateFromBreakdown(
   items: BreakdownItem[],
-  options: CalculateFromBreakdownOptions = {}
+  options: CalculateFromBreakdownOptions = {},
 ): {
   totalRight: number;
   totalWrong: number;
@@ -46,59 +43,37 @@ export function calculateFromBreakdown(
   calculatedScore: number;
   breakdownWithNet: BreakdownWithNet[];
 } {
-  const maxScore = options.maxScore ?? 100;
-
-  const breakdownWithNet: BreakdownWithNet[] = items.map((item) => ({
-    ...item,
-    net: subjectNet(item.right, item.wrong),
-  }));
-
-  const totalRight = breakdownWithNet.reduce((s, i) => s + i.right, 0);
-  const totalWrong = breakdownWithNet.reduce((s, i) => s + i.wrong, 0);
-  const totalEmpty = breakdownWithNet.reduce((s, i) => s + i.empty, 0);
-  const totalQuestions = totalRight + totalWrong + totalEmpty;
-  const totalNet = breakdownWithNet.reduce((s, i) => s + i.net, 0);
-
-  let calculatedScore = 0;
-  if (totalQuestions > 0) {
-    calculatedScore = Math.round((totalNet / totalQuestions) * maxScore * 100) / 100;
-    calculatedScore = Math.max(0, Math.min(maxScore, calculatedScore));
-  }
-
+  const examCode = options.examCode ?? '__NET_RATIO__';
+  const result = calculateExamScore({
+    examCode: examCode === '__NET_RATIO__' ? 'UNKNOWN' : examCode,
+    breakdown: items,
+    maxScore: options.maxScore,
+  });
   return {
-    totalRight,
-    totalWrong,
-    totalEmpty,
-    totalQuestions,
-    totalNet,
-    calculatedScore,
-    breakdownWithNet,
+    totalRight: result.totalRight,
+    totalWrong: result.totalWrong,
+    totalEmpty: result.totalEmpty,
+    totalQuestions: result.totalQuestions,
+    totalNet: result.totalNet,
+    calculatedScore: result.calculatedScore,
+    breakdownWithNet: result.breakdownWithNet,
   };
 }
 
-// --- KPSS: Standart sapma, z skoru, standart puan, P1/P2/P3 ---
-
-/** σ = sqrt( Σ(xi - μ)² / N ) */
-export function standardDeviation(values: number[]): number {
-  const N = values.length;
-  if (N === 0) return 0;
-  const mu = values.reduce((s, x) => s + x, 0) / N;
-  const sumSq = values.reduce((s, x) => s + (x - mu) ** 2, 0);
-  return Math.sqrt(sumSq / N);
+export interface KpssSectionSubjectIds {
+  GY: string[];
+  GK: string[];
 }
 
-/** z = (X - μ) / σ; σ=0 ise 0 döner */
-export function zScore(x: number, mu: number, sigma: number): number {
-  if (sigma === 0) return 0;
-  return (x - mu) / sigma;
+export interface KpssPopulationStats {
+  gyMean: number;
+  gyStd: number;
+  gkMean: number;
+  gkStd: number;
+  sampleSize: number;
 }
 
-/** Standart puan: SP = 50 + (10 × z) */
-export function standardScore(z: number): number {
-  return 50 + 10 * z;
-}
-
-/** KPSS puan türleri */
+/** KPSS puan türleri (geriye dönük uyumluluk) */
 export function kpssPuanlari(gySP: number, gkSP: number): { P1: number; P2: number; P3: number } {
   return {
     P1: Math.round((gySP * 0.7 + gkSP * 0.3) * 100) / 100,
@@ -107,16 +82,9 @@ export function kpssPuanlari(gySP: number, gkSP: number): { P1: number; P2: numb
   };
 }
 
-/** Bölüm–ders eşlemesi: hangi subjectId hangi bölüme ait (GY / GK) */
-export interface KpssSectionSubjectIds {
-  GY: string[];
-  GK: string[];
-}
-
-/** Breakdown'dan GY ve GK toplam netlerini hesapla */
 export function sectionNetsFromBreakdown(
   breakdown: BreakdownWithNet[],
-  sectionSubjectIds: KpssSectionSubjectIds
+  sectionSubjectIds: KpssSectionSubjectIds,
 ): { gyNet: number; gkNet: number } {
   const gySet = new Set(sectionSubjectIds.GY);
   const gkSet = new Set(sectionSubjectIds.GK);
@@ -129,15 +97,7 @@ export function sectionNetsFromBreakdown(
   return { gyNet, gkNet };
 }
 
-export interface KpssPopulationStats {
-  gyMean: number;
-  gyStd: number;
-  gkMean: number;
-  gkStd: number;
-  sampleSize: number;
-}
-
-/** KPSS için GY/GK net → z → SP → P1, P2, P3. Veri yoksa σ=10, μ=30 varsayımı. */
+/** @deprecated calculateExamScore({ examCode: 'KPSS', ... }) kullanın */
 export function calculateKpssFromBreakdown(options: {
   breakdownWithNet: BreakdownWithNet[];
   sectionSubjectIds: KpssSectionSubjectIds;
@@ -160,42 +120,67 @@ export function calculateKpssFromBreakdown(options: {
   calculatedScore: number;
   breakdownWithNet: BreakdownWithNet[];
 } {
-  const { breakdownWithNet, sectionSubjectIds, stats } = options;
-  const totalRight = breakdownWithNet.reduce((s, i) => s + i.right, 0);
-  const totalWrong = breakdownWithNet.reduce((s, i) => s + i.wrong, 0);
-  const totalEmpty = breakdownWithNet.reduce((s, i) => s + i.empty, 0);
-  const totalQuestions = totalRight + totalWrong + totalEmpty;
-  const totalNet = breakdownWithNet.reduce((s, i) => s + i.net, 0);
+  const sections = [
+    {
+      code: 'GENEL_YETENEK',
+      subjects: options.sectionSubjectIds.GY.map((id) => ({ id })),
+    },
+    {
+      code: 'GENEL_KULTUR',
+      subjects: options.sectionSubjectIds.GK.map((id) => ({ id })),
+    },
+  ];
 
-  const { gyNet, gkNet } = sectionNetsFromBreakdown(breakdownWithNet, sectionSubjectIds);
+  const populationStats = options.stats
+    ? {
+        GY: {
+          mean: options.stats.gyMean,
+          std: options.stats.gyStd,
+          sampleSize: options.stats.sampleSize,
+        },
+        GK: {
+          mean: options.stats.gkMean,
+          std: options.stats.gkStd,
+          sampleSize: options.stats.sampleSize,
+        },
+      }
+    : null;
 
-  const gyMean = stats?.gyMean ?? 30;
-  const gyStd = stats?.gyStd && stats.gyStd > 0 ? stats.gyStd : 10;
-  const gkMean = stats?.gkMean ?? 30;
-  const gkStd = stats?.gkStd && stats.gkStd > 0 ? stats.gkStd : 10;
+  const result = calculateExamScore({
+    examCode: 'KPSS',
+    breakdown: options.breakdownWithNet,
+    sections,
+    populationStats,
+  });
 
-  const gyZ = zScore(gyNet, gyMean, gyStd);
-  const gkZ = zScore(gkNet, gkMean, gkStd);
-  const gySP = Math.max(0, Math.min(100, standardScore(gyZ)));
-  const gkSP = Math.max(0, Math.min(100, standardScore(gkZ)));
-  const { P1, P2, P3 } = kpssPuanlari(gySP, gkSP);
+  const gyNet = result.sectionNets.GY ?? 0;
+  const gkNet = result.sectionNets.GK ?? 0;
+  const gySP = result.sectionSP.GY ?? 50;
+  const gkSP = result.sectionSP.GK ?? 50;
+
+  const gyMean = options.stats?.gyMean ?? 30;
+  const gyStd = options.stats?.gyStd && options.stats.gyStd > 0 ? options.stats.gyStd : 10;
+  const gkMean = options.stats?.gkMean ?? 30;
+  const gkStd = options.stats?.gkStd && options.stats.gkStd > 0 ? options.stats.gkStd : 10;
+  const gyZ = gyStd > 0 ? (gyNet - gyMean) / gyStd : 0;
+  const gkZ = gkStd > 0 ? (gkNet - gkMean) / gkStd : 0;
 
   return {
-    totalRight,
-    totalWrong,
-    totalEmpty,
-    totalQuestions,
-    totalNet,
+    totalRight: result.totalRight,
+    totalWrong: result.totalWrong,
+    totalEmpty: result.totalEmpty,
+    totalQuestions: result.totalQuestions,
+    totalNet: result.totalNet,
     gyNet,
     gkNet,
-    gyZ,
-    gkZ,
+    gyZ: Math.round(gyZ * 1000) / 1000,
+    gkZ: Math.round(gkZ * 1000) / 1000,
     gySP,
     gkSP,
-    P1,
-    P2,
-    P3,
-    calculatedScore: P3,
-    breakdownWithNet,
+    P1: result.variants.P1 ?? 0,
+    P2: result.variants.P2 ?? 0,
+    P3: result.variants.P3 ?? 0,
+    calculatedScore: result.calculatedScore,
+    breakdownWithNet: result.breakdownWithNet,
   };
 }

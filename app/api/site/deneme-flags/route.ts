@@ -3,12 +3,12 @@
  */
 
 import { NextResponse } from 'next/server';
-import { getSettingBoolean, SITE_KEYS } from '@/lib/siteSettings';
+import { isDenemeAdvancedEnabled } from '@/lib/siteSettings';
 import { HTTP_STATUS } from '@/config/constants';
 
 export async function GET() {
   try {
-    const deneme_show_advanced = await getSettingBoolean(SITE_KEYS.DENEME_SHOW_ADVANCED);
+    const deneme_show_advanced = await isDenemeAdvancedEnabled();
     return NextResponse.json({
       success: true,
       data: { deneme_show_advanced },

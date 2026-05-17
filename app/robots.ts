@@ -9,18 +9,26 @@ export default function robots(): MetadataRoute.Robots {
   } catch {
     host = undefined;
   }
+
+  const disallow = [
+    '/dashboard',
+    '/dashboard/',
+    '/api/',
+    '/auth/',
+  ] as const;
+
   return {
     host,
     rules: [
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/dashboard', '/dashboard/', '/api/', '/auth/'],
+        disallow: [...disallow],
       },
       {
         userAgent: 'Googlebot',
         allow: '/',
-        disallow: ['/dashboard', '/dashboard/', '/api/', '/auth/'],
+        disallow: [...disallow],
       },
     ],
     sitemap: `${base}/sitemap.xml`,

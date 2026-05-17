@@ -7,12 +7,15 @@ import { ArrowRight } from 'lucide-react';
 export function MobileLandingCta() {
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200 bg-white/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-8px_30px_-10px_rgba(0,0,0,0.12)] backdrop-blur-md dark:border-stone-800 dark:bg-stone-950/95 sm:hidden">
+      <p className="mx-auto mb-2 max-w-lg text-center text-[11px] font-medium text-stone-500 dark:text-stone-400">
+        Kredi kartı yok · 2 dk kurulum
+      </p>
       <div className="mx-auto flex max-w-lg items-center gap-2">
         <Link
           href="/onboarding"
           className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary-700 to-primary-600 py-3 text-sm font-bold text-white shadow-lg shadow-primary-600/25"
         >
-          Ücretsiz başla
+          2 dk&apos;da başla
           <ArrowRight className="h-4 w-4" />
         </Link>
         <Link

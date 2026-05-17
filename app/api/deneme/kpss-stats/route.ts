@@ -11,6 +11,7 @@ import { prisma } from '@/lib/db/prisma';
 import { asyncHandler } from '@/lib/errors/errorHandler';
 import { UnauthorizedError } from '@/lib/errors/AppError';
 import { getKpssPopulationStats } from '@/lib/utils/kpssStats';
+import { denemeAccessDeniedResponse } from '@/lib/deneme/denemeAccess';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +20,9 @@ async function getKpssStatsHandler(): Promise<NextResponse> {
   if (!session?.user?.id) {
     throw new UnauthorizedError();
   }
+
+  const denied = await denemeAccessDeniedResponse(session.user.id);
+  if (denied) return denied;
 
   const exam = await prisma.exam.findFirst({
     where: { code: 'KPSS', status: 'ACTIVE', deletedAt: null },

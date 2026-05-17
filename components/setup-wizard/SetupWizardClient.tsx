@@ -466,6 +466,21 @@ export default function SetupWizardClient({
                       <p className="mt-1 text-xs text-stone-500">Tek deneme + makul net</p>
                     </button>
                   </div>
+                  {preset !== 'none' && totalExamTopics != null && totalExamTopics > 0 ? (
+                    <p className="mt-4 rounded-xl border border-emerald-200/80 bg-emerald-50/70 px-3 py-2 text-sm text-emerald-900 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-100">
+                      Konu ilerlemen (kurulum sonrası): yaklaşık{' '}
+                      <strong className="tabular-nums">
+                        %
+                        {Math.min(
+                          100,
+                          Math.round(((topicPlan?.topicIds.length ?? 0) / totalExamTopics) * 100),
+                        )}
+                      </strong>{' '}
+                      <span className="text-emerald-800/90 dark:text-emerald-200/90">
+                        ({topicPlan?.topicIds.length ?? 0} / {totalExamTopics} konu)
+                      </span>
+                    </p>
+                  ) : null}
                   {addDeneme ? (
                     <div className="mt-6 rounded-2xl border border-amber-200/80 bg-amber-50/60 p-4 text-sm dark:border-amber-800/50 dark:bg-amber-950/25">
                       <p className="font-semibold text-stone-900 dark:text-stone-100">Oluşturulacak örnek deneme</p>
@@ -666,6 +681,16 @@ export default function SetupWizardClient({
                     <li className="flex justify-between gap-4 border-b border-stone-100 pb-2 dark:border-stone-800">
                       <span className="text-stone-500">Konular</span>
                       <span className="max-w-[60%] text-right font-semibold">{summaryKonuLabel}</span>
+                    </li>
+                    <li className="flex justify-between gap-4 border-b border-stone-100 pb-2 dark:border-stone-800">
+                      <span className="text-stone-500">Konu tamamlanma</span>
+                      <span className="text-right font-semibold tabular-nums">
+                        {completionPitch.total > 0 && completionPitch.done > 0
+                          ? `%${completionPitch.pct} (${completionPitch.done}/${completionPitch.total})`
+                          : completionPitch.total > 0
+                            ? '%0'
+                            : '—'}
+                      </span>
                     </li>
                     <li className="flex flex-col gap-1 border-b border-stone-100 pb-2 dark:border-stone-800 sm:flex-row sm:justify-between sm:gap-4">
                       <span className="text-stone-500">Deneme</span>

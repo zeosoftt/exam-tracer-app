@@ -22,7 +22,7 @@ export interface PomodoroStats {
 
 export async function fetchPomodoroDashboard(): Promise<
   | { ok: true; sessions: PomodoroSession[]; stats: PomodoroStats | null }
-  | { ok: false; premiumRequired?: boolean }
+  | { ok: false }
 > {
   const response = await fetch('/api/pomodoro?limit=10&page=1');
   if (response.ok) {
@@ -32,12 +32,6 @@ export async function fetchPomodoroDashboard(): Promise<
       sessions: data.data?.sessions || [],
       stats: data.data?.stats || null,
     };
-  }
-  if (response.status === 403) {
-    const body = await response.json().catch(() => ({}));
-    if ((body as { code?: string }).code === 'PREMIUM_REQUIRED') {
-      return { ok: false, premiumRequired: true };
-    }
   }
   return { ok: false };
 }

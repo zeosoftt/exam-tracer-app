@@ -11,9 +11,12 @@ import { prisma } from '@/lib/db/prisma';
 import { asyncHandler } from '@/lib/errors/errorHandler';
 import { HTTP_STATUS } from '@/config/constants';
 import { UnauthorizedError } from '@/lib/errors/AppError';
-import { calculateFromBreakdown, calculateKpssFromBreakdown } from '@/lib/utils/denemeScore';
-import { getKpssPopulationStats, getKpssSectionSubjectIds } from '@/lib/utils/kpssStats';
+import { calculateExamScore } from '@/lib/utils/denemeScore';
+import { getExamScoringProfile } from '@/lib/scoring/examScoringConfig';
+import { loadSectionPopulationStats } from '@/lib/scoring/populationStats';
 import { getMaxScoreForExam } from '@/lib/constants/examScoreRanges';
+import { getTopicCompletionByExamIds } from '@/lib/services/topic/topicCompletionByExam';
+import { denemeAccessDeniedResponse } from '@/lib/deneme/denemeAccess';
 import { z } from 'zod';
 
 const breakdownItemSchema = z.object({
@@ -42,6 +45,9 @@ async function getDenemeHandler(req: NextRequest): Promise<NextResponse> {
   if (!session?.user?.id) {
     throw new UnauthorizedError();
   }
+
+  const denied = await denemeAccessDeniedResponse(session.user.id);
+  if (denied) return denied;
 
   const { searchParams } = new URL(req.url);
   const examId = searchParams.get('examId') ?? undefined;
@@ -89,9 +95,37 @@ async function getDenemeHandler(req: NextRequest): Promise<NextResponse> {
     notes: a.notes,
   }));
 
+  const userId = session.user.id;
+  const progressExamIdsParam = searchParams.get('progressExamIds');
+  const extraProgressExamIds =
+    progressExamIdsParam?.split(',').map((id) => id.trim()).filter(Boolean) ?? [];
+
+  const examIdsFromAttempts = [...new Set(attempts.map((a) => a.examId))];
+  const activeAssignment = await prisma.examAssignment.findFirst({
+    where: { userId, deletedAt: null },
+    orderBy: { assignedAt: 'desc' },
+    select: { examId: true, exam: { select: { name: true, code: true } } },
+  });
+  const examIdsForProgress = [
+    ...new Set([...examIdsFromAttempts, activeAssignment?.examId, ...extraProgressExamIds].filter(Boolean)),
+  ] as string[];
+  const topicProgressByExam = await getTopicCompletionByExamIds(prisma, userId, examIdsForProgress);
+
+  const primaryExamId = activeAssignment?.examId ?? examIdsFromAttempts[0] ?? null;
+  const primaryTopicProgress =
+    primaryExamId && topicProgressByExam[primaryExamId]
+      ? {
+          examId: primaryExamId,
+          examName: activeAssignment?.exam?.name ?? attempts.find((a) => a.examId === primaryExamId)?.exam.name ?? null,
+          ...topicProgressByExam[primaryExamId],
+        }
+      : null;
+
   return NextResponse.json({
     success: true,
     data,
+    topicProgressByExam,
+    primaryTopicProgress,
     pagination: {
       total,
       page,
@@ -106,6 +140,9 @@ async function postDenemeHandler(req: NextRequest): Promise<NextResponse> {
   if (!session?.user?.id) {
     throw new UnauthorizedError();
   }
+
+  const denied = await denemeAccessDeniedResponse(session.user.id);
+  if (denied) return denied;
 
   const body = await req.json();
   const parsed = createDenemeSchema.safeParse(body);
@@ -150,44 +187,47 @@ async function postDenemeHandler(req: NextRequest): Promise<NextResponse> {
   }
 
   const maxScore = getMaxScoreForExam(exam.code);
+  const profile = getExamScoringProfile(exam.code);
+
+  const examSections = await prisma.section.findMany({
+    where: { examId },
+    select: {
+      code: true,
+      subjects: { select: { id: true } },
+    },
+  });
+
+  const populationStats = await loadSectionPopulationStats(prisma, examId, profile.sectionGroups);
 
   if (breakdown && breakdown.length > 0) {
-    const calculated = calculateFromBreakdown(breakdown, { maxScore });
-    breakdownJson = calculated.breakdownWithNet;
-    finalRightCount = finalRightCount ?? calculated.totalRight;
-    finalWrongCount = finalWrongCount ?? calculated.totalWrong;
-    finalEmptyCount = finalEmptyCount ?? calculated.totalEmpty;
-
-    if (exam.code === 'KPSS') {
-      const sectionIds = await getKpssSectionSubjectIds(prisma, examId);
-      const stats = sectionIds ? await getKpssPopulationStats(prisma, examId) : null;
-      if (sectionIds) {
-        const kpss = calculateKpssFromBreakdown({
-          breakdownWithNet: calculated.breakdownWithNet,
-          sectionSubjectIds: sectionIds,
-          stats,
-        });
-        finalTotalScore = finalTotalScore ?? kpss.P3;
-        finalNetScore = finalNetScore ?? kpss.totalNet;
-      } else {
-        finalTotalScore = finalTotalScore ?? calculated.calculatedScore;
-        finalNetScore = finalNetScore ?? calculated.totalNet;
-      }
-    } else {
-      finalTotalScore = finalTotalScore ?? calculated.calculatedScore;
-      finalNetScore = finalNetScore ?? calculated.totalNet;
-    }
+    const scored = calculateExamScore({
+      examCode: exam.code,
+      breakdown,
+      maxScore,
+      sections: examSections,
+      populationStats,
+    });
+    breakdownJson = scored.breakdownWithNet;
+    finalRightCount = finalRightCount ?? scored.totalRight;
+    finalWrongCount = finalWrongCount ?? scored.totalWrong;
+    finalEmptyCount = finalEmptyCount ?? scored.totalEmpty;
+    finalTotalScore = finalTotalScore ?? scored.calculatedScore;
+    finalNetScore = finalNetScore ?? scored.totalNet;
   } else if (
     (finalRightCount ?? 0) + (finalWrongCount ?? 0) + (finalEmptyCount ?? 0) > 0
   ) {
     const r = finalRightCount ?? 0;
     const w = finalWrongCount ?? 0;
     const e = finalEmptyCount ?? 0;
-    const net = r - w / 4;
-    const totalQ = r + w + e;
-    finalNetScore = finalNetScore ?? net;
-    if (totalQ > 0 && finalTotalScore == null) {
-      finalTotalScore = Math.max(0, Math.min(maxScore, Math.round((net / totalQ) * maxScore * 100) / 100));
+    const scored = calculateExamScore({
+      examCode: exam.code,
+      breakdown: [],
+      maxScore,
+      simpleTotals: { right: r, wrong: w, empty: e },
+    });
+    finalNetScore = finalNetScore ?? scored.totalNet;
+    if (finalTotalScore == null) {
+      finalTotalScore = scored.calculatedScore;
     }
   }
 

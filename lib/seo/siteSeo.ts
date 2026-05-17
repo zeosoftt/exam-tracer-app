@@ -7,23 +7,29 @@ import { getBaseUrl } from '@/lib/seo/baseUrl';
 
 export const SEO_SITE_NAME = 'The Goal Lab';
 
-export const SEO_DEFAULT_TITLE = 'The Goal Lab - Sınav ve Hedef Takip';
+export const SEO_DEFAULT_TITLE =
+  'The Goal Lab — KPSS, ALES, ÖABT Sınav ve Konu Takip Platformu';
 
 export const SEO_DEFAULT_DESCRIPTION =
-  'thegoallab — Kurumlar ve bireyler için hedef ve sınav takip platformu. KPSS, ÖABT, ALES sınav hazırlığı, konu takibi ve deneme analizi.';
+  'KPSS, ÖABT, ALES, DGS ve YKS için konu takibi, deneme kaydı ve ÖSYM uyumlu puan hesaplama. Ücretsiz başlayın — kredi kartı gerekmez.';
 
 export const SEO_KEYWORDS = [
   'sınav takip',
   'hedef takip',
-  'KPSS',
+  'konu takibi',
+  'deneme takibi',
+  'KPSS takip',
   'ÖABT',
   'ALES',
+  'DGS',
+  'YKS',
+  'TYT',
+  'ÖSYM puan hesaplama',
+  'sınav hazırlık',
   'The Goal Lab',
   'thegoallab',
-  'sınav hazırlık',
-  'konu takip',
-  'deneme takibi',
   'eğitim teknolojisi',
+  'dershane yazılımı',
 ] as const;
 
 const OG_IMAGE = {
@@ -32,11 +38,13 @@ const OG_IMAGE = {
   height: 630,
 };
 
-/** Google Search Console doğrulama (env ile geçersiz kılınabilir) */
-export const GOOGLE_SITE_VERIFICATION =
-  process.env.GOOGLE_SITE_VERIFICATION?.trim() ||
-  process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim() ||
-  'gRq38B6komUBMFH4YMw8vymDABn23I649wrmMowDUKc';
+/** Google Search Console — yalnızca env tanımlıysa */
+export function getGoogleSiteVerification(): string | undefined {
+  const v =
+    process.env.GOOGLE_SITE_VERIFICATION?.trim() ||
+    process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim();
+  return v || undefined;
+}
 
 /** Organization sameAs — virgülle ayrılmış URL listesi veya varsayılan */
 export function getOrganizationSameAs(): string[] {
@@ -62,27 +70,28 @@ export const viewport: Viewport = {
   ],
 };
 
-/**
- * Pazarlama / bilgi sayfaları için tutarlı OG + Twitter + canonical + hreflang (tr-TR).
- */
-export function buildPublicPageMetadata(input: {
+const DEFAULT_ROBOTS: Metadata['robots'] = {
+  index: true,
+  follow: true,
+  googleBot: {
+    index: true,
+    follow: true,
+    'max-video-preview': -1,
+    'max-image-preview': 'large',
+    'max-snippet': -1,
+  },
+};
+
+function buildOgTwitter(input: {
   title: string;
   description: string;
-  path: string;
-}): Metadata {
-  const base = getBaseUrl();
-  const path = input.path.startsWith('/') ? input.path : `/${input.path}`;
-  const url = `${base}${path}`;
-
+  url: string;
+}): Pick<Metadata, 'openGraph' | 'twitter'> {
   return {
-    title: input.title,
-    description: input.description,
-    keywords: [...SEO_KEYWORDS],
-    applicationName: SEO_SITE_NAME,
     openGraph: {
       type: 'website',
       locale: 'tr_TR',
-      url,
+      url: input.url,
       siteName: SEO_SITE_NAME,
       title: input.title,
       description: input.description,
@@ -94,16 +103,83 @@ export function buildPublicPageMetadata(input: {
       description: input.description,
       images: [OG_IMAGE.url],
     },
+  };
+}
+
+/**
+ * Pazarlama / bilgi sayfaları için tutarlı OG + Twitter + canonical + hreflang (tr-TR).
+ */
+export function buildPublicPageMetadata(input: {
+  title: string;
+  description: string;
+  path: string;
+}): Metadata {
+  const base = getBaseUrl();
+  const path = input.path.startsWith('/') ? input.path : `/${input.path}`;
+  const url = `${base}${path}`;
+  const pageTitle = input.title;
+
+  const verification = getGoogleSiteVerification();
+
+  return {
+    title: pageTitle,
+    description: input.description,
+    keywords: [...SEO_KEYWORDS],
+    applicationName: SEO_SITE_NAME,
+    category: 'education',
+    ...buildOgTwitter({ title: pageTitle, description: input.description, url }),
     alternates: {
       canonical: url,
       languages: { 'tr-TR': url },
     },
-    robots: { index: true, follow: true },
+    robots: DEFAULT_ROBOTS,
+    ...(verification ? { verification: { google: verification } } : {}),
+  };
+}
+
+/** Ana sayfa metadata */
+export function buildHomeMetadata(): Metadata {
+  const baseUrl = getBaseUrl();
+  const verification = getGoogleSiteVerification();
+
+  return {
+    metadataBase: new URL(baseUrl),
+    title: {
+      absolute: SEO_DEFAULT_TITLE,
+    },
+    description: SEO_DEFAULT_DESCRIPTION,
+    keywords: [...SEO_KEYWORDS],
+    applicationName: SEO_SITE_NAME,
+    authors: [{ name: SEO_SITE_NAME, url: baseUrl }],
+    creator: SEO_SITE_NAME,
+    publisher: SEO_SITE_NAME,
+    category: 'education',
+    formatDetection: { email: false, address: false, telephone: false },
+    referrer: 'origin-when-cross-origin',
+    ...buildOgTwitter({
+      title: SEO_DEFAULT_TITLE,
+      description: SEO_DEFAULT_DESCRIPTION,
+      url: baseUrl,
+    }),
+    ...(verification ? { verification: { google: verification } } : {}),
+    icons: {
+      icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
+      apple: [{ url: '/icon.svg', type: 'image/svg+xml' }],
+    },
+    alternates: { canonical: baseUrl, languages: { 'tr-TR': baseUrl } },
+    robots: DEFAULT_ROBOTS,
+    appleWebApp: {
+      capable: true,
+      title: SEO_SITE_NAME,
+      statusBarStyle: 'default',
+    },
   };
 }
 
 export function buildRootMetadata(): Metadata {
   const baseUrl = getBaseUrl();
+  const verification = getGoogleSiteVerification();
+
   return {
     metadataBase: new URL(baseUrl),
     title: { default: SEO_DEFAULT_TITLE, template: '%s | The Goal Lab' },
@@ -112,30 +188,21 @@ export function buildRootMetadata(): Metadata {
     applicationName: SEO_SITE_NAME,
     authors: [{ name: SEO_SITE_NAME, url: baseUrl }],
     creator: SEO_SITE_NAME,
+    category: 'education',
     formatDetection: { email: false, address: false, telephone: false },
     referrer: 'origin-when-cross-origin',
-    openGraph: {
-      type: 'website',
-      locale: 'tr_TR',
+    ...buildOgTwitter({
+      title: SEO_DEFAULT_TITLE,
+      description: SEO_DEFAULT_DESCRIPTION,
       url: baseUrl,
-      siteName: SEO_SITE_NAME,
-      title: SEO_DEFAULT_TITLE,
-      description: SEO_DEFAULT_DESCRIPTION,
-      images: [{ ...OG_IMAGE, alt: SEO_DEFAULT_TITLE }],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: SEO_DEFAULT_TITLE,
-      description: SEO_DEFAULT_DESCRIPTION,
-      images: [OG_IMAGE.url],
-    },
-    verification: { google: GOOGLE_SITE_VERIFICATION },
+    }),
+    ...(verification ? { verification: { google: verification } } : {}),
     icons: {
       icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
       apple: [{ url: '/icon.svg', type: 'image/svg+xml' }],
     },
     alternates: { canonical: baseUrl, languages: { 'tr-TR': baseUrl } },
-    robots: { index: true, follow: true },
+    robots: DEFAULT_ROBOTS,
     appleWebApp: {
       capable: true,
       title: SEO_SITE_NAME,

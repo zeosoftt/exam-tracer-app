@@ -6,9 +6,30 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef, startTransition } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, BookOpen, Plus, TrendingUp, Calendar, Clock, Target, Calculator, BarChart3, TrendingDown, Minus } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import {
+  ArrowLeft,
+  Plus,
+  Target,
+  Calculator,
+  Loader2,
+  Lock,
+  Sparkles,
+} from 'lucide-react';
+
+const ShopierCheckoutLink = dynamic(
+  () => import('@/components/checkout/ShopierCheckoutLink').then((m) => m.ShopierCheckoutLink),
+  { ssr: false, loading: () => null },
+);
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
-import { calculateFromBreakdown, calculateKpssFromBreakdown } from '@/lib/utils/denemeScore';
+import {
+  DenemeAnalysisPanel,
+  DenemeAttemptCard,
+  DenemeEmptyState,
+  DenemeFormModal,
+  DenemeTopicOnlyHero,
+} from '@/components/deneme/denemeUi';
+import { calculateExamScore } from '@/lib/utils/denemeScore';
 import type { KpssPopulationStats } from '@/lib/utils/denemeScore';
 import { getMaxScoreForExam } from '@/lib/constants/examScoreRanges';
 import {
@@ -18,6 +39,9 @@ import {
   fetchExamStructure,
   fetchKpssDenemeStats,
   postDenemeAttempt,
+  type DenemeAttemptListItem,
+  type ExamTopicProgress,
+  type PrimaryTopicProgress,
 } from '@/lib/client-api/denemeClient';
 
 interface ExamOption {
@@ -39,24 +63,10 @@ interface SubjectInput {
   empty: number;
 }
 
-interface DenemeItem {
-  id: string;
-  examId: string;
-  exam: { id: string; name: string; code: string };
-  attemptedAt: string;
-  completedAt: string | null;
-  totalScore: number | null;
-  netScore: number | null;
-  rightCount: number | null;
-  wrongCount: number | null;
-  emptyCount: number | null;
-  durationMinutes: number | null;
-  status: string;
-  notes: string | null;
-}
-
 export default function DenemePage() {
-  const [attempts, setAttempts] = useState<DenemeItem[]>([]);
+  const [attempts, setAttempts] = useState<DenemeAttemptListItem[]>([]);
+  const [topicProgressByExam, setTopicProgressByExam] = useState<Record<string, ExamTopicProgress>>({});
+  const [primaryTopicProgress, setPrimaryTopicProgress] = useState<PrimaryTopicProgress | null>(null);
   const [exams, setExams] = useState<ExamOption[]>([]);
   const [activeExamId, setActiveExamId] = useState<string | null>(null);
   const [examSubjects, setExamSubjects] = useState<SubjectRow[]>([]);
@@ -66,10 +76,13 @@ export default function DenemePage() {
   const [kpssStats, setKpssStats] = useState<KpssPopulationStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [showForm, setShowForm] = useState(false);
+  const [formModalOpen, setFormModalOpen] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  /** Super admin site ayarı: kapalıyken analiz + yeni kayıt formu gizli (sadece liste). */
+  const [listError, setListError] = useState<string | null>(null);
+  /** Super admin site ayarı: yalnızca açıkça false ise form/analiz gizlenir. */
   const [denemeAdvanced, setDenemeAdvanced] = useState<boolean | null>(null);
+  const [denemePremiumRequired, setDenemePremiumRequired] = useState(false);
+  const featuresEnabled = denemeAdvanced !== false && !denemePremiumRequired;
   const attemptsFetchInFlightRef = useRef(false);
   const lastAttemptsFetchAtRef = useRef(0);
   const structureCacheRef = useRef(
@@ -91,14 +104,37 @@ export default function DenemePage() {
     if (!force && now - lastAttemptsFetchAtRef.current < 10000) return;
     if (attemptsFetchInFlightRef.current) return;
     attemptsFetchInFlightRef.current = true;
+    if (force) setListError(null);
     try {
-      const list = await fetchDenemeAttempts(50);
-      if (list != null) {
-        startTransition(() => setAttempts(list as DenemeItem[]));
+      const result = await fetchDenemeAttempts(50);
+      if (result.ok) {
+        startTransition(() => {
+          setAttempts(result.data);
+          setTopicProgressByExam(result.topicProgressByExam);
+          setPrimaryTopicProgress(result.primaryTopicProgress);
+          setListError(null);
+          setDenemePremiumRequired(false);
+        });
         lastAttemptsFetchAtRef.current = Date.now();
+      } else if (result.premiumRequired) {
+        startTransition(() => {
+          setDenemePremiumRequired(true);
+          setAttempts([]);
+          setListError(null);
+        });
+        setLoading(false);
+      } else if (result.featureDisabled) {
+        startTransition(() => {
+          setDenemeAdvanced(false);
+          setDenemePremiumRequired(false);
+          setListError(null);
+        });
+        setLoading(false);
+      } else {
+        startTransition(() => setListError(result.error));
       }
-    } catch (e) {
-      console.error(e);
+    } catch {
+      startTransition(() => setListError('Deneme kayıtları yüklenemedi.'));
     } finally {
       attemptsFetchInFlightRef.current = false;
       setLoading(false);
@@ -111,15 +147,13 @@ export default function DenemePage() {
 
   useEffect(() => {
     fetchDenemeSiteFlags()
-      .then((advanced) => {
-        startTransition(() => setDenemeAdvanced(advanced));
-      })
-      .catch(() => startTransition(() => setDenemeAdvanced(false)));
+      .then((advanced) => startTransition(() => setDenemeAdvanced(advanced)))
+      .catch(() => startTransition(() => setDenemeAdvanced(true)));
   }, []);
 
-  // Sınav listesi ve kullanıcının kayıtlı olduğu (aktif) sınav (gelişmiş form açıkken)
+  // Sınav listesi ve kullanıcının kayıtlı olduğu (aktif) sınav
   useEffect(() => {
-    if (!denemeAdvanced) return;
+    if (!featuresEnabled) return;
     loadDenemeFormBootstrap()
       .then(({ exams, activeExamId }) => {
         startTransition(() => {
@@ -128,19 +162,19 @@ export default function DenemePage() {
         });
       })
       .catch(() => {});
-  }, [denemeAdvanced]);
+  }, [featuresEnabled]);
 
   // Form açıldığında kayıtlı dersi otomatik seç
   useEffect(() => {
-    if (!denemeAdvanced) return;
-    if (showForm && activeExamId && form.examId === '') {
+    if (!featuresEnabled) return;
+    if (formModalOpen && activeExamId && form.examId === '') {
       setForm((f) => ({ ...f, examId: activeExamId }));
     }
-  }, [denemeAdvanced, showForm, activeExamId, form.examId]);
+  }, [featuresEnabled, formModalOpen, activeExamId, form.examId]);
 
   // Sınav seçilince ders yapısını yükle
   useEffect(() => {
-    if (!denemeAdvanced) return;
+    if (!featuresEnabled) return;
     if (!form.examId) {
       setExamSubjects([]);
       setSubjectInputs({});
@@ -193,13 +227,13 @@ export default function DenemePage() {
         setSubjectInputs({});
       })
       .finally(() => setStructureLoading(false));
-  }, [denemeAdvanced, form.examId]);
+  }, [featuresEnabled, form.examId]);
 
   const selectedExamCode = exams.find((e) => e.id === form.examId)?.code ?? '';
 
   // KPSS seçiliyse GY/GK ortalama ve standart sapma al
   useEffect(() => {
-    if (!denemeAdvanced) return;
+    if (!featuresEnabled) return;
     if (selectedExamCode !== 'KPSS' || sections.length === 0) return;
     fetchKpssDenemeStats()
       .then((raw) => {
@@ -207,13 +241,39 @@ export default function DenemePage() {
         if (json.success && json.data) setKpssStats(json.data);
       })
       .catch(() => {});
-  }, [denemeAdvanced, selectedExamCode, sections.length]);
+  }, [featuresEnabled, selectedExamCode, sections.length]);
 
   useEffect(() => {
-    if (denemeAdvanced === false) {
-      setShowForm(false);
+    if (!featuresEnabled) {
+      setFormModalOpen(false);
     }
-  }, [denemeAdvanced]);
+  }, [featuresEnabled]);
+
+  const closeFormModal = useCallback(() => {
+    setFormModalOpen(false);
+  }, []);
+
+  const examIdsKey = useMemo(() => exams.map((e) => e.id).sort().join(','), [exams]);
+
+  useEffect(() => {
+    if (!featuresEnabled || !examIdsKey) return;
+    const ids = examIdsKey.split(',');
+    let cancelled = false;
+    fetchDenemeAttempts(1, ids)
+      .then((result) => {
+        if (cancelled || !result.ok) return;
+        startTransition(() => {
+          setTopicProgressByExam((prev) => ({ ...prev, ...result.topicProgressByExam }));
+          if (result.primaryTopicProgress) {
+            setPrimaryTopicProgress(result.primaryTopicProgress);
+          }
+        });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [featuresEnabled, examIdsKey]);
 
   const updateSubjectInput = (subjectId: string, field: 'right' | 'wrong' | 'empty', value: number) => {
     setSubjectInputs((prev) => ({
@@ -237,29 +297,55 @@ export default function DenemePage() {
 
   const maxScore = getMaxScoreForExam(selectedExamCode);
 
-  const calculated = useMemo(() => {
-    if (breakdownForSubmit.length === 0) return null;
-    return calculateFromBreakdown(breakdownForSubmit, { maxScore });
-  }, [breakdownForSubmit, maxScore]);
-
-  const sectionSubjectIds = useMemo(() => {
-    const gy = sections.find((s) => s.code === 'GENEL_YETENEK');
-    const gk = sections.find((s) => s.code === 'GENEL_KULTUR');
-    if (!gy || !gk) return null;
+  const populationStatsForScore = useMemo(() => {
+    if (!kpssStats || !selectedExamCode.startsWith('KPSS')) return null;
     return {
-      GY: gy.subjects.map((s) => s.id),
-      GK: gk.subjects.map((s) => s.id),
+      GY: {
+        mean: kpssStats.gyMean,
+        std: kpssStats.gyStd,
+        sampleSize: kpssStats.sampleSize,
+      },
+      GK: {
+        mean: kpssStats.gkMean,
+        std: kpssStats.gkStd,
+        sampleSize: kpssStats.sampleSize,
+      },
     };
-  }, [sections]);
+  }, [kpssStats, selectedExamCode]);
 
-  const kpssCalculated = useMemo(() => {
-    if (selectedExamCode !== 'KPSS' || !calculated || !sectionSubjectIds) return null;
-    return calculateKpssFromBreakdown({
-      breakdownWithNet: calculated.breakdownWithNet,
-      sectionSubjectIds,
-      stats: kpssStats,
+  const examScore = useMemo(() => {
+    if (!selectedExamCode) return null;
+    if (breakdownForSubmit.length > 0) {
+      return calculateExamScore({
+        examCode: selectedExamCode,
+        breakdown: breakdownForSubmit,
+        maxScore,
+        sections,
+        populationStats: populationStatsForScore,
+      });
+    }
+    const sr = Number(form.simpleRight) || 0;
+    const sw = Number(form.simpleWrong) || 0;
+    const se = Number(form.simpleEmpty) || 0;
+    if (sr + sw + se === 0) return null;
+    return calculateExamScore({
+      examCode: selectedExamCode,
+      breakdown: [],
+      maxScore,
+      simpleTotals: { right: sr, wrong: sw, empty: se },
     });
-  }, [selectedExamCode, calculated, sectionSubjectIds, kpssStats]);
+  }, [
+    selectedExamCode,
+    breakdownForSubmit,
+    maxScore,
+    sections,
+    populationStatsForScore,
+    form.simpleRight,
+    form.simpleWrong,
+    form.simpleEmpty,
+  ]);
+
+  const calculated = examScore;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -297,13 +383,21 @@ export default function DenemePage() {
         body.wrongCount = Number(form.simpleWrong) || 0;
         body.emptyCount = Number(form.simpleEmpty) || 0;
       }
-      const { ok, data } = await postDenemeAttempt(body);
+      const { ok, data, premiumRequired } = await postDenemeAttempt(body);
+      if (premiumRequired) {
+        setDenemePremiumRequired(true);
+        setMessage({
+          type: 'error',
+          text: 'Deneme kaydı eklemek için Premium plan gerekir.',
+        });
+        return;
+      }
       if (ok) {
         setMessage({ type: 'success', text: 'Deneme kaydı eklendi.' });
         setForm({ examId: '', attemptedAt: new Date().toISOString().slice(0, 16), durationMinutes: '', notes: '', simpleRight: '', simpleWrong: '', simpleEmpty: '' });
         setExamSubjects([]);
         setSubjectInputs({});
-        setShowForm(false);
+        setFormModalOpen(false);
         fetchAttempts(true);
       } else {
         const d = data as { error?: string | { message?: string } };
@@ -329,7 +423,7 @@ export default function DenemePage() {
 
   // Analiz: attempts üzerinden hesaplanan özet ve grafik verisi
   const analysis = useMemo(() => {
-    const withNet = attempts.filter((a) => a.netScore != null) as Array<DenemeItem & { netScore: number }>;
+    const withNet = attempts.filter((a) => a.netScore != null) as Array<DenemeAttemptListItem & { netScore: number }>;
     if (withNet.length === 0) {
       return null;
     }
@@ -373,10 +467,12 @@ export default function DenemePage() {
     };
   }, [attempts]);
 
+  const analysisAvg = analysis?.avg ?? null;
+
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
-      <header className="border-b border-stone-200 bg-white/80 shadow-sm backdrop-blur-sm dark:border-stone-800 dark:bg-stone-950/90">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+      <header className="border-b border-stone-200 bg-white/90 backdrop-blur-sm dark:border-stone-800 dark:bg-stone-950/90">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <Link
               href="/dashboard"
@@ -386,17 +482,24 @@ export default function DenemePage() {
               <span className="font-medium">Geri</span>
             </Link>
             <div className="flex items-center gap-2">
-              <Target className="h-6 w-6 text-primary-600 dark:text-primary-400" />
+              <Target className="h-5 w-5 text-primary-600 dark:text-primary-400" />
               <span className="text-xl font-bold text-stone-900 dark:text-stone-100">Deneme Takibi</span>
             </div>
-            <div className="flex w-20 justify-end">
-              <ThemeToggleCompact />
-            </div>
+            <ThemeToggleCompact />
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mb-8 sm:mb-10">
+          <h1 className="mb-2 font-display text-3xl font-bold text-stone-900 dark:text-stone-100 sm:text-4xl">
+            Deneme Takibi
+          </h1>
+          <p className="text-stone-600 dark:text-stone-400">
+            Deneme kayıtlarınızı girin, net trendinizi ve konu ilerlemenizi takip edin.
+          </p>
+        </div>
+
         {message && (
           <div
             className={`mb-6 rounded-xl border px-4 py-3 ${
@@ -409,6 +512,22 @@ export default function DenemePage() {
           </div>
         )}
 
+        {listError && (
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
+            <span>{listError}</span>
+            <button
+              type="button"
+              onClick={() => {
+                setLoading(true);
+                fetchAttempts(true);
+              }}
+              className="rounded-lg border border-red-300 bg-white px-3 py-1.5 text-xs font-semibold hover:bg-red-50 dark:border-red-800 dark:bg-stone-900 dark:hover:bg-red-950/50"
+            >
+              Tekrar dene
+            </button>
+          </div>
+        )}
+
         {denemeAdvanced === false && (
           <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-100">
             <p className="font-medium">Gelişmiş deneme özellikleri şu an kapalı.</p>
@@ -418,13 +537,30 @@ export default function DenemePage() {
           </div>
         )}
 
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-100">Deneme kayıtlarım</h1>
-          {denemeAdvanced && (
+        {denemeAdvanced !== false && denemePremiumRequired && (
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50/50 to-orange-50/50 p-6 shadow-lg dark:border-amber-900/40 dark:from-amber-950/40 dark:to-orange-950/30">
+            <div className="mb-3 flex items-center gap-2">
+              <Lock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+              <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">Deneme Takibi Premium&apos;da</h2>
+            </div>
+            <p className="mb-4 text-sm text-stone-600 dark:text-stone-400">
+              Deneme kaydı, ÖSYM uyumlu puan hesaplama, net trendi ve konu analizi Premium plan özelliğidir.
+              Görüntülemek ve kayıt eklemek için Premium&apos;a yükseltin.
+            </p>
+            <ShopierCheckoutLink className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-amber-600">
+              <Sparkles className="h-4 w-4" />
+              Pro&apos;yu Shopier&apos;da satın al
+            </ShopierCheckoutLink>
+          </div>
+        )}
+
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100"></h2>
+          {featuresEnabled && (
             <button
               type="button"
-              onClick={() => setShowForm(!showForm)}
-              className="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-2.5 font-medium text-white hover:bg-primary-700"
+              onClick={() => setFormModalOpen(true)}
+              className="btn btn-primary gap-2"
             >
               <Plus className="h-4 w-4" />
               Yeni deneme ekle
@@ -432,88 +568,22 @@ export default function DenemePage() {
           )}
         </div>
 
-        {!loading && denemeAdvanced && analysis && (
-          <section className="mb-8 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900/90">
-            <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-stone-900 dark:text-stone-100">
-              <BarChart3 className="h-5 w-5 text-primary-600 dark:text-primary-400" />
-              Deneme analizi
-            </h2>
-            <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-xl border border-stone-100 bg-stone-50 p-4 dark:border-stone-700 dark:bg-stone-800/60">
-                <p className="text-xs font-medium uppercase tracking-wide text-stone-500 dark:text-stone-400">Toplam deneme</p>
-                <p className="mt-1 text-2xl font-bold text-stone-900 dark:text-stone-100">{analysis.total}</p>
-              </div>
-              <div className="rounded-xl border border-stone-100 bg-primary-50 p-4 dark:border-primary-900/40 dark:bg-primary-950/30">
-                <p className="text-xs font-medium uppercase tracking-wide text-primary-700 dark:text-primary-300">Ortalama net</p>
-                <p className="mt-1 text-2xl font-bold text-primary-800 dark:text-primary-200">{analysis.avg.toFixed(2)}</p>
-              </div>
-              <div className="rounded-xl border border-stone-100 bg-emerald-50 p-4 dark:border-emerald-900/40 dark:bg-emerald-950/30">
-                <p className="text-xs font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-300">En yüksek net</p>
-                <p className="mt-1 text-2xl font-bold text-emerald-800 dark:text-emerald-200">{analysis.max.toFixed(2)}</p>
-              </div>
-              <div className="rounded-xl border border-stone-100 bg-amber-50 p-4 dark:border-amber-900/40 dark:bg-amber-950/30">
-                <p className="text-xs font-medium uppercase tracking-wide text-amber-700 dark:text-amber-300">En düşük net</p>
-                <p className="mt-1 text-2xl font-bold text-amber-800 dark:text-amber-200">{analysis.min.toFixed(2)}</p>
-              </div>
-            </div>
-            {analysis.avgLast5 != null && analysis.avgPrev5 != null && (
-              <div className="mb-6 flex flex-wrap items-center gap-2 rounded-xl border border-stone-100 bg-stone-50 px-4 py-3 dark:border-stone-700 dark:bg-stone-800/60">
-                <span className="text-sm text-stone-600 dark:text-stone-400">Trend:</span>
-                <span className="text-sm font-medium text-stone-700 dark:text-stone-200">
-                  Son 5 deneme ort. <strong>{analysis.avgLast5.toFixed(2)}</strong> net
-                </span>
-                <span className="text-stone-400 dark:text-stone-600">·</span>
-                <span className="text-sm text-stone-600 dark:text-stone-400">Önceki 5 deneme ort. {analysis.avgPrev5.toFixed(2)} net</span>
-                {analysis.trend === 'up' && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-sm font-medium text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200">
-                    <TrendingUp className="h-4 w-4" /> Artış
-                  </span>
-                )}
-                {analysis.trend === 'down' && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-sm font-medium text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
-                    <TrendingDown className="h-4 w-4" /> Düşüş
-                  </span>
-                )}
-                {analysis.trend === 'stable' && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-stone-200 px-2.5 py-0.5 text-sm font-medium text-stone-700 dark:bg-stone-700 dark:text-stone-200">
-                    <Minus className="h-4 w-4" /> Benzer seviye
-                  </span>
-                )}
-              </div>
-            )}
-            {analysis.chartData.length > 0 && (
-              <div>
-                <p className="mb-2 text-sm font-medium text-stone-700 dark:text-stone-300">Net puan grafiği (son {analysis.chartData.length} deneme)</p>
-                <div className="flex h-40 items-end gap-1">
-                  {analysis.chartData.map((d, i) => {
-                    const h = Math.max(8, ((d.netScore - analysis.chartMin) / analysis.chartRange) * 100);
-                    return (
-                      <div
-                        key={`${d.attemptedAt}-${i}`}
-                        className="flex min-w-0 flex-1 flex-col justify-end rounded-t bg-primary-200 transition-colors hover:bg-primary-400 dark:bg-primary-800 dark:hover:bg-primary-600"
-                        style={{ height: `${Math.min(100, h)}%` }}
-                        title={`${new Date(d.attemptedAt).toLocaleDateString('tr-TR')} · ${d.examName}: ${d.netScore.toFixed(2)} net`}
-                      >
-                        <span className="sr-only">{new Date(d.attemptedAt).toLocaleDateString('tr-TR')} {d.netScore.toFixed(2)} net</span>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="mt-2 flex justify-between text-[10px] text-stone-500 dark:text-stone-400">
-                  <span>{analysis.chartData.length > 0 ? new Date(analysis.chartData[0].attemptedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }) : ''}</span>
-                  <span>{analysis.chartData.length > 0 ? new Date(analysis.chartData[analysis.chartData.length - 1].attemptedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }) : ''}</span>
-                </div>
-              </div>
-            )}
-          </section>
+        {!loading && featuresEnabled && primaryTopicProgress && primaryTopicProgress.total > 0 && !analysis && (
+          <DenemeTopicOnlyHero progress={primaryTopicProgress} />
         )}
 
-        {denemeAdvanced && showForm && (
-          <form onSubmit={handleSubmit} className="mb-8 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900/90">
-            <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-stone-900 dark:text-stone-100">
-              <BookOpen className="h-5 w-5 text-primary-600 dark:text-primary-400" />
-              Yeni deneme kaydı
-            </h2>
+        {!loading && featuresEnabled && analysis && (
+          <div className="mb-6">
+            <DenemeAnalysisPanel analysis={analysis} primaryTopicProgress={primaryTopicProgress} />
+          </div>
+        )}
+
+        <DenemeFormModal
+          open={featuresEnabled && formModalOpen}
+          onClose={closeFormModal}
+          title="Yeni deneme kaydı"
+        >
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Sınav *</label>
@@ -521,7 +591,7 @@ export default function DenemePage() {
                   required
                   value={form.examId}
                   onChange={(e) => setForm((f) => ({ ...f, examId: e.target.value }))}
-                  className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-stone-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100"
+                  className="input"
                 >
                   <option value="">Seçiniz</option>
                   {exams.map((ex) => (
@@ -530,6 +600,15 @@ export default function DenemePage() {
                     </option>
                   ))}
                 </select>
+                {form.examId && topicProgressByExam[form.examId]?.total ? (
+                  <p className="mt-2 text-xs text-stone-600 dark:text-stone-400">
+                    Bu sınavda konu tamamlanma:{' '}
+                    <strong className="tabular-nums text-emerald-700 dark:text-emerald-300">
+                      %{topicProgressByExam[form.examId].pct}
+                    </strong>{' '}
+                    ({topicProgressByExam[form.examId].completed}/{topicProgressByExam[form.examId].total} konu)
+                  </p>
+                ) : null}
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Deneme tarihi</label>
@@ -537,7 +616,7 @@ export default function DenemePage() {
                   type="datetime-local"
                   value={form.attemptedAt}
                   onChange={(e) => setForm((f) => ({ ...f, attemptedAt: e.target.value }))}
-                  className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-stone-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100"
+                  className="input"
                 />
               </div>
               <div>
@@ -548,7 +627,7 @@ export default function DenemePage() {
                   placeholder="Örn. 120"
                   value={form.durationMinutes}
                   onChange={(e) => setForm((f) => ({ ...f, durationMinutes: e.target.value }))}
-                  className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-stone-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100"
+                  className="input"
                 />
               </div>
             </div>
@@ -624,32 +703,40 @@ export default function DenemePage() {
                         )}
                       </tbody>
                     </table>
-                    {kpssCalculated ? (
+                    {calculated && Object.keys(calculated.variants).length > 0 ? (
                       <div className="mt-3 space-y-2 rounded-lg border border-primary-200 bg-primary-50 p-4 dark:border-primary-900/40 dark:bg-primary-950/30">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-primary-800 dark:text-primary-200">KPSS puan hesaplama (net → z → SP → P1/P2/P3)</p>
-                        <div className="grid gap-2 text-sm sm:grid-cols-2">
-                          <div className="flex flex-wrap gap-x-4 gap-y-1">
-                            <span className="text-stone-600 dark:text-stone-400">GY net: <strong className="text-stone-900 dark:text-stone-100">{kpssCalculated.gyNet.toFixed(2)}</strong></span>
-                            <span className="text-stone-600 dark:text-stone-400">GK net: <strong className="text-stone-900 dark:text-stone-100">{kpssCalculated.gkNet.toFixed(2)}</strong></span>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-primary-800 dark:text-primary-200">
+                          ÖSYM puan önizlemesi ({calculated.scoreLabel} kayda yazılır)
+                        </p>
+                        {Object.keys(calculated.sectionNets).length > 0 && (
+                          <div className="grid gap-2 text-sm sm:grid-cols-2">
+                            {Object.entries(calculated.sectionNets).map(([key, net]) => (
+                              <span key={key} className="text-stone-600 dark:text-stone-400">
+                                {key} net: <strong className="text-stone-900 dark:text-stone-100">{net.toFixed(2)}</strong>
+                                {calculated.sectionSP[key] != null ? (
+                                  <> · SP: <strong className="text-primary-700 dark:text-primary-300">{calculated.sectionSP[key].toFixed(2)}</strong></>
+                                ) : null}
+                              </span>
+                            ))}
                           </div>
-                          <div className="flex flex-wrap gap-x-4 gap-y-1">
-                            <span className="text-stone-600 dark:text-stone-400">GY SP: <strong className="text-primary-700 dark:text-primary-300">{kpssCalculated.gySP.toFixed(2)}</strong></span>
-                            <span className="text-stone-600 dark:text-stone-400">GK SP: <strong className="text-primary-700 dark:text-primary-300">{kpssCalculated.gkSP.toFixed(2)}</strong></span>
-                          </div>
-                        </div>
+                        )}
                         <div className="flex flex-wrap gap-3 pt-1">
-                          <span className="font-medium text-stone-700 dark:text-stone-300">P1 (70% GY + 30% GK): <strong className="text-primary-800 dark:text-primary-200">{kpssCalculated.P1.toFixed(2)}</strong></span>
-                          <span className="font-medium text-stone-700 dark:text-stone-300">P2 (60% GY + 40% GK): <strong className="text-primary-800 dark:text-primary-200">{kpssCalculated.P2.toFixed(2)}</strong></span>
-                          <span className="font-medium text-stone-700 dark:text-stone-300">P3 (50% GY + 50% GK): <strong className="text-primary-800 dark:text-primary-200">{kpssCalculated.P3.toFixed(2)}</strong></span>
+                          {Object.entries(calculated.variants).map(([key, val]) => (
+                            <span key={key} className="font-medium text-stone-700 dark:text-stone-300">
+                              {key}: <strong className="text-primary-800 dark:text-primary-200">{val.toFixed(2)}</strong>
+                            </span>
+                          ))}
                         </div>
-                        <p className="text-xs text-stone-500 dark:text-stone-400">Kayıtta toplam puan olarak P3 kullanılır. Ortalama ve σ veritabanındaki tüm KPSS denemelerinden hesaplanır.</p>
+                        <p className="text-xs text-stone-500 dark:text-stone-400">
+                          Net = Doğru − Yanlış/4. SP = ((net − μ) / σ) × 10 + 50. Popülasyon verisi varsa μ ve σ deneme havuzundan alınır.
+                        </p>
                       </div>
-                    ) : calculated && (
+                    ) : calculated ? (
                       <div className="mt-3 flex flex-wrap gap-4 rounded-lg bg-primary-50 p-3 dark:bg-primary-950/30">
                         <span className="font-medium text-stone-700 dark:text-stone-300">Toplam net: <strong className="text-primary-700 dark:text-primary-300">{calculated.totalNet.toFixed(2)}</strong></span>
                         <span className="font-medium text-stone-700 dark:text-stone-300">Hesaplanan puan: <strong className="text-primary-700 dark:text-primary-300">{calculated.calculatedScore.toFixed(2)}{maxScore !== 100 ? ` / ${maxScore}` : ''}</strong></span>
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 ) : (
                   <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/40 dark:bg-amber-950/30">
@@ -686,6 +773,12 @@ export default function DenemePage() {
                         />
                       </div>
                     </div>
+                    {calculated && (
+                      <div className="mt-3 flex flex-wrap gap-4 rounded-lg bg-primary-50 p-3 dark:bg-primary-950/30">
+                        <span className="font-medium text-stone-700 dark:text-stone-300">Toplam net: <strong className="text-primary-700 dark:text-primary-300">{calculated.totalNet.toFixed(2)}</strong></span>
+                        <span className="font-medium text-stone-700 dark:text-stone-300">Hesaplanan puan: <strong className="text-primary-700 dark:text-primary-300">{calculated.calculatedScore.toFixed(2)}{maxScore !== 100 ? ` / ${maxScore}` : ''}</strong></span>
+                      </div>
+                    )}
                   </div>
                 )}
               </>
@@ -698,80 +791,55 @@ export default function DenemePage() {
                 maxLength={500}
                 value={form.notes}
                 onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-                className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-stone-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100"
+                className="input"
                 placeholder="Örn. 1. deneme..."
               />
             </div>
-            <div className="mt-4 flex gap-2">
+            <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-stone-100 pt-5 dark:border-stone-800">
               <button
                 type="submit"
-                disabled={submitting || !!(form.examId && examSubjects.length > 0 && !calculated?.totalQuestions)}
-                className="rounded-lg bg-primary-600 px-4 py-2 font-medium text-white hover:bg-primary-700 disabled:opacity-50"
+                disabled={submitting || !!(form.examId && examSubjects.length > 0 && !breakdownForSubmit.some((b) => b.right > 0 || b.wrong > 0 || b.empty > 0))}
+                className="btn btn-primary gap-2"
               >
+                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                 {submitting ? 'Kaydediliyor...' : 'Kaydet'}
               </button>
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="rounded-lg border border-stone-300 px-4 py-2 font-medium text-stone-700 hover:bg-stone-50 dark:border-stone-600 dark:text-stone-200 dark:hover:bg-stone-800"
-              >
-                İptal
-              </button>
+              {calculated ? (
+                <p className="text-sm text-stone-600 dark:text-stone-400">
+                  Önizleme:{' '}
+                  <strong className="tabular-nums text-primary-700 dark:text-primary-300">
+                    {calculated.totalNet.toFixed(2)} net
+                  </strong>
+                </p>
+              ) : null}
             </div>
           </form>
-        )}
+        </DenemeFormModal>
 
         {loading ? (
           <div className="space-y-3">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-24 animate-pulse rounded-xl bg-stone-100 dark:bg-stone-800" />
+            {[...Array(4)].map((_, i) => (
+              <div
+                key={i}
+                className="h-28 animate-pulse rounded-2xl border border-stone-200/60 bg-white/60 dark:border-stone-700/60 dark:bg-stone-900/40"
+              />
             ))}
           </div>
-        ) : attempts.length === 0 ? (
-          <div className="rounded-2xl border border-stone-200 bg-white p-12 text-center dark:border-stone-800 dark:bg-stone-900/90">
-            <TrendingUp className="mx-auto h-12 w-12 text-stone-300 dark:text-stone-600" />
-            <p className="mt-4 text-stone-600 dark:text-stone-400">Henüz deneme kaydı yok.</p>
-            <p className="mt-1 text-sm text-stone-500 dark:text-stone-500">Yukarıdaki &quot;Yeni deneme ekle&quot; ile ilk kaydınızı girebilirsiniz.</p>
-          </div>
+        ) : listError ? null : attempts.length === 0 ? (
+          <DenemeEmptyState
+            featuresEnabled={featuresEnabled}
+            onAdd={featuresEnabled ? () => setFormModalOpen(true) : undefined}
+          />
         ) : (
           <ul className="space-y-3">
             {attempts.map((a) => (
-              <li
+              <DenemeAttemptCard
                 key={a.id}
-                className="flex flex-wrap items-center gap-4 rounded-xl border border-stone-200 bg-white p-4 shadow-sm dark:border-stone-800 dark:bg-stone-900/90"
-              >
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-primary-600 dark:text-primary-400" />
-                  <span className="font-medium text-stone-900 dark:text-stone-100">{formatDate(a.attemptedAt)}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <BookOpen className="h-4 w-4 text-stone-500 dark:text-stone-400" />
-                  <span className="text-stone-700 dark:text-stone-300">
-                    {a.exam.name} ({a.exam.code})
-                  </span>
-                </div>
-                {a.totalScore != null && (
-                  <div className="flex items-center gap-1 rounded-lg bg-primary-50 px-2 py-1 dark:bg-primary-950/40">
-                    <Target className="h-4 w-4 text-primary-600 dark:text-primary-400" />
-                    <span className="font-semibold text-primary-700 dark:text-primary-300">{a.totalScore} puan</span>
-                  </div>
-                )}
-                {a.netScore != null && (
-                  <span className="text-sm text-stone-600 dark:text-stone-400">Net: {a.netScore}</span>
-                )}
-                {denemeAdvanced && (a.rightCount != null || a.wrongCount != null) && (
-                  <span className="text-sm text-stone-500 dark:text-stone-400">
-                    D: {a.rightCount ?? '-'} / Y: {a.wrongCount ?? '-'}
-                    {a.emptyCount != null ? ` / B: ${a.emptyCount}` : ''}
-                  </span>
-                )}
-                {denemeAdvanced && a.durationMinutes != null && (
-                  <span className="flex items-center gap-1 text-sm text-stone-500">
-                    <Clock className="h-4 w-4" />
-                    {a.durationMinutes} dk
-                  </span>
-                )}
-              </li>
+                attempt={a}
+                topicProgress={topicProgressByExam[a.examId]}
+                avgNet={analysisAvg}
+                formatDate={formatDate}
+              />
             ))}
           </ul>
         )}
