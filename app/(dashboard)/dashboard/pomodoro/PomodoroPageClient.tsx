@@ -13,25 +13,27 @@ import {
   Play,
   Pause,
   RotateCcw,
-  Clock,
-  Calendar,
-  TrendingUp,
-  History,
   Volume2,
   VolumeX,
   ClipboardList,
 } from 'lucide-react';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
+import { PomodoroStatsPanel } from '@/components/pomodoro/PomodoroStatsPanel';
+import { PomodoroHistoryPanel } from '@/components/pomodoro/PomodoroHistoryPanel';
 import {
   fetchPomodoroDashboard,
   startPomodoroSession,
   completePomodoroSession,
 } from '@/lib/client-api/pomodoroClient';
+import type { PomodoroStats } from '@/lib/client-api/pomodoroClient';
 import {
   createOrReuseAudioContext,
   playPomodoroCompletionChime,
   unlockAudioContext,
 } from '@/lib/pomodoro/pomodoroSound';
+
+const POMODORO_WORK_MINUTES = 25;
+const POMODORO_BREAK_MINUTES = 5;
 
 const DENEME_PRESETS = [
   { minutes: 40, label: '40 dk' },
@@ -50,18 +52,27 @@ interface PomodoroSession {
   completedAt: string | null;
 }
 
-interface PomodoroStats {
-  totalSessions: number;
-  totalStudyHours: number;
-  todaySessions: number;
-  todayStudyHours: number;
-  weekSessions: number;
-  weekStudyHours: number;
+function normalizePomodoroStats(stats: PomodoroStats): PomodoroStats {
+  return {
+    ...stats,
+    todayStudyMinutes: stats.todayStudyMinutes ?? Math.round(stats.todayStudyHours * 60),
+    weekStudyMinutes: stats.weekStudyMinutes ?? Math.round(stats.weekStudyHours * 60),
+    totalStudyMinutes: stats.totalStudyMinutes ?? Math.round(stats.totalStudyHours * 60),
+  };
+}
+
+function SidebarSkeleton({ rows }: { rows: number }) {
+  return (
+    <div className="space-y-3">
+      {[...Array(rows)].map((_, i) => (
+        <div key={i} className="h-20 animate-pulse rounded-xl bg-stone-100 dark:bg-stone-800" />
+      ))}
+    </div>
+  );
 }
 
 export default function PomodoroPage() {
-  const [minutes, setMinutes] = useState(25);
-  const [seconds, setSeconds] = useState(0);
+  const [remainingSeconds, setRemainingSeconds] = useState(POMODORO_WORK_MINUTES * 60);
   const [isActive, setIsActive] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
@@ -74,6 +85,7 @@ export default function PomodoroPage() {
   const audioContextRef = useRef<AudioContext | null>(null);
   const historyFetchInFlightRef = useRef(false);
   const lastHistoryFetchAtRef = useRef(0);
+  const completingRef = useRef(false);
 
   /** Kendi denemesi için geri sayım (Pomodoro’dan bağımsız) */
   const [denemeInitialSeconds, setDenemeInitialSeconds] = useState(90 * 60);
@@ -151,10 +163,11 @@ export default function PomodoroPage() {
   }, [fetchHistory]);
 
   const handleTimerComplete = useCallback(async () => {
+    const completedWasBreak = isBreak;
+
     setIsActive(false);
     if (soundEnabled) void playCompletionSound();
 
-    // Complete the session in backend
     if (currentSessionId) {
       try {
         await completePomodoroSession(currentSessionId);
@@ -164,53 +177,51 @@ export default function PomodoroPage() {
       setCurrentSessionId(null);
     }
 
-    // Refresh history
     await fetchHistory(true);
 
-    if (!isBreak) {
-      startTransition(() => {
+    startTransition(() => {
+      if (!completedWasBreak) {
         setIsBreak(true);
-        setMinutes(5); // 5 dakika mola
-        setSeconds(0);
-      });
-    } else {
-      startTransition(() => {
+        setRemainingSeconds(POMODORO_BREAK_MINUTES * 60);
+      } else {
         setIsBreak(false);
-        setMinutes(25); // 25 dakika çalışma
-        setSeconds(0);
-      });
-    }
+        setRemainingSeconds(POMODORO_WORK_MINUTES * 60);
+      }
+    });
   }, [currentSessionId, isBreak, fetchHistory, playCompletionSound, soundEnabled]);
 
-  // Timer logic
+  // Timer logic — tek remainingSeconds sayacı (stale closure / negatif süre önlenir)
   useEffect(() => {
-    if (isActive) {
-      intervalRef.current = setInterval(() => {
-        setSeconds((prev) => {
-          if (prev === 0) {
-            if (minutes === 0) {
-              // Timer bitti
-              handleTimerComplete();
-              return 0;
-            }
-            setMinutes((prev) => prev - 1);
-            return 59;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else {
+    if (!isActive) {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
+      return;
     }
+
+    intervalRef.current = setInterval(() => {
+      setRemainingSeconds((prev) => {
+        if (prev <= 1) {
+          if (!completingRef.current) {
+            completingRef.current = true;
+            void handleTimerComplete().finally(() => {
+              completingRef.current = false;
+            });
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
-  }, [isActive, minutes, seconds, handleTimerComplete]);
+  }, [isActive, handleTimerComplete]);
 
   // Deneme geri sayımı
   useEffect(() => {
@@ -288,11 +299,15 @@ export default function PomodoroPage() {
   const handleStartPause = useCallback(async () => {
     await ensureAudioReady();
 
+    if (!isActive && remainingSeconds <= 0) {
+      setRemainingSeconds(isBreak ? POMODORO_BREAK_MINUTES * 60 : POMODORO_WORK_MINUTES * 60);
+    }
+
     if (!isActive && !currentSessionId) {
       // Start new session
       try {
         const started = await startPomodoroSession({
-          duration: isBreak ? 5 : 25,
+          duration: isBreak ? POMODORO_BREAK_MINUTES : POMODORO_WORK_MINUTES,
           isBreak,
         });
         if (started.ok && started.sessionId) {
@@ -305,7 +320,7 @@ export default function PomodoroPage() {
       }
     }
     setIsActive(!isActive);
-  }, [isActive, currentSessionId, isBreak, ensureAudioReady]);
+  }, [isActive, currentSessionId, isBreak, ensureAudioReady, remainingSeconds]);
 
   const handleReset = useCallback(() => {
     setIsActive(false);
@@ -316,8 +331,7 @@ export default function PomodoroPage() {
 
     startTransition(() => {
       setIsBreak(false);
-      setMinutes(25);
-      setSeconds(0);
+      setRemainingSeconds(POMODORO_WORK_MINUTES * 60);
     });
   }, [currentSessionId]);
 
@@ -325,28 +339,21 @@ export default function PomodoroPage() {
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   }, []);
 
-  const formatDate = useCallback((dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('tr-TR', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }, []);
+  const phaseTotalSeconds = isBreak ? POMODORO_BREAK_MINUTES * 60 : POMODORO_WORK_MINUTES * 60;
+  const displayMinutes = Math.floor(remainingSeconds / 60);
+  const displaySeconds = remainingSeconds % 60;
 
   const progress = useMemo(
     () =>
-      isBreak
-        ? ((5 * 60 - (minutes * 60 + seconds)) / (5 * 60)) * 100
-        : ((25 * 60 - (minutes * 60 + seconds)) / (25 * 60)) * 100,
-    [isBreak, minutes, seconds],
+      phaseTotalSeconds > 0
+        ? ((phaseTotalSeconds - remainingSeconds) / phaseTotalSeconds) * 100
+        : 0,
+    [phaseTotalSeconds, remainingSeconds],
   );
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
-      <header className="border-b border-stone-200 bg-white/80 shadow-sm backdrop-blur-sm dark:border-stone-800 dark:bg-stone-950/90">
+    <div className="flex min-h-dvh flex-col lg:h-dvh lg:overflow-hidden bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
+      <header className="shrink-0 border-b border-stone-200 bg-white/80 shadow-sm backdrop-blur-sm dark:border-stone-800 dark:bg-stone-950/90">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <Link
@@ -367,11 +374,10 @@ export default function PomodoroPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-        <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
-          {/* Dikey sekme + tek panel (sayfa uzamaz; içerik alanında kaydırma) */}
-          <div className="lg:col-span-2">
-            <div className="flex h-[min(78vh,calc(100vh-7rem))] min-h-[28rem] flex-col overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-lg dark:border-stone-800 dark:bg-stone-900/90 lg:flex-row">
+      <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col overflow-y-auto px-4 py-4 sm:px-6 lg:min-h-0 lg:overflow-hidden lg:px-8 lg:py-5">
+        <div className="grid gap-4 lg:min-h-0 lg:flex-1 lg:grid-cols-3 lg:items-stretch lg:gap-5">
+          <div className="flex min-h-[24rem] flex-col lg:col-span-2 lg:min-h-0">
+            <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-lg dark:border-stone-800 dark:bg-stone-900/90 lg:flex-row">
               <nav
                 className="flex shrink-0 gap-1 border-b border-stone-200 bg-stone-50/95 p-2 dark:border-stone-800 dark:bg-stone-950/80 lg:w-[3.75rem] lg:flex-col lg:border-b-0 lg:border-r lg:px-1 lg:py-3"
                 aria-label="Zamanlayıcı modu"
@@ -462,7 +468,7 @@ export default function PomodoroPage() {
                               isBreak ? 'text-accent-600' : 'text-primary-600'
                             }`}
                           >
-                            {formatTime(minutes, seconds)}
+                            {formatTime(displayMinutes, displaySeconds)}
                           </div>
                           <div className="text-xs font-semibold uppercase text-stone-500 dark:text-stone-400">
                             {isBreak ? 'Mola' : 'Çalışma'}
@@ -644,114 +650,30 @@ export default function PomodoroPage() {
             </div>
           </div>
 
-          <div className="space-y-6 lg:col-span-1">
-            <div className="rounded-2xl border border-stone-100 bg-white p-6 shadow-lg dark:border-stone-800 dark:bg-stone-900/90">
-              <div className="mb-4 flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary-600 dark:text-primary-400" />
-                <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">İstatistikler</h2>
-              </div>
-              {isLoading ? (
-                <div className="space-y-4">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="h-16 animate-pulse rounded-lg bg-stone-100 dark:bg-stone-800"></div>
-                  ))}
+          <div className="flex min-h-[16rem] flex-col gap-3 lg:col-span-1 lg:min-h-0 lg:max-h-full lg:overflow-hidden">
+            {isLoading ? (
+              <>
+                <div className="shrink-0 rounded-2xl border border-stone-100 bg-white p-4 shadow-lg dark:border-stone-800 dark:bg-stone-900/90">
+                  <div className="mb-3 h-5 w-28 animate-pulse rounded bg-stone-100 dark:bg-stone-800" />
+                  <SidebarSkeleton rows={3} />
                 </div>
-              ) : stats ? (
-                <div className="space-y-4">
-                  <div className="rounded-lg border border-primary-100 bg-gradient-to-br bg-primary-50 p-4 dark:border-primary-900/40 dark:bg-primary-950/30">
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="flex items-center gap-1 text-sm text-stone-600 dark:text-stone-400">
-                        <Clock className="h-4 w-4" />
-                        Bugün
-                      </span>
-                    </div>
-                    <div className="text-2xl font-bold text-primary-600">{stats.todaySessions}</div>
-                    <div className="text-xs text-stone-500 dark:text-stone-400">{stats.todayStudyHours} saat</div>
+                <div className="min-h-0 flex-1 rounded-2xl border border-stone-100 bg-white p-4 shadow-lg dark:border-stone-800 dark:bg-stone-900/90">
+                  <div className="mb-3 h-5 w-32 animate-pulse rounded bg-stone-100 dark:bg-stone-800" />
+                  <SidebarSkeleton rows={4} />
+                </div>
+              </>
+            ) : (
+              <>
+                {stats ? (
+                  <PomodoroStatsPanel compact stats={normalizePomodoroStats(stats)} className="shrink-0" />
+                ) : (
+                  <div className="shrink-0 rounded-2xl border border-stone-100 bg-white p-4 shadow-lg dark:border-stone-800 dark:bg-stone-900/90">
+                    <p className="text-sm text-stone-500 dark:text-stone-400">İstatistikler yüklenemedi.</p>
                   </div>
-                  
-                  <div className="rounded-lg border border-primary-100 bg-gradient-to-br bg-primary-50 p-4 dark:border-primary-900/40 dark:bg-primary-950/30">
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="flex items-center gap-1 text-sm text-stone-600 dark:text-stone-400">
-                        <Calendar className="h-4 w-4" />
-                        Bu Hafta
-                      </span>
-                    </div>
-                    <div className="text-2xl font-bold text-primary-600">{stats.weekSessions}</div>
-                    <div className="text-xs text-stone-500 dark:text-stone-400">{stats.weekStudyHours} saat</div>
-                  </div>
-                  
-                  <div className="rounded-lg border border-green-100 bg-gradient-to-br from-green-50 to-emerald-50 p-4 dark:border-green-900/40 dark:from-green-950/30 dark:to-emerald-950/20">
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="flex items-center gap-1 text-sm text-stone-600 dark:text-stone-400">
-                        <TrendingUp className="h-4 w-4" />
-                        Toplam
-                      </span>
-                    </div>
-                    <div className="text-2xl font-bold text-green-600">{stats.totalSessions}</div>
-                    <div className="text-xs text-stone-500 dark:text-stone-400">{stats.totalStudyHours} saat</div>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-sm text-stone-500 dark:text-stone-400">İstatistik yükleniyor...</p>
-              )}
-            </div>
-
-            {/* History Section */}
-            <div className="rounded-2xl border border-stone-100 bg-white p-6 shadow-lg dark:border-stone-800 dark:bg-stone-900/90">
-              <div className="mb-4 flex items-center gap-2">
-                <History className="h-5 w-5 text-primary-600 dark:text-primary-400" />
-                <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">Son Oturumlar</h2>
-              </div>
-              {isLoading ? (
-                <div className="space-y-3">
-                  {[...Array(5)].map((_, i) => (
-                    <div key={i} className="h-12 animate-pulse rounded-lg bg-stone-100 dark:bg-stone-800"></div>
-                  ))}
-                </div>
-              ) : history.length > 0 ? (
-                <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {history.map((session) => (
-                    <div
-                      key={session.id}
-                      className={`rounded-lg border p-3 ${
-                        session.completed
-                          ? session.isBreak
-                            ? 'border-accent-200 bg-accent-50 dark:border-accent-900/50 dark:bg-accent-950/30'
-                            : 'border-primary-200 bg-primary-50 dark:border-primary-900/50 dark:bg-primary-950/30'
-                          : 'border-stone-200 bg-gray-50 dark:border-stone-700 dark:bg-stone-800/50'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className={`w-2 h-2 rounded-full ${
-                              session.completed
-                                ? session.isBreak
-                                  ? 'bg-pink-500'
-                                  : 'bg-primary-500'
-                                : 'bg-stone-400'
-                            }`}
-                          ></div>
-                          <span className="text-sm font-medium text-stone-900 dark:text-stone-100">
-                            {session.isBreak ? 'Mola' : 'Çalışma'} - {session.duration} dk
-                          </span>
-                        </div>
-                        {session.completed && (
-                          <span className="text-xs font-semibold text-green-600 dark:text-green-400">✓ Tamamlandı</span>
-                        )}
-                      </div>
-                      <div className="mt-1 text-xs text-stone-500 dark:text-stone-400">
-                        {formatDate(session.startedAt)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="py-4 text-center text-sm text-stone-500 dark:text-stone-400">
-                  Henüz oturum kaydı bulunmuyor
-                </p>
-              )}
-            </div>
+                )}
+                <PomodoroHistoryPanel sessions={history} className="min-h-0 flex-1" />
+              </>
+            )}
           </div>
         </div>
       </main>

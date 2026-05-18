@@ -157,10 +157,13 @@ async function getPomodoroHistoryHandler(req: NextRequest): Promise<NextResponse
         },
         stats: {
           totalSessions: stats._count || 0,
-          totalStudyHours: Math.round(totalStudyHours * 10) / 10, // Round to 1 decimal
+          totalStudyMinutes: stats._sum.duration || 0,
+          totalStudyHours: Math.round(totalStudyHours * 10) / 10,
           todaySessions: todayStats._count || 0,
+          todayStudyMinutes: todayStats._sum.duration || 0,
           todayStudyHours: Math.round(todayStudyHours * 10) / 10,
           weekSessions: weekStats._count || 0,
+          weekStudyMinutes: weekStats._sum.duration || 0,
           weekStudyHours: Math.round(weekStudyHours * 10) / 10,
         },
       },

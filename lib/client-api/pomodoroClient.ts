@@ -13,10 +13,13 @@ export interface PomodoroSession {
 
 export interface PomodoroStats {
   totalSessions: number;
+  totalStudyMinutes: number;
   totalStudyHours: number;
   todaySessions: number;
+  todayStudyMinutes: number;
   todayStudyHours: number;
   weekSessions: number;
+  weekStudyMinutes: number;
   weekStudyHours: number;
 }
 
