@@ -27,6 +27,11 @@ import {
   startPomodoroSession,
   completePomodoroSession,
 } from '@/lib/client-api/pomodoroClient';
+import {
+  createOrReuseAudioContext,
+  playPomodoroCompletionChime,
+  unlockAudioContext,
+} from '@/lib/pomodoro/pomodoroSound';
 
 const DENEME_PRESETS = [
   { minutes: 40, label: '40 dk' },
@@ -88,6 +93,24 @@ export default function PomodoroPage() {
     }
   }, []);
 
+  const ensureAudioReady = useCallback(async (): Promise<AudioContext | null> => {
+    const ctx = createOrReuseAudioContext(audioContextRef.current);
+    if (!ctx) return null;
+    audioContextRef.current = ctx;
+    await unlockAudioContext(ctx);
+    return ctx;
+  }, []);
+
+  const playCompletionSound = useCallback(async () => {
+    try {
+      const ctx = await ensureAudioReady();
+      if (!ctx) return;
+      await playPomodoroCompletionChime(ctx);
+    } catch {
+      // Ses çalınamazsa sessizce geç (örn. autoplay kısıtı)
+    }
+  }, [ensureAudioReady]);
+
   const toggleSound = useCallback(() => {
     setSoundEnabled((prev) => {
       const next = !prev;
@@ -96,41 +119,10 @@ export default function PomodoroPage() {
       } catch {
         // ignore
       }
+      if (next) void playCompletionSound();
       return next;
     });
-  }, []);
-
-  // Süre bitince bildirim sesi (Web Audio API)
-  const playCompletionSound = useCallback(() => {
-    try {
-      const AudioContextClass = typeof window !== 'undefined' ? window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext : null;
-      if (!AudioContextClass) return;
-
-      const ctx = audioContextRef.current ?? new AudioContextClass();
-      if (!audioContextRef.current) audioContextRef.current = ctx;
-
-      if (ctx.state === 'suspended') ctx.resume();
-
-      const playBeep = (frequency: number, startTime: number, duration: number) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.frequency.value = frequency;
-        osc.type = 'sine';
-        gain.gain.setValueAtTime(0.15, startTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
-        osc.start(startTime);
-        osc.stop(startTime + duration);
-      };
-
-      playBeep(880, 0, 0.15);
-      playBeep(880, 0.22, 0.15);
-      playBeep(1100, 0.44, 0.25);
-    } catch {
-      // Ses çalınamazsa sessizce geç (örn. autoplay kısıtı)
-    }
-  }, []);
+  }, [playCompletionSound]);
 
   const fetchHistory = useCallback(async (force = false) => {
     const now = Date.now();
@@ -160,7 +152,7 @@ export default function PomodoroPage() {
 
   const handleTimerComplete = useCallback(async () => {
     setIsActive(false);
-    if (soundEnabled) playCompletionSound();
+    if (soundEnabled) void playCompletionSound();
 
     // Complete the session in backend
     if (currentSessionId) {
@@ -236,7 +228,7 @@ export default function PomodoroPage() {
         const next = r - 1;
         if (next === 0) {
           setDenemeRunning(false);
-          if (soundEnabled) playCompletionSound();
+          if (soundEnabled) void playCompletionSound();
         }
         return next;
       });
@@ -269,15 +261,10 @@ export default function PomodoroPage() {
   }, [denemeRunning, denemeCustomMinutes, applyDenemePreset]);
 
   const toggleDeneme = useCallback(() => {
-    if (!audioContextRef.current && typeof window !== 'undefined') {
-      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-      if (AudioContextClass) audioContextRef.current = new AudioContextClass();
-    }
-    if (audioContextRef.current?.state === 'suspended') audioContextRef.current.resume();
-
+    void ensureAudioReady();
     if (denemeRemainingSec <= 0) return;
     setDenemeRunning((v) => !v);
-  }, [denemeRemainingSec]);
+  }, [denemeRemainingSec, ensureAudioReady]);
 
   const resetDeneme = useCallback(() => {
     setDenemeRunning(false);
@@ -299,12 +286,7 @@ export default function PomodoroPage() {
   );
 
   const handleStartPause = useCallback(async () => {
-    // Kullanıcı etkileşiminde ses bağlamını hazırla (süre bitince ses çalınabilsin)
-    if (!audioContextRef.current && typeof window !== 'undefined') {
-      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-      if (AudioContextClass) audioContextRef.current = new AudioContextClass();
-    }
-    if (audioContextRef.current?.state === 'suspended') audioContextRef.current.resume();
+    await ensureAudioReady();
 
     if (!isActive && !currentSessionId) {
       // Start new session
@@ -323,7 +305,7 @@ export default function PomodoroPage() {
       }
     }
     setIsActive(!isActive);
-  }, [isActive, currentSessionId, isBreak]);
+  }, [isActive, currentSessionId, isBreak, ensureAudioReady]);
 
   const handleReset = useCallback(() => {
     setIsActive(false);
