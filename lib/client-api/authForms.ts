@@ -2,20 +2,16 @@
  * Auth-related POST helpers used by auth pages.
  */
 
+import { fetchJson, jsonInit } from '@/lib/client-api/http';
+
+type AuthErrorBody = { error?: { message?: string }; success?: boolean; message?: string };
+
 export async function postAuthRegister(
   body: Record<string, unknown>,
 ): Promise<{ ok: boolean; errorMessage?: string }> {
-  const response = await fetch('/api/auth/register', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  const result = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    return {
-      ok: false,
-      errorMessage: result.error?.message || 'Kayıt işlemi başarısız oldu',
-    };
+  const { ok, body: result } = await fetchJson<AuthErrorBody>('/api/auth/register', jsonInit('POST', body));
+  if (!ok) {
+    return { ok: false, errorMessage: result.error?.message || 'Kayıt işlemi başarısız oldu' };
   }
   return { ok: true };
 }
@@ -23,13 +19,11 @@ export async function postAuthRegister(
 export async function postForgotPassword(
   email: string,
 ): Promise<{ ok: boolean; errorMessage?: string }> {
-  const response = await fetch('/api/auth/forgot-password', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: email.toLowerCase() }),
-  });
-  const result = await response.json().catch(() => ({}));
-  if (!response.ok) {
+  const { ok, body: result } = await fetchJson<AuthErrorBody>(
+    '/api/auth/forgot-password',
+    jsonInit('POST', { email: email.toLowerCase() }),
+  );
+  if (!ok) {
     return {
       ok: false,
       errorMessage: result.error?.message || 'Bir hata oluştu. Lütfen tekrar deneyin.',
@@ -42,13 +36,11 @@ export async function postResetPassword(body: {
   token: string;
   password: string;
 }): Promise<{ ok: boolean; errorMessage?: string }> {
-  const response = await fetch('/api/auth/reset-password', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  const result = await response.json().catch(() => ({}));
-  if (!response.ok) {
+  const { ok, body: result } = await fetchJson<AuthErrorBody>(
+    '/api/auth/reset-password',
+    jsonInit('POST', body),
+  );
+  if (!ok) {
     return {
       ok: false,
       errorMessage: result.error?.message || 'Bir hata oluştu. Lütfen tekrar deneyin.',
@@ -60,29 +52,24 @@ export async function postResetPassword(body: {
 export async function postVerifyEmail(
   token: string,
 ): Promise<{ ok: boolean; success?: boolean; message?: string; errorMessage?: string }> {
-  const res = await fetch('/api/auth/verify-email', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ token: token.trim() }),
-  });
-  const data = await res.json().catch(() => ({}));
-  if (res.ok && data.success) {
+  const { ok, body: data } = await fetchJson<AuthErrorBody>(
+    '/api/auth/verify-email',
+    jsonInit('POST', { token: token.trim() }),
+  );
+  if (ok && data.success) {
     return { ok: true, success: true, message: data.message };
   }
   return {
     ok: false,
-    errorMessage: data.error?.message || 'Doğrulama yapılamadı. Bağlantı geçersiz veya süresi dolmuş olabilir.',
+    errorMessage:
+      data.error?.message || 'Doğrulama yapılamadı. Bağlantı geçersiz veya süresi dolmuş olabilir.',
   };
 }
 
-export async function postResendVerification(
-  email: string,
-): Promise<{ message?: string }> {
-  const res = await fetch('/api/auth/resend-verification', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
-  });
-  const data = await res.json().catch(() => ({}));
+export async function postResendVerification(email: string): Promise<{ message?: string }> {
+  const { body: data } = await fetchJson<AuthErrorBody>(
+    '/api/auth/resend-verification',
+    jsonInit('POST', { email }),
+  );
   return { message: data.message || 'İstek alındı.' };
 }

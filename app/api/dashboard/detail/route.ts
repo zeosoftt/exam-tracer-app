@@ -5,8 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
+import { requireSession, getSessionUserId } from '@/lib/auth/requireSession';
 import { asyncHandler, handleError } from '@/lib/errors/errorHandler';
 import { prisma } from '@/lib/db/prisma';
 import { buildDashboardDetailData } from '@/lib/services/dashboard/dashboardDetailService';
@@ -30,12 +29,8 @@ const detailCache = new Map<string, { expiresAt: number; payload: DetailApiPaylo
 
 async function getDetailHandler(req: NextRequest): Promise<NextResponse> {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      throw new UnauthorizedError();
-    }
-
-    const userId = session.user.id;
+    const session = await requireSession();
+    const userId = getSessionUserId(session);
     const forceRefresh = req.nextUrl.searchParams.get('fresh') === '1';
     if (!forceRefresh) {
       const cached = detailCache.get(userId);

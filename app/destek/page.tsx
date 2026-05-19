@@ -4,8 +4,7 @@
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
+import { getOptionalPageSession } from '@/lib/auth/pageSession';
 import { buildDestekJsonLd, buildPublicPageMetadata } from '@/lib/seo';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { MarketingHeader } from '@/components/layout/MarketingHeader';
@@ -20,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function DestekPage() {
-  const session = await getServerSession(authOptions);
+  const session = await getOptionalPageSession();
   const defaultEmail = session?.user?.email ?? null;
   const lockedEmail = Boolean(session?.user?.email);
   return (

@@ -3,12 +3,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
+import { requireSession, getSessionUserId } from '@/lib/auth/requireSession';
 import { prisma } from '@/lib/db/prisma';
 import { asyncHandler } from '@/lib/errors/errorHandler';
 import { HTTP_STATUS, USER_ROLES } from '@/config/constants';
-import { UnauthorizedError } from '@/lib/errors/AppError';
 import { ProgressStatus, type PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { computeInitialNextReview } from '@/lib/utils/spacedRepetition';
@@ -71,12 +69,8 @@ async function loadExamInputForSetup(
 }
 
 async function getSetupWizardHandler(): Promise<NextResponse> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    throw new UnauthorizedError();
-  }
-
-  const userId = session.user.id;
+  const session = await requireSession();
+  const userId = getSessionUserId(session);
   const role = session.user.role ?? '';
 
   if (WIZARD_SKIP_ROLES.has(role)) {
@@ -149,12 +143,8 @@ async function getSetupWizardHandler(): Promise<NextResponse> {
 }
 
 async function postSetupWizardHandler(req: NextRequest): Promise<NextResponse> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    throw new UnauthorizedError();
-  }
-
-  const userId = session.user.id;
+  const session = await requireSession();
+  const userId = getSessionUserId(session);
   const role = session.user.role ?? '';
 
   if (WIZARD_SKIP_ROLES.has(role)) {

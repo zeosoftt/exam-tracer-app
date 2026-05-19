@@ -5,18 +5,20 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
-import { prisma } from '@/lib/db/prisma';
+import { requireSession, getSessionUserId } from '@/lib/auth/requireSession';
 import { asyncHandler } from '@/lib/errors/errorHandler';
 import { HTTP_STATUS } from '@/config/constants';
-import { UnauthorizedError } from '@/lib/errors/AppError';
-import { calculateExamScore } from '@/lib/utils/denemeScore';
-import { getExamScoringProfile } from '@/lib/scoring/examScoringConfig';
-import { loadSectionPopulationStats } from '@/lib/scoring/populationStats';
-import { getMaxScoreForExam } from '@/lib/constants/examScoreRanges';
 import { getTopicCompletionByExamIds } from '@/lib/services/topic/topicCompletionByExam';
 import { denemeAccessDeniedResponse } from '@/lib/deneme/denemeAccess';
+import { computeDenemeScores } from '@/lib/deneme/computeDenemeScores';
+import {
+  createDenemeAttempt,
+  findActiveExamById,
+  findUserActiveExamAssignment,
+  listUserDenemeAttempts,
+  mapDenemeAttemptToDto,
+} from '@/lib/deneme/denemeRepository';
+import { prisma } from '@/lib/db/prisma';
 import { z } from 'zod';
 
 const breakdownItemSchema = z.object({
@@ -41,12 +43,10 @@ const createDenemeSchema = z.object({
 });
 
 async function getDenemeHandler(req: NextRequest): Promise<NextResponse> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    throw new UnauthorizedError();
-  }
+  const session = await requireSession();
+  const userId = getSessionUserId(session);
 
-  const denied = await denemeAccessDeniedResponse(session.user.id);
+  const denied = await denemeAccessDeniedResponse(userId);
   if (denied) return denied;
 
   const { searchParams } = new URL(req.url);
@@ -55,57 +55,15 @@ async function getDenemeHandler(req: NextRequest): Promise<NextResponse> {
   const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10));
   const skip = (page - 1) * limit;
 
-  const [attempts, total] = await Promise.all([
-    prisma.examAttempt.findMany({
-      where: {
-        userId: session.user.id,
-        deletedAt: null,
-        ...(examId ? { examId } : {}),
-      },
-      include: {
-        exam: { select: { id: true, name: true, code: true } },
-      },
-      orderBy: { attemptedAt: 'desc' },
-      take: limit,
-      skip,
-    }),
-    prisma.examAttempt.count({
-      where: {
-        userId: session.user.id,
-        deletedAt: null,
-        ...(examId ? { examId } : {}),
-      },
-    }),
-  ]);
+  const { attempts, total } = await listUserDenemeAttempts(userId, { examId, limit, skip });
+  const data = attempts.map(mapDenemeAttemptToDto);
 
-  const data = attempts.map((a) => ({
-    id: a.id,
-    examId: a.examId,
-    exam: a.exam,
-    attemptedAt: a.attemptedAt.toISOString(),
-    completedAt: a.completedAt?.toISOString() ?? null,
-    totalScore: a.totalScore != null ? Number(a.totalScore) : null,
-    netScore: a.netScore != null ? Number(a.netScore) : null,
-    rightCount: a.rightCount,
-    wrongCount: a.wrongCount,
-    emptyCount: a.emptyCount,
-    durationMinutes: a.durationMinutes,
-    breakdown: a.breakdown as Array<{ subjectId: string; subjectName: string; right: number; wrong: number; empty: number; net: number }> | null,
-    status: a.status,
-    notes: a.notes,
-  }));
-
-  const userId = session.user.id;
   const progressExamIdsParam = searchParams.get('progressExamIds');
   const extraProgressExamIds =
     progressExamIdsParam?.split(',').map((id) => id.trim()).filter(Boolean) ?? [];
 
   const examIdsFromAttempts = [...new Set(attempts.map((a) => a.examId))];
-  const activeAssignment = await prisma.examAssignment.findFirst({
-    where: { userId, deletedAt: null },
-    orderBy: { assignedAt: 'desc' },
-    select: { examId: true, exam: { select: { name: true, code: true } } },
-  });
+  const activeAssignment = await findUserActiveExamAssignment(userId);
   const examIdsForProgress = [
     ...new Set([...examIdsFromAttempts, activeAssignment?.examId, ...extraProgressExamIds].filter(Boolean)),
   ] as string[];
@@ -136,12 +94,10 @@ async function getDenemeHandler(req: NextRequest): Promise<NextResponse> {
 }
 
 async function postDenemeHandler(req: NextRequest): Promise<NextResponse> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    throw new UnauthorizedError();
-  }
+  const session = await requireSession();
+  const userId = getSessionUserId(session);
 
-  const denied = await denemeAccessDeniedResponse(session.user.id);
+  const denied = await denemeAccessDeniedResponse(userId);
   if (denied) return denied;
 
   const body = await req.json();
@@ -150,7 +106,7 @@ async function postDenemeHandler(req: NextRequest): Promise<NextResponse> {
     const first = Object.values(parsed.error.flatten().fieldErrors).flat()[0];
     return NextResponse.json(
       { success: false, error: typeof first === 'string' ? first : 'Geçersiz veri.' },
-      { status: HTTP_STATUS.BAD_REQUEST }
+      { status: HTTP_STATUS.BAD_REQUEST },
     );
   }
 
@@ -167,97 +123,67 @@ async function postDenemeHandler(req: NextRequest): Promise<NextResponse> {
     breakdown,
   } = parsed.data;
 
-  let finalTotalScore = totalScore ?? undefined;
-  let finalNetScore = netScore ?? undefined;
-  let finalRightCount = rightCount ?? undefined;
-  let finalWrongCount = wrongCount ?? undefined;
-  let finalEmptyCount = emptyCount ?? undefined;
-  let breakdownJson: unknown = undefined;
-
-  // Sınavın var ve aktif olduğunu doğrula; puan ölçeği için code al
-  const exam = await prisma.exam.findFirst({
-    where: { id: examId, status: 'ACTIVE', deletedAt: null },
-    select: { id: true, code: true },
-  });
+  const exam = await findActiveExamById(examId);
   if (!exam) {
     return NextResponse.json(
       { success: false, error: 'Sınav bulunamadı veya aktif değil.' },
-      { status: HTTP_STATUS.NOT_FOUND }
+      { status: HTTP_STATUS.NOT_FOUND },
     );
   }
 
-  const maxScore = getMaxScoreForExam(exam.code);
-  const profile = getExamScoringProfile(exam.code);
-
-  const examSections = await prisma.section.findMany({
-    where: { examId },
-    select: {
-      code: true,
-      subjects: { select: { id: true } },
-    },
+  const scores = await computeDenemeScores({
+    examId,
+    examCode: exam.code,
+    totalScore,
+    netScore,
+    rightCount,
+    wrongCount,
+    emptyCount,
+    breakdown,
   });
 
-  const populationStats = await loadSectionPopulationStats(prisma, examId, profile.sectionGroups);
-
-  if (breakdown && breakdown.length > 0) {
-    const scored = calculateExamScore({
-      examCode: exam.code,
-      breakdown,
-      maxScore,
-      sections: examSections,
-      populationStats,
-    });
-    breakdownJson = scored.breakdownWithNet;
-    finalRightCount = finalRightCount ?? scored.totalRight;
-    finalWrongCount = finalWrongCount ?? scored.totalWrong;
-    finalEmptyCount = finalEmptyCount ?? scored.totalEmpty;
-    finalTotalScore = finalTotalScore ?? scored.calculatedScore;
-    finalNetScore = finalNetScore ?? scored.totalNet;
-  } else if (
-    (finalRightCount ?? 0) + (finalWrongCount ?? 0) + (finalEmptyCount ?? 0) > 0
-  ) {
-    const r = finalRightCount ?? 0;
-    const w = finalWrongCount ?? 0;
-    const e = finalEmptyCount ?? 0;
-    const scored = calculateExamScore({
-      examCode: exam.code,
-      breakdown: [],
-      maxScore,
-      simpleTotals: { right: r, wrong: w, empty: e },
-    });
-    finalNetScore = finalNetScore ?? scored.totalNet;
-    if (finalTotalScore == null) {
-      finalTotalScore = scored.calculatedScore;
-    }
-  }
-
-  const createData: Parameters<typeof prisma.examAttempt.create>[0]['data'] = {
-    userId: session.user.id,
+  const createData: Parameters<typeof createDenemeAttempt>[0] = {
+    userId,
     examId,
     attemptedAt: attemptedAt != null ? new Date(attemptedAt) : new Date(),
     status: 'COMPLETED',
   };
-  if (finalTotalScore != null && Number.isFinite(finalTotalScore)) {
-    createData.totalScore = finalTotalScore;
+  if (scores.finalTotalScore != null && Number.isFinite(scores.finalTotalScore)) {
+    createData.totalScore = scores.finalTotalScore;
   }
-  if (finalNetScore != null && Number.isFinite(finalNetScore)) {
-    createData.netScore = finalNetScore;
+  if (scores.finalNetScore != null && Number.isFinite(scores.finalNetScore)) {
+    createData.netScore = scores.finalNetScore;
   }
-  if (finalRightCount != null) createData.rightCount = finalRightCount;
-  if (finalWrongCount != null) createData.wrongCount = finalWrongCount;
-  if (finalEmptyCount != null) createData.emptyCount = finalEmptyCount;
+  if (scores.finalRightCount != null) createData.rightCount = scores.finalRightCount;
+  if (scores.finalWrongCount != null) createData.wrongCount = scores.finalWrongCount;
+  if (scores.finalEmptyCount != null) createData.emptyCount = scores.finalEmptyCount;
   if (durationMinutes != null) createData.durationMinutes = durationMinutes;
-  if (breakdownJson != null) createData.breakdown = breakdownJson as object;
+  if (scores.breakdownJson != null) createData.breakdown = scores.breakdownJson as object;
   if (notes != null && notes !== '') createData.notes = notes;
 
-  let attempt;
   try {
-    attempt = await prisma.examAttempt.create({
-      data: createData,
-      include: {
-        exam: { select: { id: true, name: true, code: true } },
+    const attempt = await createDenemeAttempt(createData);
+    const dto = mapDenemeAttemptToDto(attempt);
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          id: dto.id,
+          examId: dto.examId,
+          exam: dto.exam,
+          attemptedAt: dto.attemptedAt,
+          totalScore: dto.totalScore,
+          netScore: dto.netScore,
+          rightCount: dto.rightCount,
+          wrongCount: dto.wrongCount,
+          emptyCount: dto.emptyCount,
+          durationMinutes: dto.durationMinutes,
+          status: dto.status,
+          notes: dto.notes,
+        },
       },
-    });
+      { status: HTTP_STATUS.CREATED },
+    );
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     const code = err && typeof err === 'object' && 'code' in err ? (err as { code: string }).code : undefined;
@@ -267,30 +193,9 @@ async function postDenemeHandler(req: NextRequest): Promise<NextResponse> {
         error: process.env.NODE_ENV === 'development' ? msg : 'Kayıt oluşturulurken bir hata oluştu.',
         ...(code && process.env.NODE_ENV === 'development' ? { code } : {}),
       },
-      { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+      { status: HTTP_STATUS.INTERNAL_SERVER_ERROR },
     );
   }
-
-  return NextResponse.json(
-    {
-      success: true,
-      data: {
-        id: attempt.id,
-        examId: attempt.examId,
-        exam: attempt.exam,
-        attemptedAt: attempt.attemptedAt.toISOString(),
-        totalScore: attempt.totalScore != null ? Number(attempt.totalScore) : null,
-        netScore: attempt.netScore != null ? Number(attempt.netScore) : null,
-        rightCount: attempt.rightCount,
-        wrongCount: attempt.wrongCount,
-        emptyCount: attempt.emptyCount,
-        durationMinutes: attempt.durationMinutes,
-        status: attempt.status,
-        notes: attempt.notes,
-      },
-    },
-    { status: HTTP_STATUS.CREATED }
-  );
 }
 
 export const GET = asyncHandler(getDenemeHandler);

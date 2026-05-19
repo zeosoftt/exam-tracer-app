@@ -5,30 +5,21 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
+import { requireSession, getSessionUserId, toUserPermissions } from '@/lib/auth/requireSession';
 import { asyncHandler, handleError } from '@/lib/errors/errorHandler';
 import { validate } from '@/lib/validation/validate';
 import { createExamSchema, paginationSchema } from '@/lib/validation/schemas';
 import { prisma } from '@/lib/db/prisma';
-import { canCreateExam, UserPermissions } from '@/lib/auth/permissions';
+import { canCreateExam } from '@/lib/auth/permissions';
 import { logApi } from '@/lib/logger';
 import { HTTP_STATUS } from '@/config/constants';
-import { ForbiddenError, UnauthorizedError, ConflictError } from '@/lib/errors/AppError';
+import { ForbiddenError, ConflictError } from '@/lib/errors/AppError';
 import { getPaginationParams, getSkip, createPaginatedResponse } from '@/lib/utils/pagination';
 
 async function getExamsHandler(req: NextRequest): Promise<NextResponse> {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      throw new UnauthorizedError();
-    }
-
-    const userPermissions: UserPermissions = {
-      role: session.user.role as 'ADMIN' | 'INSTITUTION_ADMIN' | 'INDIVIDUAL' | 'VIEWER',
-      institutionId: session.user.institutionId,
-      userId: session.user.id,
-    };
+    const session = await requireSession();
+    const userPermissions = toUserPermissions(session);
 
     const { searchParams } = new URL(req.url);
     const pagination = validate(paginationSchema, {
@@ -57,7 +48,7 @@ async function getExamsHandler(req: NextRequest): Promise<NextResponse> {
       where.examAssignments = {
         some: {
           OR: [
-            { userId: session.user.id },
+            { userId: getSessionUserId(session) },
             { institutionId: session.user.institutionId },
           ],
           deletedAt: null,
@@ -85,7 +76,7 @@ async function getExamsHandler(req: NextRequest): Promise<NextResponse> {
     ]);
 
     const response = createPaginatedResponse(exams, total, page, pageSize);
-    logApi('GET', '/api/exams', HTTP_STATUS.OK, undefined, { userId: session.user.id });
+    logApi('GET', '/api/exams', HTTP_STATUS.OK, undefined, { userId: getSessionUserId(session) });
 
     return NextResponse.json({
       success: true,
@@ -98,16 +89,8 @@ async function getExamsHandler(req: NextRequest): Promise<NextResponse> {
 
 async function createExamHandler(req: NextRequest): Promise<NextResponse> {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      throw new UnauthorizedError();
-    }
-
-    const userPermissions: UserPermissions = {
-      role: session.user.role as 'ADMIN' | 'INSTITUTION_ADMIN' | 'INDIVIDUAL' | 'VIEWER',
-      institutionId: session.user.institutionId,
-      userId: session.user.id,
-    };
+    const session = await requireSession();
+    const userPermissions = toUserPermissions(session);
 
     if (!canCreateExam(userPermissions)) {
       throw new ForbiddenError();

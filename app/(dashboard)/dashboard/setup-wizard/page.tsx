@@ -3,24 +3,15 @@
  */
 
 import { redirect } from 'next/navigation';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
+import { requirePageSession, redirectIfSetupWizardSkippedRole } from '@/lib/auth/pageSession';
 import { prisma } from '@/lib/db/prisma';
 import { ensureSetupWizardColumnOnce } from '@/lib/db/ensureSetupWizardColumn';
 import { isMissingSetupWizardColumnError } from '@/lib/db/setupWizardColumnSupport';
-import { USER_ROLES } from '@/config/constants';
 import SetupWizardClient from '@/components/setup-wizard/SetupWizardClient';
 
 export default async function SetupWizardPage() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    redirect('/auth/login');
-  }
-
-  const role = session.user.role ?? '';
-  if (role === USER_ROLES.ADMIN || role === USER_ROLES.VIEWER) {
-    redirect('/dashboard');
-  }
+  const session = await requirePageSession();
+  redirectIfSetupWizardSkippedRole(session);
 
   await ensureSetupWizardColumnOnce(prisma);
 

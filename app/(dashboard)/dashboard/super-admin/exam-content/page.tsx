@@ -4,10 +4,7 @@
  */
 
 import dynamic from 'next/dynamic';
-import { redirect } from 'next/navigation';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
-import { USER_ROLES } from '@/config/constants';
+import { requireAdminPageSession } from '@/lib/auth/pageSession';
 import { RouteShellSkeleton } from '@/components/ui/RouteShellSkeleton';
 
 const ExamContentManager = dynamic(
@@ -17,15 +14,7 @@ const ExamContentManager = dynamic(
 );
 
 export default async function ExamContentPage() {
-  const session = await getServerSession(authOptions);
-
-  if (!session) {
-    redirect('/auth/login');
-  }
-
-  if (session.user?.role !== USER_ROLES.ADMIN) {
-    redirect('/dashboard');
-  }
+  await requireAdminPageSession();
 
   return <ExamContentManager />;
 }

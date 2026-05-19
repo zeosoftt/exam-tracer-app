@@ -5,23 +5,19 @@
  */
 
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
+import { requireSession, getSessionUserId } from '@/lib/auth/requireSession';
 import { prisma } from '@/lib/db/prisma';
 import { asyncHandler } from '@/lib/errors/errorHandler';
-import { UnauthorizedError } from '@/lib/errors/AppError';
 import { getKpssPopulationStats } from '@/lib/utils/kpssStats';
 import { denemeAccessDeniedResponse } from '@/lib/deneme/denemeAccess';
 
 export const dynamic = 'force-dynamic';
 
 async function getKpssStatsHandler(): Promise<NextResponse> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    throw new UnauthorizedError();
-  }
+  const session = await requireSession();
+  const userId = getSessionUserId(session);
 
-  const denied = await denemeAccessDeniedResponse(session.user.id);
+  const denied = await denemeAccessDeniedResponse(userId);
   if (denied) return denied;
 
   const exam = await prisma.exam.findFirst({

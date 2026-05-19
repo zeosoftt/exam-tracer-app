@@ -2,6 +2,8 @@
  * Pomodoro session API (history + stats, start, complete).
  */
 
+import { fetchApiData, fetchJson, jsonInit } from '@/lib/client-api/http';
+
 export interface PomodoroSession {
   id: string;
   duration: number;
@@ -23,39 +25,39 @@ export interface PomodoroStats {
   weekStudyHours: number;
 }
 
+type PomodoroDashboardData = {
+  sessions?: PomodoroSession[];
+  stats?: PomodoroStats | null;
+};
+
 export async function fetchPomodoroDashboard(): Promise<
   | { ok: true; sessions: PomodoroSession[]; stats: PomodoroStats | null }
   | { ok: false }
 > {
-  const response = await fetch('/api/pomodoro?limit=10&page=1');
-  if (response.ok) {
-    const data = await response.json();
-    return {
-      ok: true,
-      sessions: data.data?.sessions || [],
-      stats: data.data?.stats || null,
-    };
-  }
-  return { ok: false };
+  const result = await fetchApiData<PomodoroDashboardData>('/api/pomodoro?limit=10&page=1');
+  if (!result.ok) return { ok: false };
+  return {
+    ok: true,
+    sessions: result.data.sessions ?? [],
+    stats: result.data.stats ?? null,
+  };
 }
 
 export async function startPomodoroSession(body: {
   duration: number;
   isBreak: boolean;
 }): Promise<{ ok: boolean; sessionId?: string }> {
-  const response = await fetch('/api/pomodoro', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!response.ok) return { ok: false };
-  const data = await response.json();
-  const id = data.data?.id as string | undefined;
+  const { ok, body: data } = await fetchJson<{ success?: boolean; data?: { id?: string } }>(
+    '/api/pomodoro',
+    jsonInit('POST', body),
+  );
+  if (!ok || !data.success) return { ok: false };
+  const id = data.data?.id;
   if (!id) return { ok: false };
   return { ok: true, sessionId: id };
 }
 
 export async function completePomodoroSession(sessionId: string): Promise<boolean> {
-  const response = await fetch(`/api/pomodoro/${sessionId}`, { method: 'PATCH' });
-  return response.ok;
+  const { ok } = await fetchJson(`/api/pomodoro/${sessionId}`, jsonInit('PATCH'));
+  return ok;
 }

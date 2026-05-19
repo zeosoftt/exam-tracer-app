@@ -2,6 +2,8 @@
  * Client-side fetch for available exams (onboarding, settings, deneme, etc.).
  */
 
+import { fetchJson } from '@/lib/client-api/http';
+
 export type AvailableExam = {
   id: string;
   name: string;
@@ -12,22 +14,20 @@ export type FetchAvailableExamsResult =
   | { ok: true; exams: AvailableExam[] }
   | { ok: false; errorMessage?: string };
 
+const LOAD_ERROR = 'Sınavlar yüklenemedi. Lütfen sayfayı yenileyin.';
+
 export async function fetchAvailableExamsWithStatus(): Promise<FetchAvailableExamsResult> {
-  const response = await fetch('/api/exams/available');
-  if (response.ok) {
-    const result = await response.json().catch(() => ({}));
-    if (result.success && Array.isArray(result.data)) {
-      return { ok: true, exams: result.data };
-    }
-    return { ok: false, errorMessage: 'Sınavlar yüklenemedi. Lütfen sayfayı yenileyin.' };
+  const { ok, body } = await fetchJson<{
+    success?: boolean;
+    data?: AvailableExam[];
+    message?: string;
+  }>('/api/exams/available');
+
+  if (ok && body.success && Array.isArray(body.data)) {
+    return { ok: true, exams: body.data };
   }
-  const errorData = await response.json().catch(() => ({}));
-  return {
-    ok: false,
-    errorMessage:
-      (errorData as { message?: string }).message ||
-      'Sınavlar yüklenemedi. Lütfen sayfayı yenileyin.',
-  };
+
+  return { ok: false, errorMessage: body.message || LOAD_ERROR };
 }
 
 export async function fetchAvailableExams(): Promise<AvailableExam[]> {

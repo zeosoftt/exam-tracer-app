@@ -4,8 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
+import { requireSession, getSessionUserId } from '@/lib/auth/requireSession';
 import { prisma } from '@/lib/db/prisma';
 import { comparePassword, hashPassword } from '@/lib/auth/password';
 import { validate } from '@/lib/validation/validate';
@@ -15,11 +14,8 @@ import { UnauthorizedError } from '@/lib/errors/AppError';
 import { HTTP_STATUS } from '@/config/constants';
 
 async function changePasswordHandler(req: NextRequest): Promise<NextResponse> {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    throw new UnauthorizedError();
-  }
-  const userId = session.user.id;
+  const session = await requireSession();
+  const userId = getSessionUserId(session);
 
   const body = await req.json();
   const { currentPassword, newPassword } = validate(changePasswordSchema, body);

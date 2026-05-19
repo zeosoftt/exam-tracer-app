@@ -5,10 +5,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
+import { guardAdminSession } from '@/lib/auth/requireSession';
 import { prisma } from '@/lib/db/prisma';
-import { USER_ROLES, HTTP_STATUS, ERROR_MESSAGES, PAGINATION } from '@/config/constants';
+import { HTTP_STATUS, ERROR_MESSAGES, PAGINATION } from '@/config/constants';
 import { getAcquisitionSourceLabel } from '@/lib/marketing/acquisitionSources';
 
 const examAssignmentsSelect = {
@@ -52,19 +51,8 @@ function isMissingAcquisitionColumns(error: unknown): boolean {
 }
 
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return NextResponse.json(
-      { success: false, error: ERROR_MESSAGES.UNAUTHORIZED },
-      { status: HTTP_STATUS.UNAUTHORIZED }
-    );
-  }
-  if (session.user.role !== USER_ROLES.ADMIN) {
-    return NextResponse.json(
-      { success: false, error: ERROR_MESSAGES.FORBIDDEN },
-      { status: HTTP_STATUS.FORBIDDEN }
-    );
-  }
+  const guard = await guardAdminSession();
+  if (!guard.authorized) return guard.response;
 
   try {
     const { searchParams } = new URL(req.url);

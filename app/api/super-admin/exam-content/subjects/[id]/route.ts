@@ -3,31 +3,13 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
+import { guardAdminSession } from '@/lib/auth/requireSession';
 import { prisma } from '@/lib/db/prisma';
-import { USER_ROLES, HTTP_STATUS, ERROR_MESSAGES } from '@/config/constants';
-
-async function requireAdmin() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return NextResponse.json(
-      { success: false, error: ERROR_MESSAGES.UNAUTHORIZED },
-      { status: HTTP_STATUS.UNAUTHORIZED }
-    );
-  }
-  if (session.user.role !== USER_ROLES.ADMIN) {
-    return NextResponse.json(
-      { success: false, error: ERROR_MESSAGES.FORBIDDEN },
-      { status: HTTP_STATUS.FORBIDDEN }
-    );
-  }
-  return null;
-}
+import { HTTP_STATUS } from '@/config/constants';
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireAdmin();
-  if (auth) return auth;
+  const guard = await guardAdminSession();
+  if (!guard.authorized) return guard.response;
   const { id } = await params;
   if (!id) return NextResponse.json({ success: false, error: 'Geçersiz id.' }, { status: HTTP_STATUS.BAD_REQUEST });
   try {
@@ -48,8 +30,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await requireAdmin();
-  if (auth) return auth;
+  const guard = await guardAdminSession();
+  if (!guard.authorized) return guard.response;
   const { id } = await params;
   if (!id) return NextResponse.json({ success: false, error: 'Geçersiz id.' }, { status: HTTP_STATUS.BAD_REQUEST });
   try {

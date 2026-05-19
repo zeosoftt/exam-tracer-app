@@ -6,32 +6,24 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
+import { requireSession, getSessionUserId, toUserPermissions } from '@/lib/auth/requireSession';
 import { asyncHandler, handleError } from '@/lib/errors/errorHandler';
 import { validate } from '@/lib/validation/validate';
 import { updateExamSchema } from '@/lib/validation/schemas';
 import { prisma } from '@/lib/db/prisma';
-import { canUpdateExam, canViewExam, UserPermissions } from '@/lib/auth/permissions';
+import { canUpdateExam, canViewExam } from '@/lib/auth/permissions';
 import { logApi } from '@/lib/logger';
 import { HTTP_STATUS } from '@/config/constants';
-import { ForbiddenError, NotFoundError, UnauthorizedError } from '@/lib/errors/AppError';
+import { ForbiddenError, NotFoundError } from '@/lib/errors/AppError';
 
 async function getExamHandler(
   req: NextRequest,
   { params }: { params: { id: string } }
 ): Promise<NextResponse> {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      throw new UnauthorizedError();
-    }
-
-    const userPermissions: UserPermissions = {
-      role: session.user.role as 'ADMIN' | 'INSTITUTION_ADMIN' | 'INDIVIDUAL' | 'VIEWER',
-      institutionId: session.user.institutionId,
-      userId: session.user.id,
-    };
+    const session = await requireSession();
+    const userPermissions = toUserPermissions(session);
+    const userId = getSessionUserId(session);
 
     const exam = await prisma.exam.findFirst({
       where: {
@@ -72,7 +64,7 @@ async function getExamHandler(
     }
 
     logApi('GET', `/api/exams/${params.id}`, HTTP_STATUS.OK, undefined, {
-      userId: session.user.id,
+      userId,
     });
 
     return NextResponse.json({
@@ -89,16 +81,9 @@ async function updateExamHandler(
   { params }: { params: { id: string } }
 ): Promise<NextResponse> {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      throw new UnauthorizedError();
-    }
-
-    const userPermissions: UserPermissions = {
-      role: session.user.role as 'ADMIN' | 'INSTITUTION_ADMIN' | 'INDIVIDUAL' | 'VIEWER',
-      institutionId: session.user.institutionId,
-      userId: session.user.id,
-    };
+    const session = await requireSession();
+    const userPermissions = toUserPermissions(session);
+    const userId = getSessionUserId(session);
 
     const exam = await prisma.exam.findFirst({
       where: {
@@ -148,7 +133,7 @@ async function updateExamHandler(
     });
 
     logApi('PUT', `/api/exams/${params.id}`, HTTP_STATUS.OK, undefined, {
-      userId: session.user.id,
+      userId,
       examId: params.id,
     });
 
@@ -166,16 +151,9 @@ async function deleteExamHandler(
   { params }: { params: { id: string } }
 ): Promise<NextResponse> {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      throw new UnauthorizedError();
-    }
-
-    const userPermissions: UserPermissions = {
-      role: session.user.role as 'ADMIN' | 'INSTITUTION_ADMIN' | 'INDIVIDUAL' | 'VIEWER',
-      institutionId: session.user.institutionId,
-      userId: session.user.id,
-    };
+    const session = await requireSession();
+    const userPermissions = toUserPermissions(session);
+    const userId = getSessionUserId(session);
 
     const exam = await prisma.exam.findFirst({
       where: {
@@ -208,7 +186,7 @@ async function deleteExamHandler(
     });
 
     logApi('DELETE', `/api/exams/${params.id}`, HTTP_STATUS.OK, undefined, {
-      userId: session.user.id,
+      userId,
       examId: params.id,
     });
 

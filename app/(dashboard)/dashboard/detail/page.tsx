@@ -4,9 +4,7 @@
  */
 
 import dynamic from 'next/dynamic';
-import { redirect } from 'next/navigation';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
+import { requirePageSession } from '@/lib/auth/pageSession';
 import { RouteShellSkeleton } from '@/components/ui/RouteShellSkeleton';
 
 const DashboardDetailContent = dynamic(
@@ -18,11 +16,7 @@ const DashboardDetailContent = dynamic(
 );
 
 export default async function DashboardDetailPage() {
-  const session = await getServerSession(authOptions);
-
-  if (!session) {
-    redirect('/auth/login');
-  }
+  const session = await requirePageSession();
 
   return <DashboardDetailContent user={session.user} />;
 }

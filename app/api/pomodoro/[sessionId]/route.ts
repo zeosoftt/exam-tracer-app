@@ -4,25 +4,20 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
+import { requireSession, getSessionUserId } from '@/lib/auth/requireSession';
 import { asyncHandler, handleError } from '@/lib/errors/errorHandler';
 import { prisma } from '@/lib/db/prisma';
 import { logApi } from '@/lib/logger';
 import { HTTP_STATUS } from '@/config/constants';
-import { UnauthorizedError, BadRequestError, NotFoundError } from '@/lib/errors/AppError';
+import { BadRequestError, NotFoundError } from '@/lib/errors/AppError';
 
 async function completePomodoroHandler(
   req: NextRequest,
   { params }: { params: { sessionId: string } }
 ): Promise<NextResponse> {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      throw new UnauthorizedError();
-    }
-
-    const userId = session.user.id;
+    const session = await requireSession();
+    const userId = getSessionUserId(session);
     const { sessionId } = params;
 
     if (!sessionId) {

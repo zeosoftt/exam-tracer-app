@@ -5,23 +5,20 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
+import { requireSession, getSessionUserId, toUserPermissions } from '@/lib/auth/requireSession';
 import { asyncHandler, handleError } from '@/lib/errors/errorHandler';
 import { validate } from '@/lib/validation/validate';
 import { createSubjectSchema } from '@/lib/validation/schemas';
 import { prisma } from '@/lib/db/prisma';
-import { canCreateExam, UserPermissions } from '@/lib/auth/permissions';
+import { canCreateExam } from '@/lib/auth/permissions';
 import { logApi } from '@/lib/logger';
 import { HTTP_STATUS } from '@/config/constants';
-import { ForbiddenError, UnauthorizedError, NotFoundError } from '@/lib/errors/AppError';
+import { ForbiddenError, NotFoundError } from '@/lib/errors/AppError';
 
 async function getSubjectsHandler(req: NextRequest): Promise<NextResponse> {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      throw new UnauthorizedError();
-    }
+    const session = await requireSession();
+    const userId = getSessionUserId(session);
 
     const { searchParams } = new URL(req.url);
     const examId = searchParams.get('examId');
@@ -59,7 +56,7 @@ async function getSubjectsHandler(req: NextRequest): Promise<NextResponse> {
       },
     });
 
-    logApi('GET', '/api/subjects', HTTP_STATUS.OK, undefined, { userId: session.user.id });
+    logApi('GET', '/api/subjects', HTTP_STATUS.OK, undefined, { userId });
 
     return NextResponse.json({
       success: true,
@@ -72,16 +69,10 @@ async function getSubjectsHandler(req: NextRequest): Promise<NextResponse> {
 
 async function createSubjectHandler(req: NextRequest): Promise<NextResponse> {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      throw new UnauthorizedError();
-    }
+    const session = await requireSession();
+    const userId = getSessionUserId(session);
 
-    const userPermissions: UserPermissions = {
-      role: session.user.role as 'ADMIN' | 'INSTITUTION_ADMIN' | 'INDIVIDUAL' | 'VIEWER',
-      institutionId: session.user.institutionId,
-      userId: session.user.id,
-    };
+    const userPermissions = toUserPermissions(session);
 
     if (!canCreateExam(userPermissions)) {
       throw new ForbiddenError();
@@ -126,7 +117,7 @@ async function createSubjectHandler(req: NextRequest): Promise<NextResponse> {
     });
 
     logApi('POST', '/api/subjects', HTTP_STATUS.CREATED, undefined, {
-      userId: session.user.id,
+      userId,
       subjectId: subject.id,
     });
 

@@ -5,24 +5,21 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
+import { requireSession, getSessionUserId } from '@/lib/auth/requireSession';
 import { asyncHandler, handleError } from '@/lib/errors/errorHandler';
 import { validate } from '@/lib/validation/validate';
 import { updateProgressSchema, paginationSchema } from '@/lib/validation/schemas';
 import { prisma } from '@/lib/db/prisma';
 import { logApi } from '@/lib/logger';
 import { HTTP_STATUS } from '@/config/constants';
-import { UnauthorizedError, NotFoundError } from '@/lib/errors/AppError';
+import { NotFoundError } from '@/lib/errors/AppError';
 import { getPaginationParams, getSkip, createPaginatedResponse } from '@/lib/utils/pagination';
 import { computeInitialNextReview } from '@/lib/utils/spacedRepetition';
 
 async function getProgressHandler(req: NextRequest): Promise<NextResponse> {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      throw new UnauthorizedError();
-    }
+    const session = await requireSession();
+    const userId = getSessionUserId(session);
 
     const { searchParams } = new URL(req.url);
     const pagination = validate(paginationSchema, {
@@ -42,7 +39,7 @@ async function getProgressHandler(req: NextRequest): Promise<NextResponse> {
       topicId?: string;
       status?: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'REVIEWED';
     } = {
-      userId: session.user.id,
+      userId,
       deletedAt: null,
     };
 
@@ -80,7 +77,7 @@ async function getProgressHandler(req: NextRequest): Promise<NextResponse> {
     ]);
 
     const response = createPaginatedResponse(progress, total, page, pageSize);
-    logApi('GET', '/api/progress', HTTP_STATUS.OK, undefined, { userId: session.user.id });
+    logApi('GET', '/api/progress', HTTP_STATUS.OK, undefined, { userId });
 
     return NextResponse.json({
       success: true,
@@ -93,10 +90,8 @@ async function getProgressHandler(req: NextRequest): Promise<NextResponse> {
 
 async function updateProgressHandler(req: NextRequest): Promise<NextResponse> {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      throw new UnauthorizedError();
-    }
+    const session = await requireSession();
+    const userId = getSessionUserId(session);
 
     const body = await req.json();
     const validatedData = validate(updateProgressSchema, body);
@@ -118,7 +113,7 @@ async function updateProgressHandler(req: NextRequest): Promise<NextResponse> {
     const progress = await prisma.userProgress.upsert({
       where: {
         userId_topicId: {
-          userId: session.user.id,
+          userId,
           topicId: validatedData.topicId,
         },
       },
@@ -140,7 +135,7 @@ async function updateProgressHandler(req: NextRequest): Promise<NextResponse> {
         updatedAt: new Date(),
       },
       create: {
-        userId: session.user.id,
+        userId,
         topicId: validatedData.topicId,
         status: validatedData.status,
         notes: validatedData.notes,
@@ -156,7 +151,7 @@ async function updateProgressHandler(req: NextRequest): Promise<NextResponse> {
     });
 
     logApi('POST', '/api/progress', HTTP_STATUS.OK, undefined, {
-      userId: session.user.id,
+      userId,
       topicId: validatedData.topicId,
     });
 

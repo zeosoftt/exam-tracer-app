@@ -4,23 +4,9 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, useRef, startTransition } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import {
-  ArrowLeft,
-  Plus,
-  Target,
-  Calculator,
-  Loader2,
-  Lock,
-  Sparkles,
-} from 'lucide-react';
-
-const ShopierCheckoutLink = dynamic(
-  () => import('@/components/checkout/ShopierCheckoutLink').then((m) => m.ShopierCheckoutLink),
-  { ssr: false, loading: () => null },
-);
+import { ArrowLeft, Plus, Target, Calculator, Loader2, Lock, Sparkles } from 'lucide-react';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
 import {
   DenemeAnalysisPanel,
@@ -29,445 +15,44 @@ import {
   DenemeFormModal,
   DenemeTopicOnlyHero,
 } from '@/components/deneme/denemeUi';
-import { calculateExamScore } from '@/lib/utils/denemeScore';
-import type { KpssPopulationStats } from '@/lib/utils/denemeScore';
-import { getMaxScoreForExam } from '@/lib/constants/examScoreRanges';
-import {
-  fetchDenemeAttempts,
-  fetchDenemeSiteFlags,
-  loadDenemeFormBootstrap,
-  fetchExamStructure,
-  fetchKpssDenemeStats,
-  postDenemeAttempt,
-  type DenemeAttemptListItem,
-  type ExamTopicProgress,
-  type PrimaryTopicProgress,
-} from '@/lib/client-api/denemeClient';
+import { useDenemePage } from '@/components/deneme/hooks/useDenemePage';
+import { formatDenemeDate } from '@/lib/deneme/computeDenemeAnalysis';
 
-interface ExamOption {
-  id: string;
-  name: string;
-  code: string;
-}
-
-interface SubjectRow {
-  id: string;
-  name: string;
-  code: string;
-  sectionName?: string;
-}
-
-interface SubjectInput {
-  right: number;
-  wrong: number;
-  empty: number;
-}
+const ShopierCheckoutLink = dynamic(
+  () => import('@/components/checkout/ShopierCheckoutLink').then((m) => m.ShopierCheckoutLink),
+  { ssr: false, loading: () => null },
+);
 
 export default function DenemePage() {
-  const [attempts, setAttempts] = useState<DenemeAttemptListItem[]>([]);
-  const [topicProgressByExam, setTopicProgressByExam] = useState<Record<string, ExamTopicProgress>>({});
-  const [primaryTopicProgress, setPrimaryTopicProgress] = useState<PrimaryTopicProgress | null>(null);
-  const [exams, setExams] = useState<ExamOption[]>([]);
-  const [activeExamId, setActiveExamId] = useState<string | null>(null);
-  const [examSubjects, setExamSubjects] = useState<SubjectRow[]>([]);
-  const [subjectInputs, setSubjectInputs] = useState<Record<string, SubjectInput>>({});
-  const [structureLoading, setStructureLoading] = useState(false);
-  const [sections, setSections] = useState<Array<{ id: string; code: string; subjects: { id: string }[] }>>([]);
-  const [kpssStats, setKpssStats] = useState<KpssPopulationStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [formModalOpen, setFormModalOpen] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [listError, setListError] = useState<string | null>(null);
-  /** Super admin site ayarı: yalnızca açıkça false ise form/analiz gizlenir. */
-  const [denemeAdvanced, setDenemeAdvanced] = useState<boolean | null>(null);
-  const [denemePremiumRequired, setDenemePremiumRequired] = useState(false);
-  const featuresEnabled = denemeAdvanced !== false && !denemePremiumRequired;
-  const attemptsFetchInFlightRef = useRef(false);
-  const lastAttemptsFetchAtRef = useRef(0);
-  const structureCacheRef = useRef(
-    new Map<string, { subjects: SubjectRow[]; sections: Array<{ id: string; code: string; subjects: { id: string }[] }> }>()
-  );
-
-  const [form, setForm] = useState({
-    examId: '',
-    attemptedAt: new Date().toISOString().slice(0, 16),
-    durationMinutes: '',
-    notes: '',
-    simpleRight: '',
-    simpleWrong: '',
-    simpleEmpty: '',
-  });
-
-  const fetchAttempts = useCallback(async (force = false) => {
-    const now = Date.now();
-    if (!force && now - lastAttemptsFetchAtRef.current < 10000) return;
-    if (attemptsFetchInFlightRef.current) return;
-    attemptsFetchInFlightRef.current = true;
-    if (force) setListError(null);
-    try {
-      const result = await fetchDenemeAttempts(50);
-      if (result.ok) {
-        startTransition(() => {
-          setAttempts(result.data);
-          setTopicProgressByExam(result.topicProgressByExam);
-          setPrimaryTopicProgress(result.primaryTopicProgress);
-          setListError(null);
-          setDenemePremiumRequired(false);
-        });
-        lastAttemptsFetchAtRef.current = Date.now();
-      } else if (result.premiumRequired) {
-        startTransition(() => {
-          setDenemePremiumRequired(true);
-          setAttempts([]);
-          setListError(null);
-        });
-        setLoading(false);
-      } else if (result.featureDisabled) {
-        startTransition(() => {
-          setDenemeAdvanced(false);
-          setDenemePremiumRequired(false);
-          setListError(null);
-        });
-        setLoading(false);
-      } else {
-        startTransition(() => setListError(result.error));
-      }
-    } catch {
-      startTransition(() => setListError('Deneme kayıtları yüklenemedi.'));
-    } finally {
-      attemptsFetchInFlightRef.current = false;
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchAttempts();
-  }, [fetchAttempts]);
-
-  useEffect(() => {
-    fetchDenemeSiteFlags()
-      .then((advanced) => startTransition(() => setDenemeAdvanced(advanced)))
-      .catch(() => startTransition(() => setDenemeAdvanced(true)));
-  }, []);
-
-  // Sınav listesi ve kullanıcının kayıtlı olduğu (aktif) sınav
-  useEffect(() => {
-    if (!featuresEnabled) return;
-    loadDenemeFormBootstrap()
-      .then(({ exams, activeExamId }) => {
-        startTransition(() => {
-          setExams(exams);
-          if (activeExamId) setActiveExamId(activeExamId);
-        });
-      })
-      .catch(() => {});
-  }, [featuresEnabled]);
-
-  // Form açıldığında kayıtlı dersi otomatik seç
-  useEffect(() => {
-    if (!featuresEnabled) return;
-    if (formModalOpen && activeExamId && form.examId === '') {
-      setForm((f) => ({ ...f, examId: activeExamId }));
-    }
-  }, [featuresEnabled, formModalOpen, activeExamId, form.examId]);
-
-  // Sınav seçilince ders yapısını yükle
-  useEffect(() => {
-    if (!featuresEnabled) return;
-    if (!form.examId) {
-      setExamSubjects([]);
-      setSubjectInputs({});
-      return;
-    }
-    const cached = structureCacheRef.current.get(form.examId);
-    if (cached) {
-      setExamSubjects(cached.subjects);
-      setSections(cached.sections);
-      const initial: Record<string, SubjectInput> = {};
-      cached.subjects.forEach((s: SubjectRow) => {
-        initial[s.id] = { right: 0, wrong: 0, empty: 0 };
-      });
-      setSubjectInputs(initial);
-      return;
-    }
-    setStructureLoading(true);
-    setSections([]);
-    setKpssStats(null);
-    fetchExamStructure(form.examId)
-      .then((raw) => {
-        const json = raw as {
-          success?: boolean;
-          data?: {
-            subjects?: SubjectRow[];
-            sections?: Array<{ id: string; code: string; subjects: { id: string }[] }>;
-          };
-        };
-        if (json.success && json.data?.subjects?.length) {
-          setExamSubjects(json.data.subjects);
-          setSections(json.data.sections ?? []);
-          structureCacheRef.current.set(form.examId, {
-            subjects: json.data.subjects,
-            sections: json.data.sections ?? [],
-          });
-          const initial: Record<string, SubjectInput> = {};
-          json.data.subjects.forEach((s: SubjectRow) => {
-            initial[s.id] = { right: 0, wrong: 0, empty: 0 };
-          });
-          setSubjectInputs(initial);
-        } else {
-          setExamSubjects([]);
-          setSections([]);
-          setSubjectInputs({});
-        }
-      })
-      .catch(() => {
-        setExamSubjects([]);
-        setSections([]);
-        setSubjectInputs({});
-      })
-      .finally(() => setStructureLoading(false));
-  }, [featuresEnabled, form.examId]);
-
-  const selectedExamCode = exams.find((e) => e.id === form.examId)?.code ?? '';
-
-  // KPSS seçiliyse GY/GK ortalama ve standart sapma al
-  useEffect(() => {
-    if (!featuresEnabled) return;
-    if (selectedExamCode !== 'KPSS' || sections.length === 0) return;
-    fetchKpssDenemeStats()
-      .then((raw) => {
-        const json = raw as { success?: boolean; data?: KpssPopulationStats };
-        if (json.success && json.data) setKpssStats(json.data);
-      })
-      .catch(() => {});
-  }, [featuresEnabled, selectedExamCode, sections.length]);
-
-  useEffect(() => {
-    if (!featuresEnabled) {
-      setFormModalOpen(false);
-    }
-  }, [featuresEnabled]);
-
-  const closeFormModal = useCallback(() => {
-    setFormModalOpen(false);
-  }, []);
-
-  const examIdsKey = useMemo(() => exams.map((e) => e.id).sort().join(','), [exams]);
-
-  useEffect(() => {
-    if (!featuresEnabled || !examIdsKey) return;
-    const ids = examIdsKey.split(',');
-    let cancelled = false;
-    fetchDenemeAttempts(1, ids)
-      .then((result) => {
-        if (cancelled || !result.ok) return;
-        startTransition(() => {
-          setTopicProgressByExam((prev) => ({ ...prev, ...result.topicProgressByExam }));
-          if (result.primaryTopicProgress) {
-            setPrimaryTopicProgress(result.primaryTopicProgress);
-          }
-        });
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, [featuresEnabled, examIdsKey]);
-
-  const updateSubjectInput = (subjectId: string, field: 'right' | 'wrong' | 'empty', value: number) => {
-    setSubjectInputs((prev) => ({
-      ...prev,
-      [subjectId]: {
-        ...(prev[subjectId] ?? { right: 0, wrong: 0, empty: 0 }),
-        [field]: Math.max(0, value),
-      },
-    }));
-  };
-
-  const breakdownForSubmit = useMemo(() => {
-    return examSubjects.map((s) => ({
-      subjectId: s.id,
-      subjectName: s.name,
-      right: subjectInputs[s.id]?.right ?? 0,
-      wrong: subjectInputs[s.id]?.wrong ?? 0,
-      empty: subjectInputs[s.id]?.empty ?? 0,
-    }));
-  }, [examSubjects, subjectInputs]);
-
-  const maxScore = getMaxScoreForExam(selectedExamCode);
-
-  const populationStatsForScore = useMemo(() => {
-    if (!kpssStats || !selectedExamCode.startsWith('KPSS')) return null;
-    return {
-      GY: {
-        mean: kpssStats.gyMean,
-        std: kpssStats.gyStd,
-        sampleSize: kpssStats.sampleSize,
-      },
-      GK: {
-        mean: kpssStats.gkMean,
-        std: kpssStats.gkStd,
-        sampleSize: kpssStats.sampleSize,
-      },
-    };
-  }, [kpssStats, selectedExamCode]);
-
-  const examScore = useMemo(() => {
-    if (!selectedExamCode) return null;
-    if (breakdownForSubmit.length > 0) {
-      return calculateExamScore({
-        examCode: selectedExamCode,
-        breakdown: breakdownForSubmit,
-        maxScore,
-        sections,
-        populationStats: populationStatsForScore,
-      });
-    }
-    const sr = Number(form.simpleRight) || 0;
-    const sw = Number(form.simpleWrong) || 0;
-    const se = Number(form.simpleEmpty) || 0;
-    if (sr + sw + se === 0) return null;
-    return calculateExamScore({
-      examCode: selectedExamCode,
-      breakdown: [],
-      maxScore,
-      simpleTotals: { right: sr, wrong: sw, empty: se },
-    });
-  }, [
-    selectedExamCode,
+  const {
+    attempts,
+    topicProgressByExam,
+    primaryTopicProgress,
+    loading,
+    listError,
+    denemeAdvanced,
+    denemePremiumRequired,
+    featuresEnabled,
+    exams,
+    analysis,
+    analysisAvg,
+    fetchAttempts,
+    formModalOpen,
+    setFormModalOpen,
+    closeFormModal,
+    message,
+    submitting,
+    form,
+    setForm,
+    examSubjects,
+    subjectInputs,
+    structureLoading,
     breakdownForSubmit,
     maxScore,
-    sections,
-    populationStatsForScore,
-    form.simpleRight,
-    form.simpleWrong,
-    form.simpleEmpty,
-  ]);
-
-  const calculated = examScore;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setMessage(null);
-    if (!form.examId) {
-      setMessage({ type: 'error', text: 'Sınav seçiniz.' });
-      return;
-    }
-    const hasBreakdown = examSubjects.length > 0 && breakdownForSubmit.some(
-      (b) => b.right > 0 || b.wrong > 0 || b.empty > 0
-    );
-    const hasSimple = examSubjects.length === 0 && (
-      Number(form.simpleRight) > 0 || Number(form.simpleWrong) > 0 || Number(form.simpleEmpty) > 0
-    );
-    if (examSubjects.length > 0 && !hasBreakdown) {
-      setMessage({ type: 'error', text: 'En az bir ders için doğru/yanlış/boş girin.' });
-      return;
-    }
-    if (examSubjects.length === 0 && !hasSimple) {
-      setMessage({ type: 'error', text: 'Toplam doğru/yanlış/boş girin veya sınav seçin.' });
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const body: Record<string, unknown> = {
-        examId: form.examId,
-        attemptedAt: form.attemptedAt ? new Date(form.attemptedAt).toISOString() : undefined,
-        durationMinutes: form.durationMinutes ? Number(form.durationMinutes) : undefined,
-        notes: form.notes || undefined,
-      };
-      if (hasBreakdown) {
-        body.breakdown = breakdownForSubmit;
-      } else if (hasSimple) {
-        body.rightCount = Number(form.simpleRight) || 0;
-        body.wrongCount = Number(form.simpleWrong) || 0;
-        body.emptyCount = Number(form.simpleEmpty) || 0;
-      }
-      const { ok, data, premiumRequired } = await postDenemeAttempt(body);
-      if (premiumRequired) {
-        setDenemePremiumRequired(true);
-        setMessage({
-          type: 'error',
-          text: 'Deneme kaydı eklemek için Premium plan gerekir.',
-        });
-        return;
-      }
-      if (ok) {
-        setMessage({ type: 'success', text: 'Deneme kaydı eklendi.' });
-        setForm({ examId: '', attemptedAt: new Date().toISOString().slice(0, 16), durationMinutes: '', notes: '', simpleRight: '', simpleWrong: '', simpleEmpty: '' });
-        setExamSubjects([]);
-        setSubjectInputs({});
-        setFormModalOpen(false);
-        fetchAttempts(true);
-      } else {
-        const d = data as { error?: string | { message?: string } };
-        const errMsg =
-          typeof d.error === 'string'
-            ? d.error
-            : d.error &&
-                typeof d.error === 'object' &&
-                'message' in d.error
-              ? String((d.error as { message: string }).message)
-              : 'Kayıt eklenemedi.';
-        setMessage({ type: 'error', text: errMsg });
-      }
-    } catch (e) {
-      setMessage({ type: 'error', text: 'Bağlantı hatası.' });
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const formatDate = (s: string) =>
-    new Date(s).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-
-  // Analiz: attempts üzerinden hesaplanan özet ve grafik verisi
-  const analysis = useMemo(() => {
-    const withNet = attempts.filter((a) => a.netScore != null) as Array<DenemeAttemptListItem & { netScore: number }>;
-    if (withNet.length === 0) {
-      return null;
-    }
-    const nets = withNet.map((a) => a.netScore);
-    const sum = nets.reduce((s, n) => s + n, 0);
-    const avg = sum / nets.length;
-    const max = Math.max(...nets);
-    const min = Math.min(...nets);
-    const sortedByDate = [...withNet].sort(
-      (a, b) => new Date(a.attemptedAt).getTime() - new Date(b.attemptedAt).getTime()
-    );
-    const last5 = sortedByDate.slice(-5);
-    const prev5 = sortedByDate.slice(-10, -5);
-    const avgLast5 = last5.length ? last5.reduce((s, a) => s + a.netScore, 0) / last5.length : null;
-    const avgPrev5 = prev5.length ? prev5.reduce((s, a) => s + a.netScore, 0) / prev5.length : null;
-    let trend: 'up' | 'down' | 'stable' = 'stable';
-    if (avgLast5 != null && avgPrev5 != null) {
-      const diff = avgLast5 - avgPrev5;
-      if (diff > 0.5) trend = 'up';
-      else if (diff < -0.5) trend = 'down';
-    }
-    const chartData = sortedByDate.slice(-20).map((a) => ({
-      attemptedAt: a.attemptedAt,
-      netScore: a.netScore,
-      examName: a.exam.name,
-    }));
-    const chartMin = Math.min(...chartData.map((d) => d.netScore));
-    const chartMax = Math.max(...chartData.map((d) => d.netScore));
-    const chartRange = chartMax - chartMin || 1;
-    return {
-      total: withNet.length,
-      avg,
-      max,
-      min,
-      avgLast5,
-      avgPrev5,
-      trend,
-      chartData,
-      chartMin,
-      chartRange,
-    };
-  }, [attempts]);
-
-  const analysisAvg = analysis?.avg ?? null;
+    calculated,
+    updateSubjectInput,
+    handleSubmit,
+  } = useDenemePage();
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
@@ -517,10 +102,7 @@ export default function DenemePage() {
             <span>{listError}</span>
             <button
               type="button"
-              onClick={() => {
-                setLoading(true);
-                fetchAttempts(true);
-              }}
+              onClick={() => fetchAttempts(true)}
               className="rounded-lg border border-red-300 bg-white px-3 py-1.5 text-xs font-semibold hover:bg-red-50 dark:border-red-800 dark:bg-stone-900 dark:hover:bg-red-950/50"
             >
               Tekrar dene
@@ -557,11 +139,7 @@ export default function DenemePage() {
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100"></h2>
           {featuresEnabled && (
-            <button
-              type="button"
-              onClick={() => setFormModalOpen(true)}
-              className="btn btn-primary gap-2"
-            >
+            <button type="button" onClick={() => setFormModalOpen(true)} className="btn btn-primary gap-2">
               <Plus className="h-4 w-4" />
               Yeni deneme ekle
             </button>
@@ -578,11 +156,7 @@ export default function DenemePage() {
           </div>
         )}
 
-        <DenemeFormModal
-          open={featuresEnabled && formModalOpen}
-          onClose={closeFormModal}
-          title="Yeni deneme kaydı"
-        >
+        <DenemeFormModal open={featuresEnabled && formModalOpen} onClose={closeFormModal} title="Yeni deneme kaydı">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
@@ -686,9 +260,7 @@ export default function DenemePage() {
                                   onChange={(e) => updateSubjectInput(s.id, 'empty', parseInt(e.target.value, 10) || 0)}
                                 />
                               </td>
-                              <td className="p-2 text-center font-medium text-primary-600">
-                                {net.toFixed(2)}
-                              </td>
+                              <td className="p-2 text-center font-medium text-primary-600">{net.toFixed(2)}</td>
                             </tr>
                           );
                         })}
@@ -714,7 +286,13 @@ export default function DenemePage() {
                               <span key={key} className="text-stone-600 dark:text-stone-400">
                                 {key} net: <strong className="text-stone-900 dark:text-stone-100">{net.toFixed(2)}</strong>
                                 {calculated.sectionSP[key] != null ? (
-                                  <> · SP: <strong className="text-primary-700 dark:text-primary-300">{calculated.sectionSP[key].toFixed(2)}</strong></>
+                                  <>
+                                    {' '}
+                                    · SP:{' '}
+                                    <strong className="text-primary-700 dark:text-primary-300">
+                                      {calculated.sectionSP[key].toFixed(2)}
+                                    </strong>
+                                  </>
                                 ) : null}
                               </span>
                             ))}
@@ -728,19 +306,32 @@ export default function DenemePage() {
                           ))}
                         </div>
                         <p className="text-xs text-stone-500 dark:text-stone-400">
-                          Net = Doğru − Yanlış/4. SP = ((net − μ) / σ) × 10 + 50. Popülasyon verisi varsa μ ve σ deneme havuzundan alınır.
+                          Net = Doğru − Yanlış/4. SP = ((net − μ) / σ) × 10 + 50. Popülasyon verisi varsa μ ve σ deneme
+                          havuzundan alınır.
                         </p>
                       </div>
                     ) : calculated ? (
                       <div className="mt-3 flex flex-wrap gap-4 rounded-lg bg-primary-50 p-3 dark:bg-primary-950/30">
-                        <span className="font-medium text-stone-700 dark:text-stone-300">Toplam net: <strong className="text-primary-700 dark:text-primary-300">{calculated.totalNet.toFixed(2)}</strong></span>
-                        <span className="font-medium text-stone-700 dark:text-stone-300">Hesaplanan puan: <strong className="text-primary-700 dark:text-primary-300">{calculated.calculatedScore.toFixed(2)}{maxScore !== 100 ? ` / ${maxScore}` : ''}</strong></span>
+                        <span className="font-medium text-stone-700 dark:text-stone-300">
+                          Toplam net:{' '}
+                          <strong className="text-primary-700 dark:text-primary-300">{calculated.totalNet.toFixed(2)}</strong>
+                        </span>
+                        <span className="font-medium text-stone-700 dark:text-stone-300">
+                          Hesaplanan puan:{' '}
+                          <strong className="text-primary-700 dark:text-primary-300">
+                            {calculated.calculatedScore.toFixed(2)}
+                            {maxScore !== 100 ? ` / ${maxScore}` : ''}
+                          </strong>
+                        </span>
                       </div>
                     ) : null}
                   </div>
                 ) : (
                   <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/40 dark:bg-amber-950/30">
-                    <p className="text-sm text-amber-800 dark:text-amber-200">Bu sınav için ders yapısı tanımlı değil. Toplam doğru / yanlış / boş girin; net ve puan otomatik hesaplanır.</p>
+                    <p className="text-sm text-amber-800 dark:text-amber-200">
+                      Bu sınav için ders yapısı tanımlı değil. Toplam doğru / yanlış / boş girin; net ve puan otomatik
+                      hesaplanır.
+                    </p>
                     <div className="mt-3 grid gap-3 sm:grid-cols-3">
                       <div>
                         <label className="mb-1 block text-xs font-medium text-stone-700 dark:text-stone-300">Toplam Doğru</label>
@@ -775,8 +366,17 @@ export default function DenemePage() {
                     </div>
                     {calculated && (
                       <div className="mt-3 flex flex-wrap gap-4 rounded-lg bg-primary-50 p-3 dark:bg-primary-950/30">
-                        <span className="font-medium text-stone-700 dark:text-stone-300">Toplam net: <strong className="text-primary-700 dark:text-primary-300">{calculated.totalNet.toFixed(2)}</strong></span>
-                        <span className="font-medium text-stone-700 dark:text-stone-300">Hesaplanan puan: <strong className="text-primary-700 dark:text-primary-300">{calculated.calculatedScore.toFixed(2)}{maxScore !== 100 ? ` / ${maxScore}` : ''}</strong></span>
+                        <span className="font-medium text-stone-700 dark:text-stone-300">
+                          Toplam net:{' '}
+                          <strong className="text-primary-700 dark:text-primary-300">{calculated.totalNet.toFixed(2)}</strong>
+                        </span>
+                        <span className="font-medium text-stone-700 dark:text-stone-300">
+                          Hesaplanan puan:{' '}
+                          <strong className="text-primary-700 dark:text-primary-300">
+                            {calculated.calculatedScore.toFixed(2)}
+                            {maxScore !== 100 ? ` / ${maxScore}` : ''}
+                          </strong>
+                        </span>
                       </div>
                     )}
                   </div>
@@ -798,7 +398,10 @@ export default function DenemePage() {
             <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-stone-100 pt-5 dark:border-stone-800">
               <button
                 type="submit"
-                disabled={submitting || !!(form.examId && examSubjects.length > 0 && !breakdownForSubmit.some((b) => b.right > 0 || b.wrong > 0 || b.empty > 0))}
+                disabled={
+                  submitting ||
+                  !!(form.examId && examSubjects.length > 0 && !breakdownForSubmit.some((b) => b.right > 0 || b.wrong > 0 || b.empty > 0))
+                }
                 className="btn btn-primary gap-2"
               >
                 {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
@@ -838,7 +441,7 @@ export default function DenemePage() {
                 attempt={a}
                 topicProgress={topicProgressByExam[a.examId]}
                 avgNet={analysisAvg}
-                formatDate={formatDate}
+                formatDate={formatDenemeDate}
               />
             ))}
           </ul>

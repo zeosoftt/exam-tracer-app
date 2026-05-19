@@ -4,14 +4,12 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
+import { requireSession, getSessionUserId } from '@/lib/auth/requireSession';
 import { asyncHandler, handleError } from '@/lib/errors/errorHandler';
 import { prisma } from '@/lib/db/prisma';
 import { buildDashboardStatsData } from '@/lib/services/dashboard/dashboardStatsService';
 import { logApi } from '@/lib/logger';
 import { HTTP_STATUS } from '@/config/constants';
-import { UnauthorizedError } from '@/lib/errors/AppError';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,12 +23,8 @@ const statsCache = new Map<string, { expiresAt: number; payload: StatsApiPayload
 
 async function getStatsHandler(req: NextRequest): Promise<NextResponse> {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      throw new UnauthorizedError();
-    }
-
-    const userId = session.user.id;
+    const session = await requireSession();
+    const userId = getSessionUserId(session);
     const userRole = session.user.role;
     const institutionId = session.user.institutionId;
     const forceRefresh = req.nextUrl.searchParams.get('fresh') === '1';

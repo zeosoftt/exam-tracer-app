@@ -64,13 +64,8 @@ export interface KpssSectionSubjectIds {
   GK: string[];
 }
 
-export interface KpssPopulationStats {
-  gyMean: number;
-  gyStd: number;
-  gkMean: number;
-  gkStd: number;
-  sampleSize: number;
-}
+export type { KpssPopulationStats } from '@/lib/utils/kpssStats';
+import type { KpssPopulationStats } from '@/lib/utils/kpssStats';
 
 /** KPSS puan türleri (geriye dönük uyumluluk) */
 export function kpssPuanlari(gySP: number, gkSP: number): { P1: number; P2: number; P3: number } {

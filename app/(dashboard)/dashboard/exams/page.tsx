@@ -3,9 +3,7 @@
  */
 
 import dynamic from 'next/dynamic';
-import { redirect } from 'next/navigation';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
+import { requirePageSession } from '@/lib/auth/pageSession';
 import { RouteShellSkeleton } from '@/components/ui/RouteShellSkeleton';
 
 const ExamsList = dynamic(
@@ -14,11 +12,7 @@ const ExamsList = dynamic(
 );
 
 export default async function ExamsPage() {
-  const session = await getServerSession(authOptions);
-
-  if (!session) {
-    redirect('/auth/login');
-  }
+  const session = await requirePageSession();
 
   return <ExamsList user={session.user} />;
 }

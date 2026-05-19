@@ -4,9 +4,7 @@
  */
 
 import dynamic from 'next/dynamic';
-import { redirect } from 'next/navigation';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/config';
+import { requireExamCreatorPageSession } from '@/lib/auth/pageSession';
 import { RouteShellSkeleton } from '@/components/ui/RouteShellSkeleton';
 
 const CreateExamForm = dynamic(
@@ -15,17 +13,7 @@ const CreateExamForm = dynamic(
 );
 
 export default async function NewExamPage() {
-  const session = await getServerSession(authOptions);
-
-  if (!session) {
-    redirect('/auth/login');
-  }
-
-  const canCreate = session.user.role === 'ADMIN' || session.user.role === 'INSTITUTION_ADMIN';
-
-  if (!canCreate) {
-    redirect('/dashboard/exams');
-  }
+  const session = await requireExamCreatorPageSession();
 
   return <CreateExamForm user={session.user} />;
 }

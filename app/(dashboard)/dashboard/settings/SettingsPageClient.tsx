@@ -25,6 +25,15 @@ import {
   LifeBuoy,
 } from 'lucide-react';
 import { ThemeSelect } from '@/components/theme/ThemeSelect';
+import { ToggleSwitch, SettingsSectionCard } from '@/components/settings/SettingsUi';
+import {
+  formatExamOptionLabel,
+  settingsFieldClass,
+  settingsFieldDisabledClass,
+  settingsLabelClass,
+  settingsSelectClass,
+  settingsHelperClass,
+} from '@/lib/settings/settingsFormStyles';
 import {
   fetchSettingsPageBundle,
   patchUserSettings,
@@ -276,41 +285,38 @@ export default function SettingsPage() {
 
         <div className="space-y-6">
           {/* Hesap Ayarları */}
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900/80 sm:p-8">
-            <div className="mb-6 flex items-center gap-3">
-              <div className="rounded-full bg-primary-100 p-3 dark:bg-primary-950">
-                <User className="h-6 w-6 text-primary-600 dark:text-primary-400" />
-              </div>
-              <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 sm:text-2xl">Hesap Ayarları</h2>
-            </div>
+          <SettingsSectionCard
+            title="Hesap Ayarları"
+            icon={<User className="h-6 w-6 text-primary-600 dark:text-primary-400" />}
+          >
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">E-posta</label>
+                <label className={settingsLabelClass}>E-posta</label>
                 <input
                   type="email"
                   value={session?.user?.email ?? settings?.user?.email ?? ''}
                   disabled
-                  className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-stone-600"
+                  className={settingsFieldDisabledClass}
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Ad</label>
+                  <label className={settingsLabelClass}>Ad</label>
                   <input
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className={settingsFieldClass}
                     placeholder="Adınız"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-stone-700 mb-2">Soyad</label>
+                  <label className={settingsLabelClass}>Soyad</label>
                   <input
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className={settingsFieldClass}
                     placeholder="Soyadınız"
                   />
                 </div>
@@ -392,16 +398,13 @@ export default function SettingsPage() {
                 )}
               </div>
             </div>
-          </div>
+          </SettingsSectionCard>
 
-          {/* Plan ve Faturalandırma */}
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900/80 sm:p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="rounded-full bg-emerald-100 p-3">
-                <CreditCard className="h-6 w-6 text-emerald-600" />
-              </div>
-              <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 sm:text-2xl">Plan ve Faturalandırma</h2>
-            </div>
+          <SettingsSectionCard
+            title="Plan ve Faturalandırma"
+            icon={<CreditCard className="h-6 w-6 text-emerald-600" />}
+            iconClassName="bg-emerald-100"
+          >
             {planLoading ? (
               <div className="flex items-center gap-2 text-stone-500">
                 <Loader2 className="h-5 w-5 animate-spin" />
@@ -445,119 +448,96 @@ export default function SettingsPage() {
             ) : (
               <p className="text-sm text-stone-500">Plan bilgisi alınamadı.</p>
             )}
-          </div>
+          </SettingsSectionCard>
 
-          {/* Hedef ve çalışma */}
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900/80 sm:p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="rounded-full bg-amber-100 p-3">
-                <Target className="h-6 w-6 text-amber-600" />
-              </div>
-              <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 sm:text-2xl">Çalışma Hedefleri</h2>
-            </div>
+          <SettingsSectionCard
+            title="Çalışma Hedefleri"
+            icon={<Target className="h-6 w-6 text-amber-600" />}
+            iconClassName="bg-amber-100"
+          >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">Hedef puan (0–100)</label>
+                <label className={settingsLabelClass}>Hedef puan (0–100)</label>
                 <input
                   type="number"
                   min={0}
                   max={100}
                   value={targetScore}
                   onChange={(e) => setTargetScore(e.target.value)}
-                  className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className={settingsFieldClass}
                   placeholder="Örn. 96"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-stone-700 mb-2">Günlük çalışma saati (0–24)</label>
+                <label className={settingsLabelClass}>Günlük çalışma saati (0–24)</label>
                 <input
                   type="number"
                   min={0}
                   max={24}
                   value={dailyStudyHours}
                   onChange={(e) => setDailyStudyHours(e.target.value)}
-                  className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className={settingsFieldClass}
                   placeholder="Örn. 4"
                 />
               </div>
             </div>
-          </div>
+          </SettingsSectionCard>
 
-          {/* Sınav / Ders seçimi */}
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900/80 sm:p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="rounded-full bg-primary-100 p-3">
-                <BookOpen className="h-6 w-6 text-primary-600" />
-              </div>
-              <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 sm:text-2xl">Sınav / Ders</h2>
-            </div>
+          <SettingsSectionCard
+            title="Sınav / Ders"
+            icon={<BookOpen className="h-6 w-6 text-primary-600" />}
+          >
             <div>
-              <label className="block text-sm font-semibold text-stone-700 mb-2">Aktif sınavınız</label>
+              <label className={settingsLabelClass}>Aktif sınavınız</label>
               <select
                 value={examId}
                 onChange={(e) => setExamId(e.target.value)}
-                className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white"
+                className={settingsSelectClass}
               >
                 <option value="">Sınav seçin</option>
                 {exams.map((exam) => (
                   <option key={exam.id} value={exam.id}>
-                    {exam.name} ({exam.code})
+                    {formatExamOptionLabel(exam.name, exam.code)}
                   </option>
                 ))}
               </select>
-              <p className="mt-2 text-xs text-stone-500">
+              <p className={settingsHelperClass}>
                 İlerleme ve konular bu sınava göre gösterilir. Değiştirdiğinizde yeni sınav aktif olur.
               </p>
             </div>
-          </div>
+          </SettingsSectionCard>
 
-          {/* Bildirimler (placeholder) */}
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900/80 sm:p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="rounded-full bg-pink-100 p-3">
-                <Bell className="h-6 w-6 text-pink-600" />
-              </div>
-              <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 sm:text-2xl">Bildirimler</h2>
-            </div>
+          <SettingsSectionCard
+            title="Bildirimler"
+            icon={<Bell className="h-6 w-6 text-pink-600" />}
+            iconClassName="bg-pink-100"
+          >
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="font-semibold text-stone-900 dark:text-stone-100">E-posta bildirimleri</div>
                   <div className="text-sm text-stone-600 dark:text-stone-400">Önemli güncellemeler için e-posta alın</div>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" defaultChecked />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600" />
-                </label>
+                <ToggleSwitch defaultChecked aria-label="E-posta bildirimleri" />
               </div>
               <div className="flex items-center justify-between">
                 <div>
                   <div className="font-semibold text-stone-900 dark:text-stone-100">Çalışma hatırlatıcıları</div>
                   <div className="text-sm text-stone-600 dark:text-stone-400">Günlük hedefler için hatırlatıcılar</div>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" defaultChecked />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600" />
-                </label>
+                <ToggleSwitch defaultChecked aria-label="Çalışma hatırlatıcıları" />
               </div>
             </div>
-          </div>
+          </SettingsSectionCard>
 
-          {/* Görünüm — localStorage + html class; sunucuya yazılmaz */}
-          <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900/80 sm:p-8">
-            <div className="mb-6 flex items-center gap-3">
-              <div className="rounded-full bg-stone-100 p-3 dark:bg-stone-800">
-                <Palette className="h-6 w-6 text-stone-600 dark:text-stone-300" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 sm:text-2xl">Görünüm</h2>
-                <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
-                  Tercih bu cihazda saklanır; ister buradan ister üst menüdeki ikonlardan değiştirin.
-                </p>
-              </div>
-            </div>
+          <SettingsSectionCard
+            title="Görünüm"
+            icon={<Palette className="h-6 w-6 text-stone-600 dark:text-stone-300" />}
+            iconClassName="bg-stone-100 dark:bg-stone-800"
+            description="Tercih bu cihazda saklanır; ister buradan ister üst menüdeki ikonlardan değiştirin."
+          >
             <ThemeSelect />
-          </div>
+          </SettingsSectionCard>
 
           {/* Kaydet */}
           <div className="flex justify-end">
