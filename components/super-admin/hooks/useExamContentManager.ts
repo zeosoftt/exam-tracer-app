@@ -8,7 +8,7 @@ import {
   fetchExamContentTree,
   patchTopicOrder,
   persistExamContentModal,
-} from '../api/examContentClient';
+} from '@/lib/client-api/examContentClient';
 
 export function useExamContentManager() {
   const [exams, setExams] = useState<ExamNode[]>([]);

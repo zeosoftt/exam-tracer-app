@@ -6,7 +6,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { createExamRequest } from '@/components/exams/api/examsClient';
+import { createExamRequest } from '@/lib/client-api/examsClient';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';

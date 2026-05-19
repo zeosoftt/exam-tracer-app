@@ -13,9 +13,6 @@ export const settingsFieldDisabledClass =
 
 export const settingsHelperClass = 'mt-1.5 text-xs leading-relaxed text-stone-500 dark:text-stone-400';
 
-export const settingsCardClass =
-  'rounded-2xl border border-stone-200 bg-white p-6 shadow-sm dark:border-stone-800 dark:bg-stone-900/80 sm:p-8';
-
 /** Sınav adında kod zaten geçiyorsa tekrar ekleme */
 export function formatExamOptionLabel(name: string, code: string): string {
   const trimmedName = name.trim();

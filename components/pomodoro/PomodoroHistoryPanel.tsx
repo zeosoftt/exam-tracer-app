@@ -1,4 +1,6 @@
 import { CheckCircle2, CircleDashed, Coffee, History, Timer } from 'lucide-react';
+import { PanelCard } from '@/components/ui';
+import { cn } from '@/lib/utils/cn';
 import {
   formatRelativeSessionDate,
   formatSessionDuration,
@@ -86,9 +88,7 @@ export function PomodoroHistoryPanel({
   const completedWork = sessions.filter((s) => s.completed && !s.isBreak).length;
 
   return (
-    <div
-      className={`flex min-h-0 flex-col overflow-hidden rounded-2xl border border-stone-100 bg-white shadow-lg dark:border-stone-800 dark:bg-stone-900/90 ${className}`}
-    >
+    <PanelCard className={cn('flex min-h-0 flex-col overflow-hidden p-0', className)}>
       <div className="shrink-0 border-b border-stone-100 px-4 py-3 dark:border-stone-800">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
@@ -131,6 +131,6 @@ export function PomodoroHistoryPanel({
           </div>
         )}
       </div>
-    </div>
+    </PanelCard>
   );
 }

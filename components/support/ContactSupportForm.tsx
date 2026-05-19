@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { Loader2, Send } from 'lucide-react';
 import { SUPPORT_CATEGORY_LABELS } from '@/lib/support/supportContactCategories';
-import { submitSupportContact } from '@/components/support/api/supportContactClient';
+import { submitSupportContact } from '@/lib/client-api/supportClient';
 
 type Props = {
   defaultEmail?: string | null;

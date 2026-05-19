@@ -1,4 +1,5 @@
 import { Calendar, Clock, TrendingUp } from 'lucide-react';
+import { PanelCard } from '@/components/ui';
 import {
   describeStatPeriod,
   formatStudyDuration,
@@ -40,11 +41,7 @@ export function PomodoroStatsPanel({
   className?: string;
 }) {
   return (
-    <div
-      className={`rounded-2xl border border-stone-100 bg-white shadow-lg dark:border-stone-800 dark:bg-stone-900/90 ${
-        compact ? 'p-4' : 'p-6'
-      } ${className}`}
-    >
+    <PanelCard padding={compact ? 'sm' : 'md'} className={className}>
       <div className="mb-1 flex items-center gap-2">
         <TrendingUp className="h-5 w-5 text-primary-600 dark:text-primary-400" />
         <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">İstatistikler</h2>
@@ -112,6 +109,6 @@ export function PomodoroStatsPanel({
           );
         })}
       </div>
-    </div>
+    </PanelCard>
   );
 }

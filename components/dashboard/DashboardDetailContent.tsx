@@ -8,7 +8,7 @@
 import { useDashboardDetailPage } from '@/components/dashboard/hooks/useDashboardDetailPage';
 import type { DashboardUser } from '@/components/dashboard/home/dashboardHomeTypes';
 import { DashboardDetailHeader } from '@/components/dashboard/detail/DashboardDetailHeader';
-import { DashboardDetailBackLink } from '@/components/dashboard/detail/DashboardDetailBackLink';
+import { BackLink } from '@/components/ui';
 import { DashboardDetailSectionsView } from '@/components/dashboard/detail/DashboardDetailSectionsView';
 import { DashboardDetailEmptyState } from '@/components/dashboard/detail/DashboardDetailEmptyState';
 
@@ -20,7 +20,7 @@ export function DashboardDetailContent({ user }: { user: DashboardUser }) {
       <DashboardDetailHeader user={user} />
 
       <main className="mx-auto max-w-7xl px-3 py-6 sm:px-6 sm:py-12">
-        <DashboardDetailBackLink />
+        <BackLink href="/dashboard" label="Özet Ekrana Dön" />
 
         {!page.isLoading && page.detailData?.sections && page.detailData.sections.length > 0 && (
           <DashboardDetailSectionsView {...page} />

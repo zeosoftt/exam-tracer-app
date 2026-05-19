@@ -4,10 +4,10 @@
 
 'use client';
 
-import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { ArrowLeft, Plus, Target, Calculator, Loader2, Lock, Sparkles } from 'lucide-react';
-import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
+import { Plus, Target, Calculator, Loader2, Lock, Sparkles } from 'lucide-react';
+import { SubAppPageHeader, FlashMessage } from '@/components/ui';
+import { pageIntroClass } from '@/lib/ui/pageStyles';
 import {
   DenemeAnalysisPanel,
   DenemeAttemptCard,
@@ -56,46 +56,21 @@ export default function DenemePage() {
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
-      <header className="border-b border-stone-200 bg-white/90 backdrop-blur-sm dark:border-stone-800 dark:bg-stone-950/90">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-2 text-stone-700 transition-colors hover:text-stone-900 dark:text-stone-300 dark:hover:text-stone-100"
-            >
-              <ArrowLeft className="h-5 w-5" />
-              <span className="font-medium">Geri</span>
-            </Link>
-            <div className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-primary-600 dark:text-primary-400" />
-              <span className="text-xl font-bold text-stone-900 dark:text-stone-100">Deneme Takibi</span>
-            </div>
-            <ThemeToggleCompact />
-          </div>
-        </div>
-      </header>
+      <SubAppPageHeader
+        title="Deneme Takibi"
+        icon={<Target className="h-5 w-5 text-primary-600 dark:text-primary-400" aria-hidden />}
+      />
 
       <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8 sm:mb-10">
-          <h1 className="mb-2 font-display text-3xl font-bold text-stone-900 dark:text-stone-100 sm:text-4xl">
-            Deneme Takibi
-          </h1>
-          <p className="text-stone-600 dark:text-stone-400">
-            Deneme kayıtlarınızı girin, net trendinizi ve konu ilerlemenizi takip edin.
-          </p>
-        </div>
+        <p className={pageIntroClass}>
+          Deneme kayıtlarınızı girin, net trendinizi ve konu ilerlemenizi takip edin.
+        </p>
 
-        {message && (
-          <div
-            className={`mb-6 rounded-xl border px-4 py-3 ${
-              message.type === 'success'
-                ? 'border-green-200 bg-green-50 text-green-800 dark:border-green-900/50 dark:bg-green-950/40 dark:text-green-200'
-                : 'border-red-200 bg-red-50 text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200'
-            }`}
-          >
+        {message ? (
+          <FlashMessage type={message.type} variant="bordered">
             {message.text}
-          </div>
-        )}
+          </FlashMessage>
+        ) : null}
 
         {listError && (
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">

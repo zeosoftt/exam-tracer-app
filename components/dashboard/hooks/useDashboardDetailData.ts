@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo, startTransition } from 'react';
 import type { DetailData } from '../detail/dashboardDetailTypes';
-import { fetchDashboardDetailData } from '../api/fetchDashboardDetail';
+import { fetchDashboardDetailData } from '@/lib/client-api/dashboardClient';
 import { selectSection, selectSubject } from '../domain/detailSelectors';
 
 export function useDashboardDetailData() {

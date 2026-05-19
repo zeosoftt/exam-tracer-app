@@ -7,7 +7,7 @@ import {
   fetchSuperAdminStats,
   fetchSuperAdminUsersPage,
   patchSuperAdminSiteSettings,
-} from '../api/superAdminClient';
+} from '@/lib/client-api/superAdminClient';
 import { scheduleIdleTask } from '@/lib/runtime/scheduleIdleTask';
 
 export function formatAdminDateTime(dateStr: string | null): string {

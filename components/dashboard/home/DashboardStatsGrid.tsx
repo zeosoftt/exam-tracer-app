@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { CheckCircle, Circle, ClipboardList, Clock, LayoutDashboard, Target } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { SectionIconHeader, StatCard, StatCardGridSkeleton } from '@/components/ui';
 import { WEEK_DAY_LABELS } from '@/components/dashboard/domain/dashboardConstants';
 import type { DashboardStats } from '@/components/dashboard/domain/dashboardTypes';
 import type { useDashboardViewModel } from '@/components/dashboard/hooks/useDashboardViewModel';
@@ -20,48 +20,30 @@ export function DashboardStatsGrid({ isLoading, stats, vm }: DashboardStatsGridP
 
   return (
     <>
-      <div className="mb-4 flex items-center gap-3 sm:mb-6">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-stone-100 dark:bg-stone-800">
-          <LayoutDashboard className="h-5 w-5 text-stone-600 dark:text-stone-300" aria-hidden />
-        </div>
-        <div>
-          <h2 className="font-display text-base font-bold sm:text-lg">Özet sayılar</h2>
-          <p className="text-xs text-stone-500 dark:text-stone-400 sm:text-sm">
-            Tarama için büyük rakamlar; ayrıntı ilgili sayfada
-          </p>
-        </div>
-      </div>
+      <SectionIconHeader
+        className="mb-4 sm:mb-6"
+        icon={<LayoutDashboard className="h-5 w-5 text-stone-600 dark:text-stone-300" aria-hidden />}
+        title="Özet sayılar"
+        description="Tarama için büyük rakamlar; ayrıntı ilgili sayfada"
+      />
 
       {isLoading ? (
-        <div className="mb-8 grid gap-4 sm:mb-10 sm:grid-cols-2 lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <div
-              key={i}
-              className="animate-pulse rounded-2xl border border-stone-200 bg-white p-5 dark:border-stone-800 dark:bg-stone-900/60"
-            >
-              <div className="mb-4 flex gap-3">
-                <div className="h-10 w-10 rounded-lg bg-stone-200 dark:bg-stone-700" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-3 w-24 rounded bg-stone-100 dark:bg-stone-800" />
-                  <div className="h-8 w-16 rounded bg-stone-200 dark:bg-stone-700" />
-                </div>
-              </div>
-              <div className="h-3 w-full max-w-[90%] rounded bg-stone-100 dark:bg-stone-800" />
-            </div>
-          ))}
-        </div>
+        <StatCardGridSkeleton />
       ) : (
         <div className="mb-8 grid gap-4 sm:mb-10 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-2xl border border-stone-200 border-l-4 border-l-primary-500 bg-white p-5 dark:border-stone-800 dark:border-l-primary-500 dark:bg-stone-900/80">
-            <div className="mb-4 flex items-center gap-3 border-b border-stone-100 pb-3 dark:border-stone-800">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-100 text-primary-700 dark:bg-primary-950 dark:text-primary-400">
-                <CheckCircle className="h-5 w-5" aria-hidden />
+          <StatCard
+            accent="primary"
+            icon={<CheckCircle className="h-5 w-5" aria-hidden />}
+            label="Konu ilerlemesi"
+            title="Özet"
+            headerClassName="mb-4"
+            footer={
+              <div className="mt-4 flex items-center justify-between border-t border-stone-100 pt-3 dark:border-stone-800">
+                <span className="text-xs text-stone-500 dark:text-stone-400">Tamamlanma</span>
+                <span className="text-lg font-bold tabular-nums text-primary-700 dark:text-primary-400">{vm.completionRate}%</span>
               </div>
-              <div>
-                <p className="text-xs font-medium text-stone-500 dark:text-stone-400">Konu ilerlemesi</p>
-                <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">Özet</p>
-              </div>
-            </div>
+            }
+          >
             <dl className="space-y-2 text-sm">
               <div className="flex justify-between gap-2">
                 <dt className="text-stone-500 dark:text-stone-400">Ders</dt>
@@ -82,23 +64,19 @@ export function DashboardStatsGrid({ isLoading, stats, vm }: DashboardStatsGridP
                 </dd>
               </div>
             </dl>
-            <div className="mt-4 flex items-center justify-between border-t border-stone-100 pt-3 dark:border-stone-800">
-              <span className="text-xs text-stone-500 dark:text-stone-400">Tamamlanma</span>
-              <span className="text-lg font-bold tabular-nums text-primary-700 dark:text-primary-400">{vm.completionRate}%</span>
-            </div>
-          </div>
+          </StatCard>
 
-          <div className="rounded-2xl border border-stone-200 border-l-4 border-l-violet-500 bg-white p-5 dark:border-stone-800 dark:border-l-violet-500 dark:bg-stone-900/80">
-            <div className="mb-3 flex items-center gap-3 border-b border-stone-100 pb-3 dark:border-stone-800">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300">
-                <Clock className="h-5 w-5" aria-hidden />
-              </div>
-              <div>
-                <p className="text-xs font-medium text-stone-500 dark:text-stone-400">Çalışma süresi</p>
+          <StatCard
+            accent="violet"
+            icon={<Clock className="h-5 w-5" aria-hidden />}
+            label="Çalışma süresi"
+            title={
+              <>
                 <p className="text-2xl font-bold tabular-nums text-stone-900 dark:text-stone-50">{vm.studyHours}</p>
-                <p className="text-xs text-stone-500 dark:text-stone-400">toplam saat</p>
-              </div>
-            </div>
+                <p className="text-xs font-normal text-stone-500 dark:text-stone-400">toplam saat</p>
+              </>
+            }
+          >
             {stats?.user?.dailyStudyHours != null && (
               <p className="mb-3 text-sm text-stone-600 dark:text-stone-400">
                 Günlük hedef:{' '}
@@ -135,21 +113,15 @@ export function DashboardStatsGrid({ isLoading, stats, vm }: DashboardStatsGridP
                 </div>
               </div>
             )}
-          </div>
+          </StatCard>
 
-          <Link
+          <StatCard
+            accent="accent"
             href="/dashboard/deneme"
-            className="block rounded-2xl border border-stone-200 border-l-4 border-l-accent-500 bg-white p-5 transition-colors hover:bg-stone-50 dark:border-stone-800 dark:border-l-accent-500 dark:bg-stone-900/80 dark:hover:bg-stone-900"
+            icon={<ClipboardList className="h-5 w-5" aria-hidden />}
+            label="Deneme takibi"
+            title="Kayıtlar ve net"
           >
-            <div className="mb-3 flex items-center gap-3 border-b border-stone-100 pb-3 dark:border-stone-800">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-100 text-accent-800 dark:bg-accent-950 dark:text-accent-300">
-                <ClipboardList className="h-5 w-5" aria-hidden />
-              </div>
-              <div>
-                <p className="text-xs font-medium text-stone-500 dark:text-stone-400">Deneme takibi</p>
-                <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">Kayıtlar ve net</p>
-              </div>
-            </div>
             {stats?.deneme && stats.deneme.totalAttempts > 0 ? (
               <>
                 <p className="text-sm text-stone-600 dark:text-stone-400">
@@ -186,18 +158,24 @@ export function DashboardStatsGrid({ isLoading, stats, vm }: DashboardStatsGridP
             ) : (
               <p className="text-sm text-stone-500 dark:text-stone-400">Henüz deneme yok — eklemek için tıklayın</p>
             )}
-          </Link>
+          </StatCard>
 
-          <div className="rounded-2xl border border-stone-200 border-l-4 border-l-teal-600 bg-white p-5 dark:border-stone-800 dark:border-l-teal-500 dark:bg-stone-900/80">
-            <div className="mb-3 flex items-center gap-3 border-b border-stone-100 pb-3 dark:border-stone-800">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300">
-                <Target className="h-5 w-5" aria-hidden />
-              </div>
-              <div>
-                <p className="text-xs font-medium text-stone-500 dark:text-stone-400">Sınav ve hedef</p>
-                <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">Takvim</p>
-              </div>
-            </div>
+          <StatCard
+            accent="teal"
+            icon={<Target className="h-5 w-5" aria-hidden />}
+            label="Sınav ve hedef"
+            title="Takvim"
+            footer={
+              stats?.user?.targetScore != null ? (
+                <div className="mt-4 border-t border-stone-100 pt-3 dark:border-stone-800">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-stone-500 dark:text-stone-400">Hedef puan</span>
+                    <span className="text-xl font-bold tabular-nums text-teal-700 dark:text-teal-400">{stats.user.targetScore}</span>
+                  </div>
+                </div>
+              ) : undefined
+            }
+          >
             {stats?.activeExam ? (
               <>
                 <p className="line-clamp-2 text-sm font-medium text-stone-900 dark:text-stone-100" title={stats.activeExam.name}>
@@ -221,15 +199,7 @@ export function DashboardStatsGrid({ isLoading, stats, vm }: DashboardStatsGridP
             ) : (
               <p className="text-sm text-stone-500 dark:text-stone-400">Aktif sınav yok</p>
             )}
-            {stats?.user?.targetScore != null && (
-              <div className="mt-4 border-t border-stone-100 pt-3 dark:border-stone-800">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-stone-500 dark:text-stone-400">Hedef puan</span>
-                  <span className="text-xl font-bold tabular-nums text-teal-700 dark:text-teal-400">{stats.user.targetScore}</span>
-                </div>
-              </div>
-            )}
-          </div>
+          </StatCard>
         </div>
       )}
     </>

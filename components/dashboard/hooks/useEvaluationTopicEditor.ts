@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import type { DashboardEvaluationTopic, TopicEditValues, EvaluationFilter } from '../domain/dashboardTypes';
-import type { FetchStatsOptions } from '../api/fetchDashboardData';
+import type { FetchStatsOptions } from '@/lib/client-api/dashboardClient';
 import { patchTopicProgress } from '@/lib/client-api/progressClient';
 
 type RefetchStats = (options?: FetchStatsOptions) => Promise<void>;

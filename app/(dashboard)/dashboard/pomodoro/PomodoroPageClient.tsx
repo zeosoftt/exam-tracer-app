@@ -5,8 +5,9 @@
 
 'use client';
 
+import { Timer } from 'lucide-react';
+import { SubAppPageHeader } from '@/components/ui';
 import { usePomodoroPage } from '@/components/pomodoro/hooks/usePomodoroPage';
-import { PomodoroPageHeader } from '@/components/pomodoro/PomodoroPageHeader';
 import { PomodoroTimerTabNav } from '@/components/pomodoro/PomodoroTimerTabNav';
 import { PomodoroTimerPanel } from '@/components/pomodoro/PomodoroTimerPanel';
 import { DenemePracticeTimerPanel } from '@/components/pomodoro/DenemePracticeTimerPanel';
@@ -17,7 +18,11 @@ export default function PomodoroPageClient() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100 lg:h-dvh lg:overflow-hidden">
-      <PomodoroPageHeader />
+      <SubAppPageHeader
+        title="Pomodoro"
+        icon={<Timer className="h-6 w-6 text-primary-600 dark:text-primary-400" aria-hidden />}
+        className="shrink-0"
+      />
 
       <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col overflow-y-auto px-4 py-4 sm:px-6 lg:min-h-0 lg:overflow-hidden lg:px-8 lg:py-5">
         <div className="grid gap-4 lg:min-h-0 lg:flex-1 lg:grid-cols-3 lg:items-stretch lg:gap-5">

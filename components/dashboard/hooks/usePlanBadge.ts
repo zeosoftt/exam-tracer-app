@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import type { PlanBadge } from '../domain/dashboardTypes';
-import { fetchBillingPlanBadge } from '../api/fetchDashboardData';
+import { fetchBillingPlanBadge } from '@/lib/client-api/dashboardClient';
 import { scheduleIdleTask } from '@/lib/runtime/scheduleIdleTask';
 
 export function usePlanBadge() {

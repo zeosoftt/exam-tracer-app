@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, startTransition } from 'react';
 import type { PlanStat } from '../domain/superAdminTypes';
-import { fetchSuperAdminPlanStats } from '../api/superAdminClient';
+import { fetchSuperAdminPlanStats } from '@/lib/client-api/superAdminClient';
 import { scheduleIdleTask } from '@/lib/runtime/scheduleIdleTask';
 
 export function usePlansContent() {

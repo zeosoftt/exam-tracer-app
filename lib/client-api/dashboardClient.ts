@@ -1,5 +1,5 @@
 /**
- * Dashboard HTTP — tek konum (DRY). Eski yol: components/dashboard/api/* re-export.
+ * Dashboard HTTP — tek konum (DRY + KISS).
  */
 
 import type { DashboardStats, PlanBadge } from '@/components/dashboard/domain/dashboardTypes';

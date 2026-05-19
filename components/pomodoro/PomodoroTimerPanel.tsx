@@ -1,6 +1,7 @@
 'use client';
 
-import { Pause, Play, RotateCcw, Volume2, VolumeX } from 'lucide-react';
+import { Volume2, VolumeX } from 'lucide-react';
+import { CircularProgressRing, TimerControlButtons } from '@/components/ui';
 import type { PomodoroPageState } from '@/components/pomodoro/hooks/usePomodoroPage';
 
 type PomodoroTimerPanelProps = Pick<
@@ -39,73 +40,28 @@ export function PomodoroTimerPanel({
       </div>
 
       <div className="mb-6 flex justify-center">
-        <div className="relative h-64 w-64 sm:h-72 sm:w-72">
-          <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 320 320">
-            <circle
-              cx="160"
-              cy="160"
-              r="140"
-              stroke="currentColor"
-              strokeWidth="8"
-              fill="none"
-              className="text-stone-200 dark:text-stone-700"
-            />
-            <circle
-              cx="160"
-              cy="160"
-              r="140"
-              stroke="currentColor"
-              strokeWidth="8"
-              fill="none"
-              strokeDasharray={`${2 * Math.PI * 140}`}
-              strokeDashoffset={`${2 * Math.PI * 140 * (1 - progress / 100)}`}
-              className={`transition-all duration-1000 ${isBreak ? 'text-accent-500' : 'text-primary-600'}`}
-            />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <div
-              className={`text-5xl font-bold tabular-nums sm:text-6xl ${isBreak ? 'text-accent-600' : 'text-primary-600'}`}
-            >
-              {formatTime(displayMinutes, displaySeconds)}
-            </div>
-            <div className="text-xs font-semibold uppercase text-stone-500 dark:text-stone-400">
-              {isBreak ? 'Mola' : 'Çalışma'}
-            </div>
+        <CircularProgressRing
+          progress={progress}
+          progressClassName={`transition-all duration-1000 ${isBreak ? 'text-accent-500' : 'text-primary-600'}`}
+        >
+          <div
+            className={`text-5xl font-bold tabular-nums sm:text-6xl ${isBreak ? 'text-accent-600' : 'text-primary-600'}`}
+          >
+            {formatTime(displayMinutes, displaySeconds)}
           </div>
-        </div>
+          <div className="text-xs font-semibold uppercase text-stone-500 dark:text-stone-400">
+            {isBreak ? 'Mola' : 'Çalışma'}
+          </div>
+        </CircularProgressRing>
       </div>
 
-      <div className="mb-6 flex flex-wrap justify-center gap-3">
-        <button
-          type="button"
-          onClick={() => void handleStartPause()}
-          className={`flex items-center gap-2 rounded-2xl px-7 py-3.5 font-bold text-white shadow-lg transition hover:scale-[1.02] hover:shadow-xl ${
-            isBreak
-              ? 'bg-gradient-to-r from-pink-500 to-pink-600'
-              : 'bg-gradient-to-r from-primary-500 to-primary-600'
-          }`}
-        >
-          {isActive ? (
-            <>
-              <Pause className="h-5 w-5" />
-              Duraklat
-            </>
-          ) : (
-            <>
-              <Play className="h-5 w-5" />
-              Başlat
-            </>
-          )}
-        </button>
-        <button
-          type="button"
-          onClick={handleReset}
-          className="flex items-center gap-2 rounded-2xl border-2 border-stone-200 bg-white px-7 py-3.5 font-bold text-stone-700 shadow-md transition hover:bg-stone-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700"
-        >
-          <RotateCcw className="h-5 w-5" />
-          Sıfırla
-        </button>
-      </div>
+      <TimerControlButtons
+        className="mb-6"
+        isRunning={isActive}
+        onToggle={() => void handleStartPause()}
+        onReset={handleReset}
+        startVariant={isBreak ? 'pink' : 'primary'}
+      />
 
       <div className="flex justify-center">
         <button

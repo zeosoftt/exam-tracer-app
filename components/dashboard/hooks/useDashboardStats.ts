@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, startTransition } from 'react';
 import type { DashboardStats } from '../domain/dashboardTypes';
-import { fetchDashboardStatsPayload, type FetchStatsOptions } from '../api/fetchDashboardData';
+import { fetchDashboardStatsPayload, type FetchStatsOptions } from '@/lib/client-api/dashboardClient';
 import { scheduleIdleTask } from '@/lib/runtime/scheduleIdleTask';
 
 export function useDashboardStats() {
