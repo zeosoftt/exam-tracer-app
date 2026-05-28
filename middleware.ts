@@ -50,6 +50,8 @@ export default withAuth(
           path === '/icon.svg' ||
           path === '/robots.txt' ||
           path === '/sitemap.xml' ||
+          path === '/llms.txt' ||
+          path === '/llms-full.txt' ||
           path === '/manifest.webmanifest' ||
           path === '/opengraph-image' ||
           path.startsWith('/opengraph-image/')
@@ -92,6 +94,6 @@ export const config = {
      * withAuth dışında bırakılanlar (SEO + önizleme):
      * robots, sitemap, manifest, ikon, OG görseli — oturumsuz istekte yönlendirme/401 olmasın.
      */
-    '/((?!_next/static|_next/image|favicon\\.ico|icon\\.svg|robots\\.txt|sitemap\\.xml|manifest\\.webmanifest|opengraph-image).*)',
+    '/((?!_next/static|_next/image|favicon\\.ico|icon\\.svg|robots\\.txt|sitemap\\.xml|llms\\.txt|llms-full\\.txt|manifest\\.webmanifest|opengraph-image).*)',
   ],
 };

@@ -1,4 +1,5 @@
 export { getBaseUrl } from './baseUrl';
+export { buildLlmsFullTxt, buildLlmsTxt } from './llmsTxt';
 export { PUBLIC_FAQ_ITEMS } from './faqData';
 export {
   EXAM_NAMES_SHORT,

@@ -48,6 +48,12 @@ export function buildHomeJsonLd() {
         description: SEO_DEFAULT_DESCRIPTION,
         inLanguage: 'tr-TR',
         publisher: { '@id': `${base}/#organization` },
+        about: {
+          '@type': 'Thing',
+          name: 'Sınav ve konu takip yazılımı',
+          description:
+            'KPSS, ÖABT, ALES, YKS ve DGS hazırlığı için konu takibi, deneme kaydı ve ÖSYM uyumlu puan hesaplama.',
+        },
       },
       {
         '@type': 'Organization',

@@ -45,6 +45,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+        <link rel="alternate" type="text/plain" href="/llms.txt" title="LLM site summary" />
       </head>
       <body className="font-sans antialiased">
         <Script
