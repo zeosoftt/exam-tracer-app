@@ -39,6 +39,8 @@ export default function RootLayout({
   return (
     <html lang="tr" className={inter.variable} suppressHydrationWarning>
       <head>
+        {/* AdSense site doğrulaması — Metadata API yerine statik head (Googlebot ilk HTML’de görmeli) */}
+        <meta name="google-adsense-account" content={ADSENSE_CLIENT_ID} />
         <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossOrigin="anonymous" />

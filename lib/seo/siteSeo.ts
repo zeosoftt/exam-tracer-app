@@ -201,9 +201,6 @@ export function buildRootMetadata(): Metadata {
       url: baseUrl,
     }),
     ...(verification ? { verification: { google: verification } } : {}),
-    other: {
-      'google-adsense-account': ADSENSE_CLIENT_ID,
-    },
     icons: {
       icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
       apple: [{ url: '/icon.svg', type: 'image/svg+xml' }],
