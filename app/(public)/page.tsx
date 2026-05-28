@@ -109,14 +109,14 @@ export default async function LandingPage() {
                 <span>Sınav takibi artık tek ekranda</span>
               </div>
               <h1 className="landing-hero-in landing-hero-in-1 font-display mb-4 text-4xl font-extrabold tracking-tight text-stone-900 dark:text-stone-100 sm:mb-5 sm:text-5xl lg:text-5xl xl:text-6xl">
-                Konuları takip et.
+                KPSS, ALES, ÖABT ve YKS için
                 <br />
                 <span className="text-primary-800 dark:text-primary-200">
-                  Hedefe ulaş.
+                  konu ve deneme takibi
                 </span>
               </h1>
               <p className="landing-hero-in landing-hero-in-2 mx-auto mb-6 max-w-xl text-lg leading-relaxed text-stone-600 dark:text-stone-300 sm:mb-8 sm:text-xl lg:mx-0">
-                Dağınık notlar ve belirsiz ilerleme yerine: konuları işaretleyin, denemeleri kaydedin, net trendinizi görün. KPSS, ÖABT, ALES ve daha fazlası — tek panel.
+                The Goal Lab ile sınav hazırlığınızı tek panelde toplayın: konu ilerlemesi, deneme kaydı, net trendi ve ÖSYM uyumlu puan hesaplama. DGS, TYT/AYT ve kurum içi sınavlar dahil.
               </p>
               <div className="landing-hero-in landing-hero-in-3 mb-6 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4 lg:justify-start">
                 <Link
@@ -267,18 +267,18 @@ export default async function LandingPage() {
       </section>
 
       {/* Desteklenen Sınavlar */}
-      <section className="py-12 sm:py-16 bg-stone-50 dark:bg-stone-950 border-y border-stone-100 dark:border-stone-800">
+      <section id="sinavlar" className="border-y border-stone-100 bg-stone-50 py-12 dark:border-stone-800 dark:bg-stone-950 sm:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8 sm:mb-10">
-            <h2 className="font-display text-2xl sm:text-3xl font-bold text-stone-900 dark:text-stone-100 mb-2">
-              Desteklenen Sınavlar
+          <div className="mb-8 text-center sm:mb-10">
+            <h2 className="mb-2 font-display text-2xl font-bold text-stone-900 dark:text-stone-100 sm:text-3xl">
+              Desteklenen sınavlar
             </h2>
-            <p className="text-stone-600 dark:text-stone-300 text-sm sm:text-base max-w-xl mx-auto">
-              KPSS, öğretmenlik, lisansüstü ve yabancı dil sınavları dahil tüm yapıyı kendiniz tanımlayıp takip edebilirsiniz.
+            <p className="mx-auto max-w-2xl text-sm text-stone-600 dark:text-stone-300 sm:text-base">
+              KPSS konu takibi, ALES deneme analizi, ÖABT ve YKS (TYT/AYT) hazırlığı, DGS ve YDS — hepsinde ders/konu yapısını siz kurarsınız; deneme ve ÖSYM puanını tek yerden izlersiniz.
             </p>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-            {['KPSS', 'ÖABT', 'ALES', 'DGS', 'YDS', 'YÖKDİL', 'TUS', 'DUS', 'Diğer'].map((exam) => (
+            {['KPSS', 'ÖABT', 'ALES', 'YKS', 'TYT', 'AYT', 'DGS', 'YDS', 'YÖKDİL', 'TUS', 'DUS', 'Diğer'].map((exam) => (
               <span
                 key={exam}
                 className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-700 shadow-sm transition-colors hover:border-primary-300 hover:bg-primary-50/50 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:hover:border-primary-700"
@@ -288,6 +288,14 @@ export default async function LandingPage() {
               </span>
             ))}
           </div>
+          <p className="mt-8 text-center">
+            <Link
+              href="/sinavlar"
+              className="text-sm font-semibold text-primary-700 hover:text-primary-800 dark:text-primary-300 dark:hover:text-primary-200"
+            >
+              Tüm sınavlar için detaylı açıklama →
+            </Link>
+          </p>
         </div>
       </section>
 
@@ -348,7 +356,7 @@ export default async function LandingPage() {
               Neden The Goal Lab?
             </h2>
             <p className="text-lg sm:text-xl text-stone-600 dark:text-stone-300 max-w-2xl mx-auto">
-              Modern araçlarla sınav hazırlığınızı bir üst seviyeye taşıyın
+              Konu takibi, deneme analizi ve ÖSYM uyumlu puan — KPSS’ten YKS’ye tek platform
             </p>
           </div>
           <div className="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-3">
@@ -664,6 +672,9 @@ export default async function LandingPage() {
                 <span className="font-display text-lg sm:text-xl font-bold text-stone-900 dark:text-stone-100">The Goal Lab</span>
               </Link>
               <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+                <Link href="/sinavlar" className="text-sm font-medium text-stone-600 dark:text-stone-300 hover:text-primary-600 transition-colors">
+                  Desteklenen sınavlar
+                </Link>
                 <Link href="/sss" className="text-sm font-medium text-stone-600 dark:text-stone-300 hover:text-primary-600 transition-colors">
                   Sıkça Sorulan Sorular
                 </Link>

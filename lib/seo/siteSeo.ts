@@ -8,26 +8,42 @@ import { getBaseUrl } from '@/lib/seo/baseUrl';
 export const SEO_SITE_NAME = 'The Goal Lab';
 
 export const SEO_DEFAULT_TITLE =
-  'The Goal Lab — KPSS, ALES, ÖABT Sınav ve Konu Takip Platformu';
+  'The Goal Lab | KPSS, ALES, ÖABT, YKS Konu ve Deneme Takip Platformu';
 
 export const SEO_DEFAULT_DESCRIPTION =
-  'KPSS, ÖABT, ALES, DGS ve YKS için konu takibi, deneme kaydı ve ÖSYM uyumlu puan hesaplama. Ücretsiz başlayın — kredi kartı gerekmez.';
+  'KPSS, ÖABT, ALES, YKS (TYT/AYT), DGS ve YDS için konu takibi, deneme kaydı, net trendi ve ÖSYM uyumlu puan hesaplama. The Goal Lab (thegoallab) ile ücretsiz başlayın — kredi kartı gerekmez.';
 
 export const SEO_KEYWORDS = [
   'sınav takip',
-  'hedef takip',
+  'sınav takip programı',
   'konu takibi',
+  'konu ilerleme takibi',
   'deneme takibi',
+  'deneme analizi',
+  'net takibi',
   'KPSS takip',
+  'KPSS konu takibi',
+  'KPSS deneme analizi',
+  'ÖABT konu takibi',
   'ÖABT',
+  'ALES deneme takibi',
+  'ALES konu takibi',
   'ALES',
+  'YKS konu takip',
+  'YKS hazırlık',
+  'TYT konu takibi',
+  'AYT konu takibi',
+  'DGS konu takibi',
   'DGS',
   'YKS',
-  'TYT',
+  'YDS',
   'ÖSYM puan hesaplama',
   'sınav hazırlık',
+  'online sınav takip',
+  'hedef puan takibi',
   'The Goal Lab',
   'thegoallab',
+  'thegoallab.com',
   'eğitim teknolojisi',
   'dershane yazılımı',
 ] as const;

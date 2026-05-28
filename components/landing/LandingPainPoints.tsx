@@ -25,7 +25,7 @@ export function LandingPainPoints() {
             Tanıdık geliyor mu?
           </h2>
           <p className="mt-3 text-base text-stone-600 dark:text-stone-300 sm:text-lg">
-            Sınav hazırlığında en çok vakit kaybettiren üç durum — ve The Goal Lab ile nasıl çözüldüğü.
+            KPSS, ALES veya YKS hazırlığında en çok vakit kaybettiren üç durum — ve The Goal Lab ile nasıl çözüldüğü.
           </p>
         </LandingReveal>
         <div className="grid gap-4 md:grid-cols-3 md:gap-6">

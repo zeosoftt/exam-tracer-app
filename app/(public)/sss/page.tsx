@@ -13,7 +13,7 @@ import { HelpCircle, ArrowLeft } from 'lucide-react';
 export async function generateMetadata(): Promise<Metadata> {
   const title = 'Sıkça Sorulan Sorular';
   const description =
-    'The Goal Lab (thegoallab) SSS: ücretsiz plan, KPSS/ALES/ÖABT desteği, deneme takibi, ÖSYM puanı, veri güvenliği ve kurumsal kullanım.';
+    'KPSS, ALES, ÖABT, YKS ve DGS hakkında SSS: ücretsiz plan, konu takibi, deneme analizi, ÖSYM puan hesaplama, veri güvenliği ve kurumsal kullanım — The Goal Lab.';
   return buildPublicPageMetadata({ title, description, path: '/sss' });
 }
 
@@ -35,7 +35,14 @@ export default async function SSSPage() {
           <h1 className="mb-2 font-display text-3xl font-bold text-stone-900 dark:text-stone-100 sm:text-4xl lg:text-5xl">
             Sıkça Sorulan Sorular
           </h1>
-          <p className="text-base text-stone-600 dark:text-stone-400 sm:text-lg">Merak ettiklerinizin yanıtları</p>
+          <p className="text-base leading-relaxed text-stone-600 dark:text-stone-400 sm:text-lg">
+            KPSS konu takibi, ALES ve YKS deneme kaydı, ÖABT hazırlığı ve ücretsiz plan hakkında sık sorulan sorular.
+            Tüm sınav listesi için{' '}
+            <Link href="/sinavlar" className="font-medium text-primary-700 hover:underline dark:text-primary-300">
+              desteklenen sınavlar
+            </Link>{' '}
+            sayfasına bakın.
+          </p>
         </div>
         <div className="space-y-4">
           {PUBLIC_FAQ_ITEMS.map(({ q, a }) => (

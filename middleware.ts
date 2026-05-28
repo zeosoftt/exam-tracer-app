@@ -66,6 +66,7 @@ export default withAuth(
           '/auth/reset-password',
           '/onboarding',
           '/destek',
+          '/sinavlar',
           '/sss',
           '/api/auth',
           '/api/health',

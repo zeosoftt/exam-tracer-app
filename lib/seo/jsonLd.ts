@@ -3,6 +3,7 @@
  */
 
 import { PUBLIC_FAQ_ITEMS } from '@/lib/seo/faqData';
+import { EXAM_SEO_ENTRIES } from '@/lib/seo/exams';
 import { getBaseUrl } from '@/lib/seo/baseUrl';
 import { getOrganizationSameAs, SEO_DEFAULT_DESCRIPTION, SEO_SITE_NAME } from '@/lib/seo/siteSeo';
 
@@ -86,11 +87,39 @@ export function buildHomeJsonLd() {
         description:
           'Sınav ve konu takibi, hedef puan, deneme kaydı ve ÖSYM uyumlu puan hesaplama. KPSS, ÖABT, ALES, DGS, YKS için bireysel ve kurumsal kullanım.',
         featureList: [
-          'Konu ve ders takibi',
-          'Deneme kaydı ve net analizi',
-          'Dashboard ve ilerleme istatistikleri',
-          'KPSS, ALES, ÖABT sınav desteği',
+          'KPSS konu takibi ve deneme analizi',
+          'ÖABT ve ALES konu ilerlemesi',
+          'YKS TYT/AYT ve DGS hazırlık takibi',
+          'Deneme kaydı ve ÖSYM uyumlu puan hesaplama',
+          'Dashboard, net trendi ve haftalık hedefler',
+          'Kurumsal ve dershane ekip yönetimi',
         ],
+      },
+    ],
+  };
+}
+
+export function buildSinavlarJsonLd() {
+  const base = getBaseUrl();
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      buildBreadcrumbJsonLd([
+        { name: 'Ana sayfa', path: '/' },
+        { name: 'Desteklenen sınavlar', path: '/sinavlar' },
+      ]),
+      {
+        '@type': 'ItemList',
+        name: 'Desteklenen sınavlar — The Goal Lab',
+        description:
+          'KPSS, ÖABT, ALES, YKS, DGS ve YDS için konu takibi ve deneme kaydı.',
+        numberOfItems: EXAM_SEO_ENTRIES.length,
+        itemListElement: EXAM_SEO_ENTRIES.map((exam, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: exam.headline,
+          url: `${base}/sinavlar#${exam.id}`,
+        })),
       },
     ],
   };

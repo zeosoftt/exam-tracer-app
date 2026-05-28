@@ -1,11 +1,18 @@
 export { getBaseUrl } from './baseUrl';
 export { PUBLIC_FAQ_ITEMS } from './faqData';
 export {
+  EXAM_NAMES_SHORT,
+  EXAM_SEO_ENTRIES,
+  EXAM_SEO_PAGE_DESCRIPTION,
+  EXAM_SEO_PAGE_TITLE,
+} from './exams';
+export {
   buildBreadcrumbJsonLd,
   buildDestekJsonLd,
   buildFaqPageEntity,
   buildHomeJsonLd,
   buildOnboardingJsonLd,
+  buildSinavlarJsonLd,
   buildSssJsonLd,
 } from './jsonLd';
 export {
