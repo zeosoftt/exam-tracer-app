@@ -60,6 +60,10 @@ export function getOrganizationSameAs(): string[] {
 
 export const GA_MEASUREMENT_ID = 'G-6YZFCN5KML';
 
+/** Google AdSense yayıncı kimliği — env ile geçersiz kılınabilir */
+export const ADSENSE_CLIENT_ID =
+  process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID?.trim() || 'ca-pub-5570650174796895';
+
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,

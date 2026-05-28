@@ -6,7 +6,12 @@
 import Script from 'next/script';
 import dynamic from 'next/dynamic';
 import { Inter } from 'next/font/google';
-import { buildRootMetadata, GA_MEASUREMENT_ID, viewport } from '@/lib/seo/siteSeo';
+import {
+  ADSENSE_CLIENT_ID,
+  buildRootMetadata,
+  GA_MEASUREMENT_ID,
+  viewport,
+} from '@/lib/seo/siteSeo';
 import './globals.css';
 import { Providers } from './providers';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -36,6 +41,8 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
       </head>
       <body className="font-sans antialiased">
         <Script
@@ -50,6 +57,12 @@ export default function RootLayout({
             gtag('config', '${GA_MEASUREMENT_ID}');
           `}
         </Script>
+        <Script
+          id="google-adsense"
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`}
+          strategy="lazyOnload"
+          crossOrigin="anonymous"
+        />
         <ErrorBoundary>
           <Providers>{children}</Providers>
         </ErrorBoundary>

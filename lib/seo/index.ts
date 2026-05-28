@@ -12,6 +12,7 @@ export {
   buildHomeMetadata,
   buildPublicPageMetadata,
   buildRootMetadata,
+  ADSENSE_CLIENT_ID,
   GA_MEASUREMENT_ID,
   getGoogleSiteVerification,
   getOrganizationSameAs,
