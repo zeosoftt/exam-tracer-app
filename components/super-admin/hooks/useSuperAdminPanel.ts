@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, startTransition } from 'react';
 import type { AdminStats, AdminUser } from '../domain/superAdminTypes';
+import type { AdminSiteSettings } from '@/lib/siteSettings';
 import {
   fetchSuperAdminSiteSettings,
   fetchSuperAdminStats,
@@ -30,7 +31,7 @@ export function useSuperAdminPanel() {
   const [isLoadingStats, setIsLoadingStats] = useState(true);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [usersLoadError, setUsersLoadError] = useState<string | null>(null);
-  const [siteSettings, setSiteSettings] = useState<Record<string, boolean> | null>(null);
+  const [siteSettings, setSiteSettings] = useState<AdminSiteSettings | null>(null);
   const [siteSettingsLoading, setSiteSettingsLoading] = useState(true);
   const [siteSettingsPatching, setSiteSettingsPatching] = useState(false);
 
@@ -45,10 +46,7 @@ export function useSuperAdminPanel() {
     }
   }, []);
 
-  const patchSiteSettings = useCallback(async (patch: {
-    landing_show_partners?: boolean;
-    deneme_show_advanced?: boolean;
-  }) => {
+  const patchSiteSettings = useCallback(async (patch: Partial<AdminSiteSettings>) => {
     setSiteSettingsPatching(true);
     try {
       const data = await patchSuperAdminSiteSettings(patch);

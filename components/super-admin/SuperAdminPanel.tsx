@@ -1,9 +1,8 @@
 'use client';
 
 import { useSuperAdminPanel } from '@/components/super-admin/hooks/useSuperAdminPanel';
+import { TrackingSettingsSection } from '@/components/super-admin/TrackingSettingsSection';
 import {
-  DENEME_SHOW_ADVANCED_KEY,
-  LANDING_SHOW_PARTNERS_KEY,
   ROLE_LABELS,
 } from '@/components/super-admin/domain/superAdminTypes';
 import Link from 'next/link';
@@ -15,6 +14,7 @@ import {
   ClipboardList,
   MousePointerClick,
   Shield,
+  BarChart2,
   ChevronLeft,
   ChevronRight,
   Loader2,
@@ -318,28 +318,28 @@ export function SuperAdminPanel() {
                 <button
                   type="button"
                   role="switch"
-                  aria-checked={siteSettings?.[LANDING_SHOW_PARTNERS_KEY] ?? true}
+                  aria-checked={siteSettings?.landing_show_partners ?? true}
                   disabled={siteSettingsPatching}
                   onClick={() =>
                     patchSiteSettings({
-                      landing_show_partners: !(siteSettings?.[LANDING_SHOW_PARTNERS_KEY] ?? true),
+                      landing_show_partners: !(siteSettings?.landing_show_partners ?? true),
                     })
                   }
                   className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-stone-950 ${
-                    siteSettings?.[LANDING_SHOW_PARTNERS_KEY] ?? true
+                    siteSettings?.landing_show_partners ?? true
                       ? 'bg-primary-600'
                       : 'bg-stone-200 dark:bg-stone-700'
                   }`}
                 >
                   <span
                     className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition dark:bg-stone-200 ${
-                      siteSettings?.[LANDING_SHOW_PARTNERS_KEY] ?? true ? 'translate-x-5' : 'translate-x-1'
+                      siteSettings?.landing_show_partners ?? true ? 'translate-x-5' : 'translate-x-1'
                     }`}
                   />
                 </button>
               </div>
               <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">
-                {siteSettings?.[LANDING_SHOW_PARTNERS_KEY] ?? true ? 'Gösteriliyor' : 'Gizli'}
+                {siteSettings?.landing_show_partners ?? true ? 'Gösteriliyor' : 'Gizli'}
               </p>
             </div>
           )}
@@ -369,31 +369,49 @@ export function SuperAdminPanel() {
                 <button
                   type="button"
                   role="switch"
-                  aria-checked={siteSettings?.[DENEME_SHOW_ADVANCED_KEY] ?? false}
+                  aria-checked={siteSettings?.deneme_show_advanced ?? false}
                   disabled={siteSettingsPatching}
                   onClick={() =>
                     patchSiteSettings({
-                      deneme_show_advanced: !(siteSettings?.[DENEME_SHOW_ADVANCED_KEY] ?? false),
+                      deneme_show_advanced: !(siteSettings?.deneme_show_advanced ?? false),
                     })
                   }
                   className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-stone-950 ${
-                    siteSettings?.[DENEME_SHOW_ADVANCED_KEY] ?? false
+                    siteSettings?.deneme_show_advanced ?? false
                       ? 'bg-primary-600'
                       : 'bg-stone-200 dark:bg-stone-700'
                   }`}
                 >
                   <span
                     className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition dark:bg-stone-200 ${
-                      siteSettings?.[DENEME_SHOW_ADVANCED_KEY] ?? false ? 'translate-x-5' : 'translate-x-1'
+                      siteSettings?.deneme_show_advanced ?? false ? 'translate-x-5' : 'translate-x-1'
                     }`}
                   />
                 </button>
               </div>
               <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">
-                {siteSettings?.[DENEME_SHOW_ADVANCED_KEY] ?? false ? 'Açık — kullanıcılar tam deneme arayüzünü görür' : 'Kapalı — sadece liste'}
+                {siteSettings?.deneme_show_advanced ?? false ? 'Açık — kullanıcılar tam deneme arayüzünü görür' : 'Kapalı — sadece liste'}
               </p>
             </div>
           )}
+        </section>
+
+        {/* İzleme: GTM, GA, AdSense */}
+        <section className="mt-10 space-y-4">
+          <div className="flex items-center gap-2">
+            <BarChart2 className="h-5 w-5 text-primary-600" aria-hidden />
+            <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100">İzleme & Analytics</h2>
+          </div>
+          <p className="text-sm text-stone-500 dark:text-stone-400">
+            Google Tag Manager, Google Analytics (GA4) ve AdSense kodlarını buradan açıp kapatabilir, kimliklerini
+            güncelleyebilirsiniz. Değişiklikler tüm public sayfalarda geçerlidir.
+          </p>
+          <TrackingSettingsSection
+            settings={siteSettings}
+            loading={siteSettingsLoading}
+            patching={siteSettingsPatching}
+            onSave={patchSiteSettings}
+          />
         </section>
 
         {/* Yönetim alanları */}

@@ -1,23 +1,30 @@
 /**
- * Super Admin - Site ayarları (ana sayfa bölümleri aç/kapa)
+ * Super Admin - Site ayarları (ana sayfa bölümleri, izleme kodları)
  * GET: ayarları döner, PATCH: günceller. Sadece ADMIN.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { guardAdminSession } from '@/lib/auth/requireSession';
 import {
-  getAllLandingSectionSettings,
+  getAdminSiteSettings,
   setSetting,
   SITE_KEYS,
+  type AdminSiteSettings,
 } from '@/lib/siteSettings';
 import { HTTP_STATUS, ERROR_MESSAGES } from '@/config/constants';
+
+function normalizeId(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  return trimmed;
+}
 
 export async function GET() {
   const guard = await guardAdminSession();
   if (!guard.authorized) return guard.response;
 
   try {
-    const settings = await getAllLandingSectionSettings();
+    const settings = await getAdminSiteSettings();
     return NextResponse.json({ success: true, data: settings });
   } catch (error) {
     console.error('Site settings GET error:', error);
@@ -33,27 +40,59 @@ export async function PATCH(req: NextRequest) {
   if (!guard.authorized) return guard.response;
 
   try {
-    const body = await req.json();
-    const { landing_show_partners, deneme_show_advanced } = body as {
-      landing_show_partners?: boolean;
-      deneme_show_advanced?: boolean;
-    };
+    const body = (await req.json()) as Partial<AdminSiteSettings>;
 
-    if (typeof landing_show_partners === 'boolean') {
+    if (typeof body.landing_show_partners === 'boolean') {
       await setSetting(
         SITE_KEYS.LANDING_SHOW_PARTNERS,
-        landing_show_partners ? 'true' : 'false'
+        body.landing_show_partners ? 'true' : 'false'
       );
     }
 
-    if (typeof deneme_show_advanced === 'boolean') {
+    if (typeof body.deneme_show_advanced === 'boolean') {
       await setSetting(
         SITE_KEYS.DENEME_SHOW_ADVANCED,
-        deneme_show_advanced ? 'true' : 'false'
+        body.deneme_show_advanced ? 'true' : 'false'
       );
     }
 
-    const settings = await getAllLandingSectionSettings();
+    if (typeof body.tracking_gtm_enabled === 'boolean') {
+      await setSetting(
+        SITE_KEYS.TRACKING_GTM_ENABLED,
+        body.tracking_gtm_enabled ? 'true' : 'false'
+      );
+    }
+
+    if (typeof body.tracking_ga_enabled === 'boolean') {
+      await setSetting(
+        SITE_KEYS.TRACKING_GA_ENABLED,
+        body.tracking_ga_enabled ? 'true' : 'false'
+      );
+    }
+
+    if (typeof body.tracking_adsense_enabled === 'boolean') {
+      await setSetting(
+        SITE_KEYS.TRACKING_ADSENSE_ENABLED,
+        body.tracking_adsense_enabled ? 'true' : 'false'
+      );
+    }
+
+    const gtmId = normalizeId(body.gtm_container_id);
+    if (gtmId !== undefined) {
+      await setSetting(SITE_KEYS.GTM_CONTAINER_ID, gtmId);
+    }
+
+    const gaId = normalizeId(body.ga_measurement_id);
+    if (gaId !== undefined) {
+      await setSetting(SITE_KEYS.GA_MEASUREMENT_ID, gaId);
+    }
+
+    const adsenseId = normalizeId(body.adsense_client_id);
+    if (adsenseId !== undefined) {
+      await setSetting(SITE_KEYS.ADSENSE_CLIENT_ID, adsenseId);
+    }
+
+    const settings = await getAdminSiteSettings();
     return NextResponse.json({ success: true, data: settings });
   } catch (error) {
     console.error('Site settings PATCH error:', error);

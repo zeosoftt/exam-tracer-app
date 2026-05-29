@@ -21,6 +21,7 @@ export {
   buildPublicPageMetadata,
   buildRootMetadata,
   ADSENSE_CLIENT_ID,
+  DEFAULT_GTM_CONTAINER_ID,
   GA_MEASUREMENT_ID,
   getGoogleSiteVerification,
   getOrganizationSameAs,

@@ -1,4 +1,5 @@
 import type { AdminStats, AdminUser, PlanStat } from '@/components/super-admin/domain/superAdminTypes';
+import type { AdminSiteSettings } from '@/lib/siteSettings';
 import { fetchApiData, fetchJson, getApiErrorMessage, mutateApi } from '@/lib/client-api/http';
 
 export async function fetchSuperAdminStats(): Promise<AdminStats | null> {
@@ -35,16 +36,15 @@ export async function fetchSuperAdminUsersPage(pageNum: number, limit = 10): Pro
   };
 }
 
-export async function fetchSuperAdminSiteSettings(): Promise<Record<string, boolean> | null> {
-  const result = await fetchApiData<Record<string, boolean>>('/api/super-admin/site-settings');
+export async function fetchSuperAdminSiteSettings(): Promise<AdminSiteSettings | null> {
+  const result = await fetchApiData<AdminSiteSettings>('/api/super-admin/site-settings');
   return result.ok ? result.data : null;
 }
 
-export async function patchSuperAdminSiteSettings(patch: {
-  landing_show_partners?: boolean;
-  deneme_show_advanced?: boolean;
-}): Promise<Record<string, boolean> | null> {
-  const { ok, data } = await mutateApi<typeof patch, Record<string, boolean>>(
+export async function patchSuperAdminSiteSettings(
+  patch: Partial<AdminSiteSettings>,
+): Promise<AdminSiteSettings | null> {
+  const { ok, data } = await mutateApi<Partial<AdminSiteSettings>, AdminSiteSettings>(
     '/api/super-admin/site-settings',
     'PATCH',
     patch,

@@ -3,15 +3,13 @@
  * Global layout with error boundary
  */
 
-import Script from 'next/script';
+import type { Metadata } from 'next';
 import dynamic from 'next/dynamic';
+import { cache } from 'react';
 import { Inter } from 'next/font/google';
-import {
-  ADSENSE_CLIENT_ID,
-  buildRootMetadata,
-  GA_MEASUREMENT_ID,
-  viewport,
-} from '@/lib/seo/siteSeo';
+import { SiteTrackingScripts } from '@/components/analytics/SiteTracking';
+import { buildRootMetadata, viewport } from '@/lib/seo/siteSeo';
+import { getPublicTrackingConfig } from '@/lib/siteSettings';
 import './globals.css';
 import { Providers } from './providers';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -20,7 +18,6 @@ const Analytics = dynamic(() => import('@/components/analytics/VercelAnalyticsLa
   ssr: false,
 });
 
-/** Tek aile + latin-ext: kritik istek zinciri ve blokaj azalır; başlıklar `font-display` ile aynı değişken */
 const inter = Inter({
   subsets: ['latin', 'latin-ext'],
   variable: '--font-sans',
@@ -28,44 +25,37 @@ const inter = Inter({
   adjustFontFallback: true,
 });
 
-export const metadata = buildRootMetadata();
 export { viewport };
 
-export default function RootLayout({
+const getTracking = cache(getPublicTrackingConfig);
+
+export async function generateMetadata(): Promise<Metadata> {
+  const tracking = await getTracking();
+  const base = buildRootMetadata();
+
+  if (!tracking.adsenseEnabled || !tracking.adsenseClientId) {
+    return base;
+  }
+
+  return {
+    ...base,
+    other: {
+      'google-adsense-account': tracking.adsenseClientId,
+    },
+  };
+}
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const tracking = await getTracking();
+
   return (
     <html lang="tr" className={inter.variable} suppressHydrationWarning>
-      <head>
-        {/* AdSense site doğrulaması — Metadata API yerine statik head (Googlebot ilk HTML’de görmeli) */}
-        <meta name="google-adsense-account" content={ADSENSE_CLIENT_ID} />
-        <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-        <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
-        <link rel="alternate" type="text/plain" href="/llms.txt" title="LLM site summary" />
-      </head>
       <body className="font-sans antialiased">
-        <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-          strategy="lazyOnload"
-        />
-        <Script id="google-analytics" strategy="lazyOnload">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${GA_MEASUREMENT_ID}');
-          `}
-        </Script>
-        <Script
-          id="google-adsense"
-          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`}
-          strategy="lazyOnload"
-          crossOrigin="anonymous"
-        />
+        <SiteTrackingScripts tracking={tracking} />
         <ErrorBoundary>
           <Providers>{children}</Providers>
         </ErrorBoundary>
