@@ -16,7 +16,6 @@ import { LandingPainPoints } from '@/components/landing/LandingPainPoints';
 import { LandingOutcomeStrip } from '@/components/landing/LandingOutcomeStrip';
 import { LandingMidCta } from '@/components/landing/LandingMidCta';
 import { LandingHeroAnchors } from '@/components/landing/LandingHeroAnchors';
-import { LandingInlineCta } from '@/components/landing/LandingInlineCta';
 import { LandingFreeVsPro } from '@/components/landing/LandingFreeVsPro';
 import {
   BookOpen,
@@ -342,11 +341,6 @@ export default async function LandingPage() {
           </div>
         </div>
       </section>
-
-      <LandingInlineCta
-        title="Hedef sınavınızı seçin, ilk konuyu işaretleyin"
-        description="Kayıt sonrası kurulum sihirbazı sizi adım adım yönlendirir — ortalama 2 dakika."
-      />
 
       {/* Features */}
       <section id="ozellikler" className="py-16 sm:py-24 lg:py-32">
