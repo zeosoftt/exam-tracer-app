@@ -35,7 +35,7 @@ async function resendVerificationHandler(req: NextRequest): Promise<NextResponse
   }
 
   return authEnumerationSafe(
-    'Eğer bu e-posta kayıtlı ve henüz doğrulanmamışsa, doğrulama bağlantısı gönderildi. Gelen kutunuzu ve spam klasörünü kontrol edin.',
+    'Eğer bu e-posta kayıtlı ve henüz doğrulanmamışsa, yeni doğrulama kodu gönderildi. Gelen kutunuzu ve spam klasörünü kontrol edin.',
   );
 }
 

@@ -49,12 +49,16 @@ export async function postResetPassword(body: {
   return { ok: true };
 }
 
-export async function postVerifyEmail(
-  token: string,
-): Promise<{ ok: boolean; success?: boolean; message?: string; errorMessage?: string }> {
+export async function postVerifyEmail(params: {
+  email: string;
+  code: string;
+}): Promise<{ ok: boolean; success?: boolean; message?: string; errorMessage?: string }> {
   const { ok, body: data } = await fetchJson<AuthErrorBody>(
     '/api/auth/verify-email',
-    jsonInit('POST', { token: token.trim() }),
+    jsonInit('POST', {
+      email: params.email.trim().toLowerCase(),
+      code: params.code.trim(),
+    }),
   );
   if (ok && data.success) {
     return { ok: true, success: true, message: data.message };
@@ -62,7 +66,7 @@ export async function postVerifyEmail(
   return {
     ok: false,
     errorMessage:
-      data.error?.message || 'Doğrulama yapılamadı. Bağlantı geçersiz veya süresi dolmuş olabilir.',
+      data.error?.message || 'Doğrulama yapılamadı. Kod geçersiz veya süresi dolmuş olabilir.',
   };
 }
 
@@ -72,4 +76,18 @@ export async function postResendVerification(email: string): Promise<{ message?:
     jsonInit('POST', { email }),
   );
   return { message: data.message || 'İstek alındı.' };
+}
+
+/** Yalnızca development — local test için son doğrulama kodu */
+export async function fetchDevVerificationCode(email: string): Promise<string | null> {
+  if (process.env.NODE_ENV === 'production') return null;
+  try {
+    const { ok, body } = await fetchJson<{ code?: string | null }>(
+      `/api/auth/dev-verification-code?email=${encodeURIComponent(email.trim().toLowerCase())}`,
+    );
+    if (!ok || !body.code) return null;
+    return body.code;
+  } catch {
+    return null;
+  }
 }

@@ -105,7 +105,7 @@ function LoginForm() {
           if (result.error === AUTH_ERROR_CODES.EMAIL_NOT_VERIFIED) {
             setPendingVerifyEmail(data.email.toLowerCase().trim());
             setError(
-              'E-posta adresiniz henüz doğrulanmadı. Kayıt sırasında gönderilen bağlantıya tıklayın veya aşağıdan yeni doğrulama e-postası isteyin.'
+              'E-posta adresiniz henüz doğrulanmadı. E-postanıza gelen 6 haneli kodu doğrulama sayfasına girin veya aşağıdan yeni kod isteyin.'
             );
             return;
           }
@@ -153,7 +153,7 @@ function LoginForm() {
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400" />
                 <p className="text-sm font-medium text-green-800 dark:text-green-200">
-                  Hesabınız oluşturuldu. E-posta adresinize gönderilen doğrulama linkine tıklayın, ardından giriş yapabilirsiniz.
+                  Hesabınız oluşturuldu. E-postanıza gelen 6 haneli doğrulama kodunu girin, ardından giriş yapabilirsiniz.
                 </p>
               </div>
             </div>
@@ -232,8 +232,14 @@ function LoginForm() {
                     ) : (
                       <Send className="h-4 w-4" />
                     )}
-                    Doğrulama e-postasını tekrar gönder
+                    Doğrulama kodunu tekrar gönder
                   </button>
+                  <Link
+                    href={`/auth/verify-email?email=${encodeURIComponent(pendingVerifyEmail)}`}
+                    className="mt-2 inline-flex text-sm font-medium text-primary-700 hover:underline dark:text-primary-300"
+                  >
+                    Doğrulama kodunu gir →
+                  </Link>
                   {resendMessage && (
                     <p className="mt-2 text-xs text-stone-600 dark:text-stone-400">{resendMessage}</p>
                   )}

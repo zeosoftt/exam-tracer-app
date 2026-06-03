@@ -1,11 +1,11 @@
 /**
- * E-posta doğrulama token'ı oluşturur ve doğrulama maili gönderir
+ * E-posta doğrulama kodu oluşturur ve doğrulama maili gönderir
  */
 
-import { randomBytes } from 'crypto';
 import { prisma } from '@/lib/db/prisma';
 import { EMAIL_VERIFICATION_TTL_HOURS } from '@/config/constants';
-import { sendVerificationEmail, buildVerificationUrl } from '@/lib/email';
+import { sendVerificationEmail } from '@/lib/email';
+import { generateEmailVerificationCode } from '@/lib/auth/verificationCode';
 import { logError } from '@/lib/logger';
 
 export async function issueVerificationEmailForUser(userId: string): Promise<void> {
@@ -15,23 +15,27 @@ export async function issueVerificationEmailForUser(userId: string): Promise<voi
   });
   if (!user || user.emailVerified) return;
 
-  const verificationToken = randomBytes(32).toString('hex');
+  const verificationCode = generateEmailVerificationCode();
   const verificationExpiresAt = new Date();
   verificationExpiresAt.setHours(verificationExpiresAt.getHours() + EMAIL_VERIFICATION_TTL_HOURS);
 
-  await prisma.emailVerificationToken.create({
-    data: {
-      userId: user.id,
-      token: verificationToken,
-      expiresAt: verificationExpiresAt,
-    },
-  });
+  await prisma.$transaction([
+    prisma.emailVerificationToken.deleteMany({
+      where: { userId: user.id, used: false },
+    }),
+    prisma.emailVerificationToken.create({
+      data: {
+        userId: user.id,
+        token: verificationCode,
+        expiresAt: verificationExpiresAt,
+      },
+    }),
+  ]);
 
-  const verifyUrl = buildVerificationUrl(verificationToken);
   await sendVerificationEmail({
     to: user.email,
     firstName: user.firstName,
-    verifyUrl,
-    linkValidityHours: EMAIL_VERIFICATION_TTL_HOURS,
+    verificationCode,
+    codeValidityHours: EMAIL_VERIFICATION_TTL_HOURS,
   }).catch((err) => logError('Verification email send failed', err as Error));
 }

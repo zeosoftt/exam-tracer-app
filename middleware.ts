@@ -71,6 +71,7 @@ export default withAuth(
           '/sinavlar',
           '/sss',
           '/api/auth',
+          '/api/auth/dev-verification-code',
           '/api/health',
           '/api/exams/available',
           '/api/support',

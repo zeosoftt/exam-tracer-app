@@ -101,12 +101,7 @@ function RegisterForm() {
         // Clear onboarding data
         sessionStorage.removeItem('onboarding');
 
-        // If exam was selected during onboarding, redirect to dashboard
-        if (onboardingData?.examId) {
-          router.push('/dashboard?examAssigned=true');
-        } else {
-          router.push('/auth/login?registered=true');
-        }
+        router.push(`/auth/verify-email?email=${encodeURIComponent(data.email)}`);
       } catch {
         setError('Bir hata oluştu. Lütfen tekrar deneyin.');
       } finally {
