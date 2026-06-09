@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { ProtectedSessionGuard } from '@/components/auth/ProtectedSessionGuard';
 
 /**
  * Uygulama içi sayfalar arama indeksine açılmamalı (gizlilik + tarama bütçesi).
@@ -13,5 +14,10 @@ export const metadata: Metadata = {
 };
 
 export default function DashboardGroupLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <>
+      <ProtectedSessionGuard />
+      {children}
+    </>
+  );
 }

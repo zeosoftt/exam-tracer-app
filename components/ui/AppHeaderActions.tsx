@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { signOut } from 'next-auth/react';
+import { signOutAndRedirect } from '@/components/auth/signOutAndRedirect';
 import { LifeBuoy, LogOut, User } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
@@ -52,7 +52,7 @@ export function AppHeaderSignOutButton({ compact = false }: { compact?: boolean 
     return (
       <button
         type="button"
-        onClick={() => signOut({ callbackUrl: '/' })}
+        onClick={() => void signOutAndRedirect()}
         className="flex items-center gap-2 rounded-xl bg-stone-100 p-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700 sm:px-4 sm:py-2"
         title="Çıkış"
       >
@@ -65,7 +65,7 @@ export function AppHeaderSignOutButton({ compact = false }: { compact?: boolean 
   return (
     <button
       type="button"
-      onClick={() => signOut({ callbackUrl: '/' })}
+      onClick={() => void signOutAndRedirect()}
       className="btn btn-secondary !px-2.5 !py-2 text-xs sm:!px-4 sm:text-sm"
     >
       <LogOut className="h-4 w-4 sm:mr-1" />

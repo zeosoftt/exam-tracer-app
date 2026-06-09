@@ -25,6 +25,13 @@ export default withAuth(
 
     // Add security headers
     const response = NextResponse.next();
+
+    // Korumalı sayfalar önbelleğe alınmasın (çıkış sonrası geri tuşu / bfcache)
+    if (req.nextUrl.pathname.startsWith('/dashboard')) {
+      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+      response.headers.set('Pragma', 'no-cache');
+      response.headers.set('Expires', '0');
+    }
     
     // CORS headers (adjust for production)
     const origin = req.headers.get('origin');
