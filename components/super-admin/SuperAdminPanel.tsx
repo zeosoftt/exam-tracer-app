@@ -369,28 +369,28 @@ export function SuperAdminPanel() {
                 <button
                   type="button"
                   role="switch"
-                  aria-checked={siteSettings?.deneme_show_advanced ?? false}
+                  aria-checked={siteSettings?.deneme_show_advanced ?? true}
                   disabled={siteSettingsPatching}
                   onClick={() =>
                     patchSiteSettings({
-                      deneme_show_advanced: !(siteSettings?.deneme_show_advanced ?? false),
+                      deneme_show_advanced: !(siteSettings?.deneme_show_advanced ?? true),
                     })
                   }
                   className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-stone-950 ${
-                    siteSettings?.deneme_show_advanced ?? false
+                    siteSettings?.deneme_show_advanced ?? true
                       ? 'bg-primary-600'
                       : 'bg-stone-200 dark:bg-stone-700'
                   }`}
                 >
                   <span
                     className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition dark:bg-stone-200 ${
-                      siteSettings?.deneme_show_advanced ?? false ? 'translate-x-5' : 'translate-x-1'
+                      siteSettings?.deneme_show_advanced ?? true ? 'translate-x-5' : 'translate-x-1'
                     }`}
                   />
                 </button>
               </div>
               <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">
-                {siteSettings?.deneme_show_advanced ?? false ? 'Açık — kullanıcılar tam deneme arayüzünü görür' : 'Kapalı — sadece liste'}
+                {siteSettings?.deneme_show_advanced ?? true ? 'Açık — kullanıcılar tam deneme arayüzünü görür' : 'Kapalı — sadece liste'}
               </p>
             </div>
           )}

@@ -26,7 +26,7 @@ export const SITE_KEYS = {
 
 const DEFAULTS: Record<string, string> = {
   [SITE_KEYS.LANDING_SHOW_PARTNERS]: 'true',
-  [SITE_KEYS.DENEME_SHOW_ADVANCED]: 'false',
+  [SITE_KEYS.DENEME_SHOW_ADVANCED]: 'true',
   [SITE_KEYS.SHOPIER_CHECKOUT_CLICKS]: '0',
   [SITE_KEYS.TRACKING_GTM_ENABLED]: 'false',
   [SITE_KEYS.TRACKING_GA_ENABLED]: 'true',
@@ -69,14 +69,10 @@ export async function getSettingBoolean(key: string): Promise<boolean> {
 }
 
 /**
- * Deneme sayfası: analiz + yeni kayıt formu.
- * - development: her zaman açık (geçici; prod öncesi kapatılır)
- * - production: site_settings / varsayılan (kapalı)
+ * Deneme sayfası: liste, import, kayıt formu ve analiz.
+ * site_settings üzerinden kapatılabilir; varsayılan açık.
  */
 export async function isDenemeAdvancedEnabled(): Promise<boolean> {
-  if (process.env.NODE_ENV === 'development') {
-    return true;
-  }
   return getSettingBoolean(SITE_KEYS.DENEME_SHOW_ADVANCED);
 }
 
