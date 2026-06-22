@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { requireSession, getSessionUserId } from '@/lib/auth/requireSession';
+import { requireSession } from '@/lib/auth/requireSession';
 import { asyncHandler } from '@/lib/errors/errorHandler';
 import { HTTP_STATUS } from '@/config/constants';
 import { denemeSiteDisabledResponse } from '@/lib/deneme/denemeAccess';
@@ -15,8 +15,7 @@ const bodySchema = z.object({
 });
 
 export async function postInstitutionResultImportHandler(req: NextRequest): Promise<NextResponse> {
-  const session = await requireSession();
-  const userId = getSessionUserId(session);
+  await requireSession();
 
   const denied = await denemeSiteDisabledResponse();
   if (denied) return denied;

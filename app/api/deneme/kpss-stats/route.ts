@@ -5,7 +5,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { requireSession, getSessionUserId } from '@/lib/auth/requireSession';
+import { requireSession } from '@/lib/auth/requireSession';
 import { prisma } from '@/lib/db/prisma';
 import { asyncHandler } from '@/lib/errors/errorHandler';
 import { getKpssPopulationStats } from '@/lib/utils/kpssStats';
@@ -14,8 +14,7 @@ import { denemeSiteDisabledResponse } from '@/lib/deneme/denemeAccess';
 export const dynamic = 'force-dynamic';
 
 async function getKpssStatsHandler(): Promise<NextResponse> {
-  const session = await requireSession();
-  const userId = getSessionUserId(session);
+  await requireSession();
 
   const denied = await denemeSiteDisabledResponse();
   if (denied) return denied;
