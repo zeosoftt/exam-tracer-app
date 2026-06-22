@@ -1,6 +1,6 @@
 import type { z } from 'zod';
 import type { createExamSchema } from '@/lib/validation/schemas';
-import { fetchApiData, mutateApi } from '@/lib/client-api/http';
+import { fetchApiData, getApiErrorMessage, mutateApi } from '@/lib/client-api/http';
 
 export type CreateExamInput = z.infer<typeof createExamSchema>;
 
@@ -26,7 +26,7 @@ export async function createExamRequest(body: CreateExamInput): Promise<CreateEx
     body,
   );
   if (!ok) {
-    return { ok: false, message: result.error?.message || 'Sınav oluşturulurken bir hata oluştu' };
+    return { ok: false, message: getApiErrorMessage(result, 'Sınav oluşturulurken bir hata oluştu') };
   }
   if (!data?.id) {
     return { ok: false, message: 'Sunucu yanıtı geçersiz.' };

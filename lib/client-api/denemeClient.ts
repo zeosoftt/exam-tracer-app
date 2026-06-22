@@ -3,7 +3,7 @@
  */
 
 import { fetchAvailableExams } from '@/lib/client-api/examsAvailable';
-import { fetchApiData, fetchJson, mutateApi } from '@/lib/client-api/http';
+import { fetchApiData, fetchJson, getApiErrorMessage, mutateApi } from '@/lib/client-api/http';
 import { fetchUserSettingsRaw } from '@/lib/client-api/userSettings';
 
 export type ExamTopicProgress = {
@@ -206,17 +206,22 @@ export async function fetchInstitutionResultImport(
   url: string,
 ): Promise<{ ok: true; data: InstitutionResultImport } | { ok: false; error: string; premiumRequired?: boolean }> {
   try {
-    const { ok, status, result } = await mutateApi<
-      { url: string },
-      { success?: boolean; data?: InstitutionResultImport; error?: string; code?: string }
-    >('/api/deneme/import/result', 'POST', { url });
+    const { ok, status, result } = await mutateApi<{ url: string }, InstitutionResultImport>(
+      '/api/deneme/import/result',
+      'POST',
+      { url },
+    );
 
     if (status === 403 && result.code === 'PREMIUM_REQUIRED') {
-      return { ok: false, error: result.error ?? 'Premium gerekli.', premiumRequired: true };
+      return {
+        ok: false,
+        error: getApiErrorMessage(result, 'Premium gerekli.'),
+        premiumRequired: true,
+      };
     }
 
     if (!ok || !result.success || !result.data) {
-      return { ok: false, error: result.error ?? 'Kurum sonucu alınamadı.' };
+      return { ok: false, error: getApiErrorMessage(result, 'Kurum sonucu alınamadı.') };
     }
 
     return { ok: true, data: result.data };
@@ -280,15 +285,19 @@ export async function saveInstitutionResultAsAttempt(
   try {
     const { ok, status, result } = await mutateApi<
       { url: string; examId: string },
-      { success?: boolean; data?: DenemeAttemptListItem; error?: string; code?: string }
+      DenemeAttemptListItem
     >('/api/deneme/import/result/save', 'POST', { url, examId });
 
     if (status === 403 && result.code === 'PREMIUM_REQUIRED') {
-      return { ok: false, error: result.error ?? 'Premium gerekli.', premiumRequired: true };
+      return {
+        ok: false,
+        error: getApiErrorMessage(result, 'Premium gerekli.'),
+        premiumRequired: true,
+      };
     }
 
     if (!ok || !result.success || !result.data) {
-      return { ok: false, error: result.error ?? 'Deneme kaydı oluşturulamadı.' };
+      return { ok: false, error: getApiErrorMessage(result, 'Deneme kaydı oluşturulamadı.') };
     }
 
     return { ok: true, data: result.data };

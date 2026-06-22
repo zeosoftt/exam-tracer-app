@@ -15,7 +15,7 @@ const bodySchema = z.object({
   examId: z.string().min(1, 'Sınav seçiniz.'),
 });
 
-export async function postInstitutionResultSaveHandler(req: NextRequest): Promise<NextResponse> {
+async function postInstitutionResultSaveHandler(req: NextRequest): Promise<NextResponse> {
   const session = await requireSession();
   const userId = getSessionUserId(session);
 

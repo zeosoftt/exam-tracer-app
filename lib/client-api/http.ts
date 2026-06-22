@@ -11,7 +11,8 @@ export type JsonFetchResult<T> = {
 export type ApiEnvelope<T> = {
   success?: boolean;
   data?: T;
-  error?: { message?: string; code?: string };
+  error?: string | { message?: string; code?: string };
+  code?: string;
   message?: string;
 };
 
@@ -38,7 +39,7 @@ export async function fetchApiData<T>(
   if (ok && body.success && body.data !== undefined) {
     return { ok: true, data: body.data };
   }
-  return { ok: false, status, message: body.error?.message ?? body.message };
+  return { ok: false, status, message: getApiErrorMessage(body, body.message ?? 'Request failed') };
 }
 
 export async function mutateApi<TBody, TData>(

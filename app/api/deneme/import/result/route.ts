@@ -14,7 +14,7 @@ const bodySchema = z.object({
   url: z.string().min(10, 'Sonuç linki girin.'),
 });
 
-export async function postInstitutionResultImportHandler(req: NextRequest): Promise<NextResponse> {
+async function postInstitutionResultImportHandler(req: NextRequest): Promise<NextResponse> {
   await requireSession();
 
   const denied = await denemeSiteDisabledResponse();
