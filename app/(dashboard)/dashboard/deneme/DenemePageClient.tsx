@@ -15,6 +15,7 @@ import {
   DenemeFormModal,
   DenemeTopicOnlyHero,
 } from '@/components/deneme/denemeUi';
+import { PegemImportPanel } from '@/components/deneme/PegemImportPanel';
 import { useDenemePage } from '@/components/deneme/hooks/useDenemePage';
 import { formatDenemeDate } from '@/lib/deneme/computeDenemeAnalysis';
 
@@ -31,9 +32,10 @@ export default function DenemePage() {
     loading,
     listError,
     denemeAdvanced,
-    denemePremiumRequired,
+    canViewDenemeDetail,
     featuresEnabled,
     exams,
+    activeExamId,
     analysis,
     analysisAvg,
     fetchAttempts,
@@ -94,15 +96,15 @@ export default function DenemePage() {
           </div>
         )}
 
-        {denemeAdvanced !== false && denemePremiumRequired && (
+        {denemeAdvanced !== false && !canViewDenemeDetail && (
           <div className="mb-6 rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50/50 to-orange-50/50 p-6 shadow-lg dark:border-amber-900/40 dark:from-amber-950/40 dark:to-orange-950/30">
             <div className="mb-3 flex items-center gap-2">
               <Lock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-              <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">Deneme Takibi Premium&apos;da</h2>
+              <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">Deneme detayı Premium&apos;da</h2>
             </div>
             <p className="mb-4 text-sm text-stone-600 dark:text-stone-400">
-              Deneme kaydı, ÖSYM uyumlu puan hesaplama, net trendi ve konu analizi Premium plan özelliğidir.
-              Görüntülemek ve kayıt eklemek için Premium&apos;a yükseltin.
+              Deneme listesi ve yeni kayıt ücretsizdir. Ders bazlı sonuçlar, konu analizi ve bilgi–deneme karşılaştırması
+              için Premium plan gerekir.
             </p>
             <ShopierCheckoutLink className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-amber-600">
               <Sparkles className="h-4 w-4" />
@@ -111,8 +113,12 @@ export default function DenemePage() {
           </div>
         )}
 
+        {featuresEnabled ? (
+          <PegemImportPanel exams={exams} activeExamId={activeExamId} onSaved={() => fetchAttempts(true)} />
+        ) : null}
+
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100"></h2>
+          <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">Deneme kayıtları</h2>
           {featuresEnabled && (
             <button type="button" onClick={() => setFormModalOpen(true)} className="btn btn-primary gap-2">
               <Plus className="h-4 w-4" />
@@ -399,7 +405,7 @@ export default function DenemePage() {
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="h-28 animate-pulse rounded-2xl border border-stone-200/60 bg-white/60 dark:border-stone-700/60 dark:bg-stone-900/40"
+                className="h-36 animate-pulse rounded-2xl border border-stone-200/60 bg-white/60 dark:border-stone-700/60 dark:bg-stone-900/40"
               />
             ))}
           </div>
@@ -409,7 +415,7 @@ export default function DenemePage() {
             onAdd={featuresEnabled ? () => setFormModalOpen(true) : undefined}
           />
         ) : (
-          <ul className="space-y-3">
+          <ul className="space-y-4">
             {attempts.map((a) => (
               <DenemeAttemptCard
                 key={a.id}
@@ -417,6 +423,7 @@ export default function DenemePage() {
                 topicProgress={topicProgressByExam[a.examId]}
                 avgNet={analysisAvg}
                 formatDate={formatDenemeDate}
+                canViewDetail={canViewDenemeDetail}
               />
             ))}
           </ul>

@@ -1,32 +1,24 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, type ReactNode } from 'react';
 import { cn } from '@/lib/utils/cn';
 import type { ExamTopicProgress, PrimaryTopicProgress } from '@/lib/client-api/denemeClient';
+import { getDenemeDetailPath } from '@/lib/client-api/denemeClient';
+import { DenemeNetLineChart } from '@/components/deneme/DenemeNetLineChart';
 import {
+  ArrowRight,
   BarChart3,
   BookOpen,
   Calendar,
   Clock,
+  Lock,
   Minus,
   Target,
   TrendingDown,
   TrendingUp,
   X,
 } from 'lucide-react';
-
-const CHART_TRACK_PX = 120;
-
-function chartBarHeightPx(
-  netScore: number,
-  chartMin: number,
-  chartRange: number,
-  pointCount: number,
-): number {
-  if (pointCount === 1) return Math.round(CHART_TRACK_PX * 0.5);
-  const ratio = chartRange > 0 ? (netScore - chartMin) / chartRange : 1;
-  return Math.max(10, Math.round(ratio * CHART_TRACK_PX));
-}
 
 /** Standart dashboard kartı */
 export const denemeCardClass =
@@ -157,6 +149,135 @@ export function StatTile({
   );
 }
 
+type NetTrendState = {
+  variant: 'up' | 'down' | 'avg';
+  diff: number;
+  label: string;
+  diffLabel: string;
+};
+
+function getNetTrendState(net: number, avgNet: number): NetTrendState {
+  const diff = net - avgNet;
+  const threshold = 1.5;
+
+  if (diff >= threshold) {
+    return {
+      variant: 'up',
+      diff,
+      label: 'Yükseliş',
+      diffLabel: `+${diff.toFixed(1)} net`,
+    };
+  }
+
+  if (diff <= -threshold) {
+    return {
+      variant: 'down',
+      diff,
+      label: 'Düşüş',
+      diffLabel: `${diff.toFixed(1)} net`,
+    };
+  }
+
+  return {
+    variant: 'avg',
+    diff,
+    label: 'Ortalama',
+    diffLabel: diff >= 0 ? `+${diff.toFixed(1)} net` : `${diff.toFixed(1)} net`,
+  };
+}
+
+const trendAccentStyles = {
+  up: {
+    stripe: 'border-l-emerald-500',
+    netBg: 'from-emerald-500 to-emerald-600 text-white shadow-emerald-500/25',
+    badge:
+      'border-emerald-300 bg-emerald-50 text-emerald-800 ring-emerald-600/20 dark:border-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-100 dark:ring-emerald-400/25',
+    icon: TrendingUp,
+  },
+  down: {
+    stripe: 'border-l-red-500',
+    netBg: 'from-red-500 to-red-600 text-white shadow-red-500/25',
+    badge:
+      'border-red-300 bg-red-50 text-red-800 ring-red-600/20 dark:border-red-700 dark:bg-red-950/80 dark:text-red-100 dark:ring-red-400/25',
+    icon: TrendingDown,
+  },
+  avg: {
+    stripe: 'border-l-amber-400',
+    netBg: 'from-amber-400 to-amber-500 text-amber-950 shadow-amber-400/25',
+    badge:
+      'border-amber-300 bg-amber-50 text-amber-900 ring-amber-600/20 dark:border-amber-700 dark:bg-amber-950/80 dark:text-amber-100 dark:ring-amber-400/25',
+    icon: Minus,
+  },
+} as const;
+
+function NetVsAvgIndicator({
+  net,
+  avgNet,
+  prominent = false,
+}: {
+  net: number;
+  avgNet: number;
+  prominent?: boolean;
+}) {
+  const trend = getNetTrendState(net, avgNet);
+  const styles = trendAccentStyles[trend.variant];
+  const Icon = styles.icon;
+
+  if (prominent) {
+    return (
+      <div
+        className={cn(
+          'flex min-w-[5.5rem] flex-col items-center rounded-2xl border px-3 py-2.5 text-center shadow-sm ring-1 ring-inset',
+          styles.badge,
+        )}
+        title={`Genel ortalama: ${avgNet.toFixed(1)} net`}
+      >
+        <Icon className="h-5 w-5 shrink-0" aria-hidden />
+        <span className="mt-1 text-xs font-bold leading-tight">{trend.label}</span>
+        <span className="mt-0.5 text-[10px] font-semibold tabular-nums opacity-80">{trend.diffLabel}</span>
+      </div>
+    );
+  }
+
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold shadow-sm ring-1 ring-inset',
+        styles.badge,
+      )}
+      title={`Genel ortalama: ${avgNet.toFixed(1)} net · ${trend.diffLabel.replace(' net', '')} fark`}
+    >
+      <Icon className="h-4 w-4 shrink-0" aria-hidden />
+      {trend.label}
+    </span>
+  );
+}
+
+function StatChip({
+  label,
+  value,
+  tone = 'neutral',
+}: {
+  label: string;
+  value: string | number;
+  tone?: 'neutral' | 'primary' | 'success' | 'danger' | 'muted';
+}) {
+  const tones = {
+    neutral: 'border-stone-200 bg-stone-50 text-stone-800 dark:border-stone-700 dark:bg-stone-800/80 dark:text-stone-100',
+    primary: 'border-primary-200 bg-primary-50 text-primary-800 dark:border-primary-900/50 dark:bg-primary-950/40 dark:text-primary-200',
+    success: 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-200',
+    danger: 'border-red-200 bg-red-50 text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200',
+    muted: 'border-stone-200 bg-white text-stone-600 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300',
+  };
+
+  return (
+    <div className={cn('rounded-lg border px-2.5 py-1.5 text-center', tones[tone])}>
+      <p className="text-[10px] font-semibold uppercase tracking-wide opacity-70">{label}</p>
+      <p className="mt-0.5 text-sm font-bold tabular-nums">{value}</p>
+    </div>
+  );
+}
+
 export function TrendPill({ trend }: { trend: 'up' | 'down' | 'stable' }) {
   if (trend === 'up') {
     return (
@@ -245,51 +366,20 @@ export function DenemeAnalysisPanel({
 
       {analysis.chartData.length > 0 ? (
         <div className="mt-6 rounded-xl border border-stone-100 bg-stone-50 p-4 dark:border-stone-700 dark:bg-stone-800/60">
-          <p className="mb-3 text-sm font-medium text-stone-700 dark:text-stone-300">
-            Net grafiği (son {analysis.chartData.length} deneme)
-          </p>
-          <div
-            className="flex items-end justify-center gap-2 sm:gap-3"
-            style={{ height: CHART_TRACK_PX + 28 }}
-            role="img"
-            aria-label="Deneme net grafiği"
-          >
-            {analysis.chartData.map((d, i) => {
-              const barPx = chartBarHeightPx(
-                d.netScore,
-                analysis.chartMin,
-                analysis.chartRange,
-                analysis.chartData.length,
-              );
-              const isLast = i === analysis.chartData.length - 1;
-              const maxBarWidth = analysis.chartData.length === 1 ? 'max-w-[4rem]' : undefined;
-              return (
-                <div
-                  key={`${d.attemptedAt}-${i}`}
-                  className={cn('flex min-w-0 flex-1 flex-col items-center gap-1.5', maxBarWidth)}
-                >
-                  <span className="text-[10px] font-semibold tabular-nums text-primary-700 dark:text-primary-300">
-                    {d.netScore.toFixed(1)}
-                  </span>
-                  <div className="flex w-full flex-col justify-end" style={{ height: CHART_TRACK_PX }}>
-                    <div
-                      className={cn(
-                        'w-full rounded-t transition-colors',
-                        isLast
-                          ? 'bg-primary-600 dark:bg-primary-500'
-                          : 'bg-primary-400 dark:bg-primary-700',
-                      )}
-                      style={{ height: barPx }}
-                      title={`${new Date(d.attemptedAt).toLocaleDateString('tr-TR')} · ${d.examName}: ${d.netScore.toFixed(2)} net`}
-                    />
-                  </div>
-                  <span className="truncate text-center text-[10px] text-stone-500 dark:text-stone-400">
-                    {new Date(d.attemptedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}
-                  </span>
-                </div>
-              );
-            })}
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm font-medium text-stone-700 dark:text-stone-300">
+              Net grafiği (son {analysis.chartData.length} deneme)
+            </p>
+            <p className="text-xs text-stone-500 dark:text-stone-400">
+              Kesikli çizgi: genel ortalama ({analysis.avg.toFixed(1)} net)
+            </p>
           </div>
+          <DenemeNetLineChart
+            data={analysis.chartData}
+            chartMin={analysis.chartMin}
+            chartRange={analysis.chartRange}
+            avg={analysis.avg}
+          />
         </div>
       ) : null}
     </section>
@@ -301,6 +391,7 @@ export function DenemeAttemptCard({
   topicProgress,
   avgNet,
   formatDate,
+  canViewDetail = true,
 }: {
   attempt: {
     id: string;
@@ -318,61 +409,116 @@ export function DenemeAttemptCard({
   topicProgress?: ExamTopicProgress;
   avgNet: number | null;
   formatDate: (s: string) => string;
+  canViewDetail?: boolean;
 }) {
   const net = attempt.netScore != null ? Number(attempt.netScore) : null;
+  const trend = net != null && avgNet != null ? getNetTrendState(net, avgNet) : null;
+  const accent = trend ? trendAccentStyles[trend.variant] : trendAccentStyles.avg;
+  const netDisplay = net != null ? (net % 1 === 0 ? String(net) : net.toFixed(2)) : '—';
+  const hasStats =
+    attempt.totalScore != null ||
+    attempt.rightCount != null ||
+    attempt.wrongCount != null ||
+    attempt.emptyCount != null ||
+    attempt.durationMinutes != null;
 
   return (
-    <li className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm dark:border-stone-800 dark:bg-stone-900/80">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 flex-1 space-y-2">
-          <div className="flex flex-wrap items-center gap-2">
-            {net != null ? (
-              <span className="text-2xl font-bold tabular-nums text-primary-700 dark:text-primary-300">
-                {net % 1 === 0 ? net : net.toFixed(2)}
-                <span className="ml-1 text-sm font-medium text-stone-500 dark:text-stone-400">net</span>
-              </span>
-            ) : null}
-            <TopicProgressChip progress={topicProgress} compact />
-          </div>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-stone-600 dark:text-stone-400">
-            <span className="inline-flex items-center gap-1 font-medium text-stone-900 dark:text-stone-100">
-              <BookOpen className="h-4 w-4 text-primary-600 dark:text-primary-400" />
-              {attempt.exam.name} ({attempt.exam.code})
+    <li
+      className={cn(
+        'group overflow-hidden rounded-2xl border border-stone-200 border-l-[5px] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-stone-800 dark:bg-stone-900/90',
+        accent.stripe,
+      )}
+    >
+      <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-stretch sm:gap-5 sm:p-5">
+        <div
+          className={cn(
+            'flex shrink-0 flex-col items-center justify-center rounded-2xl bg-gradient-to-br px-5 py-4 shadow-lg sm:w-[7.25rem]',
+            accent.netBg,
+          )}
+        >
+          <span className="text-[10px] font-bold uppercase tracking-[0.14em] opacity-90">Net</span>
+          <span className="font-display text-4xl font-bold leading-none tabular-nums">{netDisplay}</span>
+          {avgNet != null ? (
+            <span className="mt-2 rounded-full bg-black/10 px-2 py-0.5 text-[10px] font-semibold tabular-nums">
+              Ort. {avgNet.toFixed(1)}
             </span>
-            <span className="inline-flex items-center gap-1">
-              <Calendar className="h-3.5 w-3.5" />
-              {formatDate(attempt.attemptedAt)}
-            </span>
-          </div>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-stone-500 dark:text-stone-400">
-            {attempt.totalScore != null ? (
-              <span className="inline-flex items-center gap-1 font-medium text-primary-700 dark:text-primary-300">
-                <Target className="h-3.5 w-3.5" />
-                {attempt.totalScore} puan
-              </span>
+          ) : null}
+        </div>
+
+        <div className="flex min-w-0 flex-1 flex-col gap-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="truncate font-display text-base font-bold text-stone-900 dark:text-stone-100">
+                  {attempt.exam.name}
+                </h3>
+                <span className="shrink-0 rounded-md bg-stone-100 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-stone-600 dark:bg-stone-800 dark:text-stone-300">
+                  {attempt.exam.code}
+                </span>
+                <TopicProgressChip progress={topicProgress} compact />
+              </div>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-stone-500 dark:text-stone-400">
+                <span className="inline-flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5 shrink-0 text-primary-600 dark:text-primary-400" />
+                  {formatDate(attempt.attemptedAt)}
+                </span>
+                {attempt.durationMinutes != null ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5 shrink-0" />
+                    {attempt.durationMinutes} dk
+                  </span>
+                ) : null}
+              </div>
+            </div>
+
+            {net != null && avgNet != null ? (
+              <NetVsAvgIndicator net={net} avgNet={avgNet} prominent />
             ) : null}
-            {(attempt.rightCount != null || attempt.wrongCount != null) && (
-              <span className="tabular-nums">
-                D {attempt.rightCount ?? '—'} · Y {attempt.wrongCount ?? '—'}
-                {attempt.emptyCount != null ? ` · B ${attempt.emptyCount}` : ''}
+          </div>
+
+          {hasStats ? (
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2.5">
+              {attempt.totalScore != null ? (
+                <StatChip label="Puan" value={attempt.totalScore} tone="primary" />
+              ) : null}
+              {attempt.rightCount != null ? (
+                <StatChip label="Doğru" value={attempt.rightCount} tone="success" />
+              ) : null}
+              {attempt.wrongCount != null ? (
+                <StatChip label="Yanlış" value={attempt.wrongCount} tone="danger" />
+              ) : null}
+              {attempt.emptyCount != null ? (
+                <StatChip label="Boş" value={attempt.emptyCount} tone="muted" />
+              ) : null}
+            </div>
+          ) : null}
+
+          {attempt.notes ? (
+            <div className="rounded-xl border border-stone-100 bg-stone-50/80 px-3 py-2 text-xs leading-relaxed text-stone-600 dark:border-stone-800 dark:bg-stone-950/50 dark:text-stone-400">
+              <span className="font-semibold text-stone-500 dark:text-stone-500">Not · </span>
+              {attempt.notes}
+            </div>
+          ) : null}
+
+          <div className="flex justify-end border-t border-stone-100 pt-3 dark:border-stone-800">
+            {canViewDetail ? (
+              <Link
+                href={getDenemeDetailPath(attempt.id)}
+                className="inline-flex items-center gap-2 rounded-xl border border-primary-200 bg-primary-50 px-4 py-2 text-sm font-semibold text-primary-800 transition hover:border-primary-300 hover:bg-primary-100 dark:border-primary-900/50 dark:bg-primary-950/40 dark:text-primary-200 dark:hover:border-primary-800 dark:hover:bg-primary-950/60"
+              >
+                Detay gör
+                <ArrowRight className="h-4 w-4" aria-hidden />
+              </Link>
+            ) : (
+              <span
+                className="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-stone-50 px-4 py-2 text-sm font-semibold text-stone-500 dark:border-stone-700 dark:bg-stone-800/80 dark:text-stone-400"
+                title="Deneme detayı ve konu analizi Premium plan özelliğidir."
+              >
+                <Lock className="h-4 w-4" aria-hidden />
+                Detay (Premium)
               </span>
             )}
-            {attempt.durationMinutes != null ? (
-              <span className="inline-flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5" />
-                {attempt.durationMinutes} dk
-              </span>
-            ) : null}
-            {avgNet != null && net != null ? (
-              <span className="text-stone-400">
-                Ort: {avgNet.toFixed(1)}
-                {net >= avgNet + 1.5 ? ' · üstünde' : net < avgNet - 1.5 ? ' · altında' : ''}
-              </span>
-            ) : null}
           </div>
-          {attempt.notes ? (
-            <p className="text-xs text-stone-500 dark:text-stone-400">&ldquo;{attempt.notes}&rdquo;</p>
-          ) : null}
         </div>
       </div>
     </li>

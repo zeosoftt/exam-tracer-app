@@ -35,10 +35,24 @@ export function AppPageHeader({
         )}
       >
         <div className={cn('mx-auto max-w-7xl px-3 sm:px-6 lg:px-8', innerClassName)}>
-          <div className="flex h-14 items-center justify-between gap-2 sm:h-16">
-            <div className="flex min-w-0 flex-1 items-center">{left}</div>
-            {center ? <div className="flex flex-1 items-center justify-center px-2">{center}</div> : null}
-            <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">{right}</div>
+          <div
+            className={cn(
+              'h-14 sm:h-16',
+              center
+                ? 'grid grid-cols-[1fr_auto_1fr] items-center gap-2'
+                : 'flex items-center justify-between gap-2',
+            )}
+          >
+            <div className={cn('flex min-w-0 items-center', !center && 'flex-1')}>{left}</div>
+            {center ? <div className="flex items-center justify-center px-2">{center}</div> : null}
+            <div
+              className={cn(
+                'flex items-center justify-end gap-1.5 sm:gap-2',
+                center ? 'min-w-0' : 'shrink-0',
+              )}
+            >
+              {right}
+            </div>
           </div>
         </div>
       </header>

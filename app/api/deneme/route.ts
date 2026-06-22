@@ -9,7 +9,7 @@ import { requireSession, getSessionUserId } from '@/lib/auth/requireSession';
 import { asyncHandler } from '@/lib/errors/errorHandler';
 import { HTTP_STATUS } from '@/config/constants';
 import { getTopicCompletionByExamIds } from '@/lib/services/topic/topicCompletionByExam';
-import { denemeAccessDeniedResponse } from '@/lib/deneme/denemeAccess';
+import { denemeSiteDisabledResponse } from '@/lib/deneme/denemeAccess';
 import { computeDenemeScores } from '@/lib/deneme/computeDenemeScores';
 import {
   createDenemeAttempt,
@@ -46,7 +46,7 @@ async function getDenemeHandler(req: NextRequest): Promise<NextResponse> {
   const session = await requireSession();
   const userId = getSessionUserId(session);
 
-  const denied = await denemeAccessDeniedResponse(userId);
+  const denied = await denemeSiteDisabledResponse();
   if (denied) return denied;
 
   const { searchParams } = new URL(req.url);
@@ -97,7 +97,7 @@ async function postDenemeHandler(req: NextRequest): Promise<NextResponse> {
   const session = await requireSession();
   const userId = getSessionUserId(session);
 
-  const denied = await denemeAccessDeniedResponse(userId);
+  const denied = await denemeSiteDisabledResponse();
   if (denied) return denied;
 
   const body = await req.json();

@@ -285,6 +285,7 @@ model ExamAttempt {
   emptyCount       Int?                              // Boş sayısı
   durationMinutes  Int?                              // Süre (dakika)
   breakdown        Json?                             // Ders bazlı: [{ subjectId, subjectName, right, wrong, empty, net }]
+  topicBreakdown   Json?                             // Konu bazlı deneme: [{ topicId, topicName, subjectName, questionCount, right, wrong, empty, successRate }]
   status           ExamAttemptStatus @default(COMPLETED)
   notes            String?
   createdAt        DateTime        @default(now())

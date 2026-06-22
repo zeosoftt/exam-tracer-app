@@ -19,6 +19,7 @@ export type DenemeAttemptRecord = {
   emptyCount: number | null;
   durationMinutes: number | null;
   breakdown: unknown;
+  topicBreakdown: unknown;
   status: string;
   notes: string | null;
 };
@@ -43,6 +44,7 @@ export type DenemeAttemptDto = {
     empty: number;
     net: number;
   }> | null;
+  topicBreakdown: unknown;
   status: string;
   notes: string | null;
 };
@@ -61,6 +63,7 @@ export function mapDenemeAttemptToDto(attempt: DenemeAttemptRecord): DenemeAttem
     emptyCount: attempt.emptyCount,
     durationMinutes: attempt.durationMinutes,
     breakdown: attempt.breakdown as DenemeAttemptDto['breakdown'],
+    topicBreakdown: attempt.topicBreakdown ?? null,
     status: attempt.status,
     notes: attempt.notes,
   };
@@ -115,11 +118,74 @@ export async function findExamSectionsForScoring(examId: string) {
   });
 }
 
-export type CreateDenemeAttemptData = Parameters<typeof prisma.examAttempt.create>[0]['data'];
+export async function findExamSubjectsByExamId(examId: string) {
+  return prisma.subject.findMany({
+    where: { section: { examId, deletedAt: null }, deletedAt: null },
+    select: { id: true, name: true, code: true },
+    orderBy: [{ section: { order: 'asc' } }, { order: 'asc' }],
+  });
+}
 
-export async function createDenemeAttempt(data: CreateDenemeAttemptData) {
-  return prisma.examAttempt.create({
-    data,
+export async function findExamTopicsByExamId(examId: string) {
+  return prisma.topic.findMany({
+    where: {
+      deletedAt: null,
+      subject: { deletedAt: null, section: { examId, deletedAt: null } },
+    },
+    select: {
+      id: true,
+      name: true,
+      subject: { select: { id: true, name: true } },
+    },
+  });
+}
+
+export async function findUserDenemeAttemptById(userId: string, attemptId: string) {
+  const attempt = await prisma.examAttempt.findFirst({
+    where: { id: attemptId, userId, deletedAt: null },
     include: { exam: { select: { id: true, name: true, code: true } } },
   });
+
+  if (!attempt) return null;
+
+  const topicBreakdown = await readTopicBreakdown(attemptId);
+  return { ...attempt, topicBreakdown };
+}
+
+export type CreateDenemeAttemptData = Parameters<typeof prisma.examAttempt.create>[0]['data'];
+
+export type CreateDenemeAttemptInput = CreateDenemeAttemptData & {
+  topicBreakdown?: unknown;
+};
+
+async function persistTopicBreakdown(attemptId: string, topicBreakdown: unknown): Promise<void> {
+  await prisma.$executeRawUnsafe(
+    `UPDATE "exam_attempts" SET "topicBreakdown" = $1::jsonb, "updatedAt" = NOW() WHERE "id" = $2`,
+    JSON.stringify(topicBreakdown),
+    attemptId,
+  );
+}
+
+async function readTopicBreakdown(attemptId: string): Promise<unknown> {
+  const rows = await prisma.$queryRawUnsafe<Array<{ topicBreakdown: unknown }>>(
+    `SELECT "topicBreakdown" FROM "exam_attempts" WHERE "id" = $1 LIMIT 1`,
+    attemptId,
+  );
+  return rows[0]?.topicBreakdown ?? null;
+}
+
+export async function createDenemeAttempt(data: CreateDenemeAttemptInput) {
+  const { topicBreakdown, ...prismaData } = data;
+
+  const attempt = await prisma.examAttempt.create({
+    data: prismaData as CreateDenemeAttemptData,
+    include: { exam: { select: { id: true, name: true, code: true } } },
+  });
+
+  if (topicBreakdown != null) {
+    await persistTopicBreakdown(attempt.id, topicBreakdown);
+    return { ...attempt, topicBreakdown };
+  }
+
+  return attempt;
 }

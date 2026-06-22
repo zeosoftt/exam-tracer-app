@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState, startTransition } from 'react';
-import { fetchDenemeSiteFlags } from '@/lib/client-api/denemeClient';
+import { fetchDenemeSiteFlags, fetchDenemeDetailAccess } from '@/lib/client-api/denemeClient';
 import { computeDenemeAnalysis } from '@/lib/deneme/computeDenemeAnalysis';
 import { useDenemeAttemptsList } from '@/components/deneme/hooks/useDenemeAttemptsList';
 import {
@@ -12,6 +12,7 @@ import { useDenemeForm } from '@/components/deneme/hooks/useDenemeForm';
 
 export function useDenemePage() {
   const [denemeAdvanced, setDenemeAdvanced] = useState<boolean | null>(null);
+  const [canViewDenemeDetail, setCanViewDenemeDetail] = useState(false);
 
   const markFeatureDisabled = useCallback(() => {
     startTransition(() => setDenemeAdvanced(false));
@@ -25,7 +26,6 @@ export function useDenemePage() {
     setPrimaryTopicProgress,
     loading,
     listError,
-    denemePremiumRequired,
     fetchAttempts,
   } = useDenemeAttemptsList(markFeatureDisabled);
 
@@ -35,7 +35,13 @@ export function useDenemePage() {
       .catch(() => startTransition(() => setDenemeAdvanced(true)));
   }, []);
 
-  const featuresEnabled = denemeAdvanced !== false && !denemePremiumRequired;
+  useEffect(() => {
+    fetchDenemeDetailAccess()
+      .then((allowed) => startTransition(() => setCanViewDenemeDetail(allowed)))
+      .catch(() => startTransition(() => setCanViewDenemeDetail(false)));
+  }, []);
+
+  const featuresEnabled = denemeAdvanced !== false;
   const { exams, activeExamId, examIdsKey } = useDenemeExamBootstrap(featuresEnabled);
 
   useDenemeTopicProgressRefresh(
@@ -69,9 +75,10 @@ export function useDenemePage() {
     loading,
     listError,
     denemeAdvanced,
-    denemePremiumRequired,
+    canViewDenemeDetail,
     featuresEnabled,
     exams,
+    activeExamId,
     analysis,
     analysisAvg,
     fetchAttempts,

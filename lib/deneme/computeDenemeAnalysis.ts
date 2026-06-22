@@ -1,4 +1,5 @@
 import type { DenemeAttemptListItem } from '@/lib/client-api/denemeClient';
+import { computeChartBounds } from '@/lib/deneme/netLineChartLayout';
 
 export type DenemeAnalysis = {
   total: number;
@@ -46,9 +47,7 @@ export function computeDenemeAnalysis(attempts: DenemeAttemptListItem[]): Deneme
     netScore: a.netScore,
     examName: a.exam.name,
   }));
-  const chartMin = Math.min(...chartData.map((d) => d.netScore));
-  const chartMax = Math.max(...chartData.map((d) => d.netScore));
-  const chartRange = chartMax - chartMin || 1;
+  const { chartMin, chartRange } = computeChartBounds(chartData.map((d) => d.netScore));
 
   return {
     total: withNet.length,
