@@ -80,6 +80,7 @@ export type DenemeAnalysisView = {
   chartRange: number;
 };
 
+/** @deprecated DenemeDashboardPanel + DenemeAnalysisStats kullanın */
 export function DenemeAnalysisPanel({
   analysis,
   primaryTopicProgress,

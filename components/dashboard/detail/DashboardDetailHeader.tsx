@@ -15,6 +15,7 @@ export function DashboardDetailHeader({ user }: DashboardDetailHeaderProps) {
         <AppHeaderActions
           userName={user.name}
           showUserName
+          showSupport={false}
           userNameVisibility="always"
           userNameClassName="max-w-[100px] sm:max-w-none"
           supportVariant="icon"

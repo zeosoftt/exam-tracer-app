@@ -1,17 +1,17 @@
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { Lock, Sparkles, Target } from 'lucide-react';
 import { SHOPIER_CHECKOUT_URL } from '@/config/constants';
-import { pageIntroClass } from '@/lib/ui/pageStyles';
 import { computeDenemeAnalysis } from '@/lib/deneme/computeDenemeAnalysis';
 import type { DenemePageInitialData } from '@/lib/deneme/loadDenemePageData';
 import { DenemeAttemptCardServer } from '@/components/deneme/DenemeAttemptCardServer';
-import { DenemeAddButtonTrigger } from '@/components/deneme/DenemeAddButtonTrigger';
 
 type DenemePageStaticContentProps = {
   data: DenemePageInitialData;
+  topContent?: ReactNode;
 };
 
-export function DenemePageStaticContent({ data }: DenemePageStaticContentProps) {
+export function DenemePageStaticContent({ data, topContent }: DenemePageStaticContentProps) {
   const analysisAvg = computeDenemeAnalysis(data.attempts)?.avg ?? null;
   const showPremiumBanner = data.denemeAdvanced && !data.canViewDenemeDetail;
   const featuresEnabled = data.denemeAdvanced;
@@ -35,9 +35,7 @@ export function DenemePageStaticContent({ data }: DenemePageStaticContentProps) 
       </header>
 
       <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-        <p className={pageIntroClass}>
-          Deneme kayıtlarınızı girin, net trendinizi ve konu ilerlemenizi takip edin.
-        </p>
+        {topContent}
 
         {data.denemeAdvanced === false ? (
           <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-100">
@@ -69,9 +67,8 @@ export function DenemePageStaticContent({ data }: DenemePageStaticContentProps) 
           </div>
         ) : null}
 
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="mb-6">
           <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">Deneme kayıtları</h2>
-          {featuresEnabled ? <DenemeAddButtonTrigger /> : null}
         </div>
 
         {data.attempts.length === 0 ? (
@@ -80,7 +77,7 @@ export function DenemePageStaticContent({ data }: DenemePageStaticContentProps) 
             <p className="mt-4 font-medium text-stone-700 dark:text-stone-300">Henüz deneme kaydı yok</p>
             <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
               {featuresEnabled
-                ? 'İlk denemenizi ekleyerek net trendinizi takip etmeye başlayın.'
+                ? 'Yukarıdaki “Deneme ekle” kartından kurum linki veya manuel kayıt ile deneme ekleyin.'
                 : 'Yeni kayıt ekleme şu an kapalı.'}
             </p>
           </div>

@@ -11,6 +11,7 @@ type AppHeaderActionsProps = {
   userName?: string;
   /** Dashboard: btn-secondary; detail/pomodoro: bordered icon */
   supportVariant?: 'compact' | 'icon';
+  showSupport?: boolean;
   showUserName?: boolean;
   /** `sm` = sadece geniş ekranda (dashboard); `always` = her zaman (detail) */
   userNameVisibility?: 'sm' | 'always';
@@ -77,6 +78,7 @@ export function AppHeaderSignOutButton({ compact = false }: { compact?: boolean 
 export function AppHeaderActions({
   userName,
   supportVariant = 'compact',
+  showSupport = true,
   showUserName = false,
   userNameVisibility = 'sm',
   userNameClassName,
@@ -89,7 +91,7 @@ export function AppHeaderActions({
       {beforeTheme}
       <ThemeToggleCompact />
       {afterTheme}
-      <AppHeaderSupportLink variant={supportVariant} />
+      {showSupport ? <AppHeaderSupportLink variant={supportVariant} /> : null}
       {showUserName && userName ? (
         <div
           className={cn(

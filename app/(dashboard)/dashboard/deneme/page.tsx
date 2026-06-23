@@ -5,8 +5,9 @@
 import { Suspense } from 'react';
 import { requirePageSession } from '@/lib/auth/pageSession';
 import { loadDenemePageData } from '@/lib/deneme/loadDenemePageData';
+import { DenemePageProvider } from '@/components/deneme/DenemePageContext';
+import { DenemePageSummary, DenemePageAdd, DenemePageModal } from '@/components/deneme/DenemePageClient';
 import { DenemePageStaticContent } from '@/components/deneme/DenemePageStaticContent';
-import { DenemePageOverlays } from '@/components/deneme/DenemePageOverlays';
 import { DenemeRouteSkeleton } from '@/components/ui/DenemeRouteSkeleton';
 
 async function DenemePageContent() {
@@ -14,10 +15,18 @@ async function DenemePageContent() {
   const initialData = await loadDenemePageData(session.user.id);
 
   return (
-    <>
-      <DenemePageStaticContent data={initialData} />
-      <DenemePageOverlays initialData={initialData} />
-    </>
+    <DenemePageProvider initialData={initialData}>
+      <DenemePageStaticContent
+        data={initialData}
+        topContent={
+          <>
+            <DenemePageSummary />
+            <DenemePageAdd />
+          </>
+        }
+      />
+      <DenemePageModal />
+    </DenemePageProvider>
   );
 }
 

@@ -51,6 +51,7 @@ export function DashboardHeader({ user, planBadge }: DashboardHeaderProps) {
           <AppHeaderActions
             userName={user.name}
             showUserName
+            showSupport={false}
             afterTheme={
               <Link
                 href="/dashboard/settings"
