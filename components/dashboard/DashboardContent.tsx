@@ -19,13 +19,7 @@ export function DashboardContent({ user }: { user: DashboardUser }) {
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
-      <DashboardHeader
-        user={page.user}
-        planBadge={page.planBadge}
-        statsRefreshing={page.statsRefreshing}
-        isLoading={page.isLoading}
-        onRefresh={() => void page.refreshDashboard()}
-      />
+      <DashboardHeader user={page.user} planBadge={page.planBadge} />
 
       <main className="mx-auto max-w-5xl px-4 py-8 pb-24 sm:px-6 sm:py-10 sm:pb-12 lg:px-8">
         <DashboardHeroSection

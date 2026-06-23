@@ -7,7 +7,7 @@ import type { DetailData } from '@/components/dashboard/detail/dashboardDetailTy
 import { fetchApiData } from '@/lib/client-api/http';
 import { fetchJsonCached } from '@/lib/client-api/requestCache';
 
-export type FetchStatsOptions = { manual?: boolean; force?: boolean; lite?: boolean };
+export type FetchStatsOptions = { force?: boolean; lite?: boolean };
 
 export async function fetchDashboardStatsPayload(
   options?: FetchStatsOptions,
@@ -15,7 +15,7 @@ export async function fetchDashboardStatsPayload(
   const lite = options?.lite ?? true;
   const params = new URLSearchParams();
   params.set('scope', lite ? 'core' : 'full');
-  if (options?.force || options?.manual) params.set('fresh', '1');
+  if (options?.force) params.set('fresh', '1');
   const result = await fetchApiData<DashboardStats>(`/api/dashboard/stats?${params.toString()}`);
   return result.ok ? result.data : undefined;
 }

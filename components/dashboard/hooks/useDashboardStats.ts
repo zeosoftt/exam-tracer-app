@@ -8,7 +8,6 @@ import { scheduleIdleTask } from '@/lib/runtime/scheduleIdleTask';
 export function useDashboardStats() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [statsRefreshing, setStatsRefreshing] = useState(false);
   const [statsUpdatedAt, setStatsUpdatedAt] = useState<Date | null>(null);
   const lastLiteStatsFetchAtRef = useRef(0);
   const lastFullStatsFetchAtRef = useRef(0);
@@ -18,12 +17,11 @@ export function useDashboardStats() {
     const lite = options?.lite ?? true;
     const now = Date.now();
     const lastFetchAt = lite ? lastLiteStatsFetchAtRef.current : lastFullStatsFetchAtRef.current;
-    if (!options?.force && !options?.manual && now - lastFetchAt < 10000) {
+    if (!options?.force && now - lastFetchAt < 10000) {
       return;
     }
     if (statsFetchInFlightRef.current) return;
     statsFetchInFlightRef.current = true;
-    if (options?.manual) setStatsRefreshing(true);
     try {
       const data = await fetchDashboardStatsPayload(options);
       if (data !== undefined) {
@@ -47,7 +45,6 @@ export function useDashboardStats() {
     } finally {
       statsFetchInFlightRef.current = false;
       setIsLoading(false);
-      if (options?.manual) setStatsRefreshing(false);
     }
   }, []);
 
@@ -85,7 +82,6 @@ export function useDashboardStats() {
   return {
     stats,
     isLoading,
-    statsRefreshing,
     statsUpdatedAt,
     fetchStats,
   };

@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { RefreshCw, Shield } from 'lucide-react';
+import { Settings, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { AppBrandLink, AppHeaderActions, AppPageHeader } from '@/components/ui';
 import type { PlanBadge } from '@/components/dashboard/domain/dashboardTypes';
@@ -16,18 +16,9 @@ const ShopierCheckoutLink = dynamic(
 type DashboardHeaderProps = {
   user: DashboardUser;
   planBadge: PlanBadge | null;
-  statsRefreshing: boolean;
-  isLoading: boolean;
-  onRefresh: () => void;
 };
 
-export function DashboardHeader({
-  user,
-  planBadge,
-  statsRefreshing,
-  isLoading,
-  onRefresh,
-}: DashboardHeaderProps) {
+export function DashboardHeader({ user, planBadge }: DashboardHeaderProps) {
   const adminMobileBanner =
     user.role === 'ADMIN' ? (
       <div className="border-b border-primary-200 bg-primary-50 dark:border-primary-900 dark:bg-primary-950/40 sm:hidden">
@@ -61,18 +52,15 @@ export function DashboardHeader({
             userName={user.name}
             showUserName
             afterTheme={
-              <button
-                type="button"
-                onClick={onRefresh}
-                disabled={statsRefreshing || isLoading}
+              <Link
+                href="/dashboard/settings"
                 className="btn btn-secondary !px-2.5 !py-2 sm:!px-3"
-                title="Verileri yenile"
-                aria-label="Dashboard verilerini yenile"
+                title="Ayarlar"
+                aria-label="Ayarlara git"
               >
-                <RefreshCw
-                  className={cn('h-4 w-4 text-stone-600 dark:text-stone-400', statsRefreshing && 'animate-spin')}
-                />
-              </button>
+                <Settings className="h-4 w-4 text-stone-600 dark:text-stone-400" />
+                <span className="ml-1.5 hidden text-xs font-semibold sm:inline">Ayarlar</span>
+              </Link>
             }
             trailing={
               planBadge ? (
