@@ -21,6 +21,8 @@ type DashboardDetailSectionsViewProps = Pick<
   | 'updateQuestionStats'
   | 'startEdit'
   | 'cancelEdit'
+  | 'evaluationFilter'
+  | 'setEvaluationFilter'
 >;
 
 export function DashboardDetailSectionsView({
@@ -39,6 +41,8 @@ export function DashboardDetailSectionsView({
   updateQuestionStats,
   startEdit,
   cancelEdit,
+  evaluationFilter,
+  setEvaluationFilter,
 }: DashboardDetailSectionsViewProps) {
   if (!detailData?.sections?.length) return null;
 
@@ -246,6 +250,8 @@ export function DashboardDetailSectionsView({
                 <DashboardDetailTopicsTable
                   subject={selectedSubject}
                   evaluation={detailData.evaluation}
+                  evaluationFilter={evaluationFilter}
+                  setEvaluationFilter={setEvaluationFilter}
                   updatingTopicId={updatingTopicId}
                   editingTopicId={editingTopicId}
                   editValues={editValues}

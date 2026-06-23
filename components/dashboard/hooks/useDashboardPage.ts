@@ -10,7 +10,7 @@ export function useDashboardPage(user: DashboardUser) {
   const { stats, isLoading, statsUpdatedAt, fetchStats } = useDashboardStats();
   const planBadge = usePlanBadge();
   const evaluationEditor = useEvaluationTopicEditor(fetchStats);
-  const vm = useDashboardViewModel(stats, evaluationEditor.evaluationFilter, user.name);
+  const vm = useDashboardViewModel(stats, user.name);
 
   const srsOverdue = stats?.spacedRepetition?.summary.overdue ?? 0;
   const srsDueWeek = stats?.spacedRepetition?.summary.dueWithinWeek ?? 0;

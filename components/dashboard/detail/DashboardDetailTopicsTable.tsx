@@ -11,7 +11,14 @@ import {
   TrendingUp,
   X,
 } from 'lucide-react';
+import type { EvaluationFilter } from '@/components/dashboard/domain/dashboardTypes';
 import type { DetailData, Subject, Topic } from '@/components/dashboard/detail/dashboardDetailTypes';
+import { EvaluationTopicFilters } from '@/components/dashboard/detail/EvaluationTopicFilters';
+import {
+  computeDetailTopicAverages,
+  countDetailTopicEvaluation,
+  filterDetailTopicsByEvaluation,
+} from '@/components/dashboard/detail/detailTopicEvaluation';
 import { getTopicStatusConfig, type TopicStatusValue } from '@/components/dashboard/detail/topicStatusConfig';
 
 type TopicEditValues = {
@@ -23,6 +30,8 @@ type TopicEditValues = {
 type DashboardDetailTopicsTableProps = {
   subject: Subject;
   evaluation: DetailData['evaluation'];
+  evaluationFilter: EvaluationFilter;
+  setEvaluationFilter: Dispatch<SetStateAction<EvaluationFilter>>;
   updatingTopicId: string | null;
   editingTopicId: string | null;
   editValues: TopicEditValues | null;
@@ -36,6 +45,8 @@ type DashboardDetailTopicsTableProps = {
 export function DashboardDetailTopicsTable({
   subject,
   evaluation,
+  evaluationFilter,
+  setEvaluationFilter,
   updatingTopicId,
   editingTopicId,
   editValues,
@@ -45,28 +56,49 @@ export function DashboardDetailTopicsTable({
   onStartEdit,
   onCancelEdit,
 }: DashboardDetailTopicsTableProps) {
-  const hasTopics = subject.topics && subject.topics.length > 0;
+  const evaluationCounts = countDetailTopicEvaluation(subject.topics);
+  const filteredTopics = filterDetailTopicsByEvaluation(subject.topics, evaluationFilter);
+  const topicAverages = computeDetailTopicAverages(subject.topics);
+  const hasTopics = subject.topics.length > 0;
 
   return (
     <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-soft dark:border-stone-800 dark:bg-stone-900/90">
       {hasTopics && (
-        <div className="border-b border-stone-100 bg-stone-50/50 px-4 py-3 dark:border-stone-800 dark:bg-stone-950/50 sm:px-5">
-          <p className="text-sm text-stone-600 dark:text-stone-400">
-            <span className="font-semibold text-stone-900 dark:text-stone-100">{subject.topics.length}</span> konu
-            {subject.completedTopics > 0 && (
-              <>
-                {' '}
-                ·{' '}
-                <span className="font-medium text-primary-600 dark:text-primary-400">
-                  {subject.completedTopics} tamamlandı
-                </span>
-              </>
-            )}
-          </p>
+        <div className="border-b border-stone-100 bg-stone-50/50 px-4 py-3 dark:border-stone-800 dark:bg-stone-950/50 sm:px-5 sm:py-4">
+          <div className="flex flex-col gap-3">
+            <p className="text-sm text-stone-600 dark:text-stone-400">
+              <span className="font-semibold text-stone-900 dark:text-stone-100">{subject.topics.length}</span> konu
+              {subject.completedTopics > 0 && (
+                <>
+                  {' '}
+                  ·{' '}
+                  <span className="font-medium text-primary-600 dark:text-primary-400">
+                    {subject.completedTopics} tamamlandı
+                  </span>
+                </>
+              )}
+            </p>
+
+            {evaluation ? (
+              <EvaluationTopicFilters
+                evaluationFilter={evaluationFilter}
+                setEvaluationFilter={setEvaluationFilter}
+                counts={evaluationCounts}
+                filteredCount={filteredTopics.length}
+                averageSuccessRate={topicAverages?.averageSuccessRate}
+                averageNet={topicAverages?.averageNet}
+              />
+            ) : null}
+          </div>
         </div>
       )}
       <div className="max-h-[min(70vh,600px)] overflow-auto">
         {hasTopics ? (
+          evaluationFilter && filteredTopics.length === 0 ? (
+            <div className="p-10 text-center text-sm text-stone-500 dark:text-stone-400">
+              Bu derste seçilen kategoride konu bulunmuyor.
+            </div>
+          ) : (
           <table className="w-full min-w-[680px]">
             <thead className="sticky top-0 z-10">
               <tr className="border-b border-stone-200 bg-stone-50 shadow-[0_1px_0_0_rgba(0,0,0,0.05)] dark:border-stone-700 dark:bg-stone-900/80">
@@ -104,7 +136,7 @@ export function DashboardDetailTopicsTable({
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
-              {subject.topics.map((topic) => {
+              {(evaluationFilter ? filteredTopics : subject.topics).map((topic) => {
                 const statusConfig = getTopicStatusConfig(topic.status);
                 const Icon = statusConfig.icon;
 
@@ -314,6 +346,7 @@ export function DashboardDetailTopicsTable({
               })}
             </tbody>
           </table>
+          )
         ) : (
           <div className="p-10 text-center sm:p-14">
             <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-stone-100 text-stone-400 dark:bg-stone-800 dark:text-stone-500">

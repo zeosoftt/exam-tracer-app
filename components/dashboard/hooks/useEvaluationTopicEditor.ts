@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import type { DashboardEvaluationTopic, TopicEditValues, EvaluationFilter } from '../domain/dashboardTypes';
+import type { DashboardEvaluationTopic, TopicEditValues } from '../domain/dashboardTypes';
 import type { FetchStatsOptions } from '@/lib/client-api/dashboardClient';
 import { patchTopicProgress } from '@/lib/client-api/progressClient';
 
@@ -11,7 +11,6 @@ export function useEvaluationTopicEditor(fetchStats: RefetchStats) {
   const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<TopicEditValues | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
-  const [evaluationFilter, setEvaluationFilter] = useState<EvaluationFilter>(null);
   const [reviewAckTopicId, setReviewAckTopicId] = useState<string | null>(null);
 
   const updateQuestionStats = useCallback(
@@ -84,8 +83,6 @@ export function useEvaluationTopicEditor(fetchStats: RefetchStats) {
     editValues,
     setEditValues,
     expandedSections,
-    evaluationFilter,
-    setEvaluationFilter,
     reviewAckTopicId,
     updateQuestionStats,
     startEdit,

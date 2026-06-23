@@ -1,14 +1,13 @@
 'use client';
 
 import { useMemo } from 'react';
-import type { DashboardStats, EvaluationFilter } from '../domain/dashboardTypes';
+import type { DashboardStats } from '../domain/dashboardTypes';
 import {
   buildDenemeSparkline,
   buildWeeklyStudyByLabel,
   computeCompletionRate,
   computeExamCountdown,
   computeTotalTopics,
-  filterEvaluationTopics,
   formatDashboardTodayLabel,
   getFirstName,
   groupEvaluationTopicsBySectionSubject,
@@ -16,13 +15,11 @@ import {
 
 export function useDashboardViewModel(
   stats: DashboardStats | null,
-  evaluationFilter: EvaluationFilter,
   userFullName: string,
 ) {
   return useMemo(() => {
     const totalTopics = computeTotalTopics(stats);
     const evaluationTopics = stats?.evaluation?.topics ?? [];
-    const filteredEvaluationTopics = filterEvaluationTopics(evaluationTopics, evaluationFilter);
     return {
       totalTopics,
       completionRate: computeCompletionRate(stats, totalTopics),
@@ -31,10 +28,9 @@ export function useDashboardViewModel(
       denemeSparkline: buildDenemeSparkline(stats?.deneme?.recentAttempts),
       examCountdown: computeExamCountdown(stats?.activeExam?.startDate ?? null),
       evaluationTopics,
-      filteredEvaluationTopics,
-      groupedTopics: groupEvaluationTopicsBySectionSubject(filteredEvaluationTopics),
+      groupedTopics: groupEvaluationTopicsBySectionSubject(evaluationTopics),
       todayLabel: formatDashboardTodayLabel(),
       firstName: getFirstName(userFullName),
     };
-  }, [stats, evaluationFilter, userFullName]);
+  }, [stats, userFullName]);
 }

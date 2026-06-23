@@ -45,8 +45,6 @@ export function DashboardContent({ user }: { user: DashboardUser }) {
           <DashboardEvaluationSection
             evaluation={page.stats.evaluation}
             vm={page.vm}
-            evaluationFilter={page.evaluationFilter}
-            setEvaluationFilter={page.setEvaluationFilter}
             editingTopicId={page.editingTopicId}
             editValues={page.editValues}
             setEditValues={page.setEditValues}
