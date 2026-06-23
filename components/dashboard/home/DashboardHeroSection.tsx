@@ -1,6 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import {
+  AlertCircle,
+  ArrowRight,
+} from 'lucide-react';
 import type { DashboardStats } from '@/components/dashboard/domain/dashboardTypes';
 
 type DashboardHeroSectionProps = {
@@ -10,8 +14,47 @@ type DashboardHeroSectionProps = {
   isLoading: boolean;
   stats: DashboardStats | null;
   srsOverdue: number;
-  srsDueWeek: number;
 };
+
+const QUICK_LINKS = [
+  { href: '/dashboard/detail', label: 'Konular' },
+  { href: '/dashboard/pomodoro', label: 'Pomodoro' },
+  { href: '/dashboard/deneme', label: 'Deneme' },
+] as const;
+
+function SrsOverdueButton({ count }: { count: number }) {
+  return (
+    <a
+      href="#srs-section"
+      className="group flex items-center gap-3 rounded-xl border border-red-200 bg-gradient-to-r from-red-50 to-red-50/40 px-4 py-3.5 shadow-sm transition-all hover:border-red-300 hover:from-red-100 hover:to-red-50 hover:shadow-md dark:border-red-900/50 dark:from-red-950/40 dark:to-red-950/20 dark:hover:border-red-800 dark:hover:from-red-950/60"
+    >
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300">
+        <AlertCircle className="h-5 w-5" aria-hidden />
+      </span>
+      <span className="min-w-0 flex-1 text-left">
+        <span className="block text-sm font-semibold text-red-950 dark:text-red-100">
+          {count} tekrar gecikmiş
+        </span>
+        <span className="mt-0.5 block text-xs text-red-700/90 dark:text-red-300/90">Aralıklı tekrar listesine git</span>
+      </span>
+      <span className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-colors group-hover:bg-red-700 dark:bg-red-700 dark:group-hover:bg-red-600">
+        Listeye git
+        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden />
+      </span>
+    </a>
+  );
+}
+
+function QuickLinkButton({ href, label }: { href: string; label: string }) {
+  return (
+    <Link
+      href={href}
+      className="btn btn-secondary min-w-0 flex-1 justify-center !px-3 !py-3 shadow-sm ring-1 ring-stone-300/80 hover:shadow-md active:scale-[0.98] dark:ring-stone-600 sm:!px-4"
+    >
+      {label}
+    </Link>
+  );
+}
 
 export function DashboardHeroSection({
   todayLabel,
@@ -20,7 +63,6 @@ export function DashboardHeroSection({
   isLoading,
   stats,
   srsOverdue,
-  srsDueWeek,
 }: DashboardHeroSectionProps) {
   return (
     <section
@@ -44,31 +86,18 @@ export function DashboardHeroSection({
             </p>
           )}
         </div>
-        <nav className="flex flex-col gap-2 sm:min-w-[240px]" aria-label="Hızlı işlemler">
-          {srsOverdue > 0 && (
-            <a href="#srs-section" className="btn btn-primary justify-center text-sm !py-3">
-              {srsOverdue} tekrar gecikmiş — listeye git
-            </a>
-          )}
-          <div className="flex flex-wrap gap-2">
-            <Link href="/dashboard/detail" className="btn btn-secondary min-w-[6rem] flex-1 justify-center text-sm !py-2.5">
-              Konular
-            </Link>
-            <Link href="/dashboard/pomodoro" className="btn btn-secondary min-w-[6rem] flex-1 justify-center text-sm !py-2.5">
-              Pomodoro
-            </Link>
-            <Link href="/dashboard/deneme" className="btn btn-secondary min-w-[6rem] flex-1 justify-center text-sm !py-2.5">
-              Deneme
-            </Link>
+
+        <nav className="flex w-full flex-col gap-3 sm:min-w-[280px] lg:max-w-sm" aria-label="Hızlı işlemler">
+          {srsOverdue > 0 && <SrsOverdueButton count={srsOverdue} />}
+
+          <div className="flex gap-2">
+            {QUICK_LINKS.map((link) => (
+              <QuickLinkButton key={link.href} href={link.href} label={link.label} />
+            ))}
           </div>
-          {!isLoading && stats && (srsDueWeek > 0 || srsOverdue > 0) && (
-            <p className="text-xs text-stone-500 dark:text-stone-400">
-              {srsDueWeek > 0 && <span>Bu hafta {srsDueWeek} tekrar yaklaşıyor. </span>}
-              Gecikenleri yukarıdaki düğme ile açabilirsiniz.
-            </p>
-          )}
         </nav>
       </div>
+
       {!isLoading && stats?.activeExam && (
         <p className="mt-6 border-t border-stone-100 pt-4 text-sm dark:border-stone-800">
           <span className="text-stone-500 dark:text-stone-400">Aktif sınav:</span>{' '}

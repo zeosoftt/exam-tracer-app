@@ -13,7 +13,6 @@ export function useDashboardPage(user: DashboardUser) {
   const vm = useDashboardViewModel(stats, user.name);
 
   const srsOverdue = stats?.spacedRepetition?.summary.overdue ?? 0;
-  const srsDueWeek = stats?.spacedRepetition?.summary.dueWithinWeek ?? 0;
 
   return {
     user,
@@ -23,7 +22,6 @@ export function useDashboardPage(user: DashboardUser) {
     planBadge,
     vm,
     srsOverdue,
-    srsDueWeek,
     reviewAckTopicId,
     acknowledgeTopicReview,
   };

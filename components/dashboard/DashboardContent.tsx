@@ -27,7 +27,6 @@ export function DashboardContent({ user }: { user: DashboardUser }) {
           isLoading={page.isLoading}
           stats={page.stats}
           srsOverdue={page.srsOverdue}
-          srsDueWeek={page.srsDueWeek}
         />
 
         <DashboardStatsGrid isLoading={page.isLoading} stats={page.stats} vm={page.vm} />
