@@ -31,6 +31,8 @@ export function DashboardContent({ user }: { user: DashboardUser }) {
           srsDueWeek={page.srsDueWeek}
         />
 
+        <DashboardStatsGrid isLoading={page.isLoading} stats={page.stats} vm={page.vm} />
+
         {!page.isLoading && page.stats?.spacedRepetition && (
           <DashboardSpacedRepetitionSection
             spacedRepetition={page.stats.spacedRepetition}
@@ -38,8 +40,6 @@ export function DashboardContent({ user }: { user: DashboardUser }) {
             onAcknowledgeReview={page.acknowledgeTopicReview}
           />
         )}
-
-        <DashboardStatsGrid isLoading={page.isLoading} stats={page.stats} vm={page.vm} />
 
         {page.stats?.evaluation && (
           <DashboardEvaluationSection
