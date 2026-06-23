@@ -54,12 +54,16 @@ const OG_IMAGE = {
   height: 630,
 };
 
-/** Google Search Console — yalnızca env tanımlıysa */
-export function getGoogleSiteVerification(): string | undefined {
-  const v =
+/** Google Search Console HTML meta doğrulama */
+export const GOOGLE_SITE_VERIFICATION_TOKEN =
+  'gRq38B6komUBMFH4YMw8vymDABn23I649wrmMowDUKc';
+
+export function getGoogleSiteVerification(): string {
+  return (
     process.env.GOOGLE_SITE_VERIFICATION?.trim() ||
-    process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim();
-  return v || undefined;
+    process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim() ||
+    GOOGLE_SITE_VERIFICATION_TOKEN
+  );
 }
 
 /** Organization sameAs — virgülle ayrılmış URL listesi veya varsayılan */
