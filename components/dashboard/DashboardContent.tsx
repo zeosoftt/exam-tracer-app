@@ -11,7 +11,6 @@ import { DashboardHeader } from '@/components/dashboard/home/DashboardHeader';
 import { DashboardHeroSection } from '@/components/dashboard/home/DashboardHeroSection';
 import { DashboardStatsGrid } from '@/components/dashboard/home/DashboardStatsGrid';
 import { DashboardSpacedRepetitionSection } from '@/components/dashboard/home/DashboardSpacedRepetitionSection';
-import { DashboardEvaluationSection } from '@/components/dashboard/home/DashboardEvaluationSection';
 
 export function DashboardContent({ user }: { user: DashboardUser }) {
   const page = useDashboardPage(user);
@@ -41,20 +40,6 @@ export function DashboardContent({ user }: { user: DashboardUser }) {
           />
         )}
 
-        {page.stats?.evaluation && (
-          <DashboardEvaluationSection
-            evaluation={page.stats.evaluation}
-            vm={page.vm}
-            editingTopicId={page.editingTopicId}
-            editValues={page.editValues}
-            setEditValues={page.setEditValues}
-            expandedSections={page.expandedSections}
-            toggleSection={page.toggleSection}
-            startEdit={page.startEdit}
-            cancelEdit={page.cancelEdit}
-            updateQuestionStats={page.updateQuestionStats}
-          />
-        )}
       </main>
     </div>
   );

@@ -10,7 +10,6 @@ import {
   computeTotalTopics,
   formatDashboardTodayLabel,
   getFirstName,
-  groupEvaluationTopicsBySectionSubject,
 } from '../domain/dashboardSelectors';
 
 export function useDashboardViewModel(
@@ -19,7 +18,6 @@ export function useDashboardViewModel(
 ) {
   return useMemo(() => {
     const totalTopics = computeTotalTopics(stats);
-    const evaluationTopics = stats?.evaluation?.topics ?? [];
     return {
       totalTopics,
       completionRate: computeCompletionRate(stats, totalTopics),
@@ -27,8 +25,6 @@ export function useDashboardViewModel(
       weeklyStudyByLabel: buildWeeklyStudyByLabel(stats?.study?.weeklySummary),
       denemeSparkline: buildDenemeSparkline(stats?.deneme?.recentAttempts),
       examCountdown: computeExamCountdown(stats?.activeExam?.startDate ?? null),
-      evaluationTopics,
-      groupedTopics: groupEvaluationTopicsBySectionSubject(evaluationTopics),
       todayLabel: formatDashboardTodayLabel(),
       firstName: getFirstName(userFullName),
     };

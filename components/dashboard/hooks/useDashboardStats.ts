@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback, startTransition } from 'react';
 import type { DashboardStats } from '../domain/dashboardTypes';
 import { fetchDashboardStatsPayload, type FetchStatsOptions } from '@/lib/client-api/dashboardClient';
-import { scheduleIdleTask } from '@/lib/runtime/scheduleIdleTask';
 
 export function useDashboardStats() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -27,10 +26,23 @@ export function useDashboardStats() {
       if (data !== undefined) {
         startTransition(() => {
           setStats((prev) => {
-            if (lite && prev?.evaluation && !data.evaluation) {
-              return { ...data, evaluation: prev.evaluation };
-            }
-            return data;
+            if (!lite || !prev) return data;
+            return {
+              ...data,
+              spacedRepetition:
+                data.spacedRepetition?.items?.length || !prev.spacedRepetition
+                  ? data.spacedRepetition
+                  : prev.spacedRepetition,
+              deneme:
+                data.deneme?.recentAttempts?.length || !prev.deneme?.recentAttempts?.length
+                  ? data.deneme
+                  : prev.deneme ?? data.deneme,
+              study:
+                data.study?.weeklySummary?.some((day) => day.minutesStudied > 0) ||
+                !prev.study?.weeklySummary?.some((day) => day.minutesStudied > 0)
+                  ? data.study
+                  : prev.study ?? data.study,
+            };
           });
         });
         setStatsUpdatedAt(new Date());
@@ -51,13 +63,7 @@ export function useDashboardStats() {
   useEffect(() => {
     const load = async () => {
       await fetchStats({ lite: true });
-      // Ağır "full" istatistik paketini ilk boyama sonrası / boşta çalıştır — TBT azaltır
-      scheduleIdleTask(
-        () => {
-          void fetchStats({ force: true, lite: false });
-        },
-        { timeout: 1800 },
-      );
+      void fetchStats({ force: true, lite: false });
     };
     void load();
   }, [fetchStats]);

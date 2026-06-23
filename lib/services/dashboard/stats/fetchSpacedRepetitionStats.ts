@@ -102,7 +102,7 @@ export async function fetchSpacedRepetitionStats(
   examId: string,
   isCoreScope: boolean,
 ): Promise<SpacedRepetitionStats> {
-  const reviewProgressList = isCoreScope ? [] : await fetchReviewProgressList(db, userId, examId);
+  const reviewProgressList = await fetchReviewProgressList(db, userId, examId);
 
   const nowMs = Date.now();
   const dayMs = 86400000;
@@ -131,6 +131,8 @@ export async function fetchSpacedRepetitionStats(
     (i) => !i.overdue && i.daysUntil <= 7 && i.daysUntil >= 0,
   ).length;
 
+  const itemLimit = isCoreScope ? 12 : 24;
+
   return {
     summary: {
       overdue,
@@ -138,6 +140,6 @@ export async function fetchSpacedRepetitionStats(
       totalScheduled: scheduleItems.length,
     },
     scheduleExplanation: SCHEDULE_EXPLANATION,
-    items: isCoreScope ? [] : scheduleItems.slice(0, 20),
+    items: scheduleItems.slice(0, itemLimit),
   };
 }

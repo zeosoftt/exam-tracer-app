@@ -9,7 +9,7 @@ import type { DashboardUser } from '@/components/dashboard/home/dashboardHomeTyp
 export function useDashboardPage(user: DashboardUser) {
   const { stats, isLoading, statsUpdatedAt, fetchStats } = useDashboardStats();
   const planBadge = usePlanBadge();
-  const evaluationEditor = useEvaluationTopicEditor(fetchStats);
+  const { reviewAckTopicId, acknowledgeTopicReview } = useEvaluationTopicEditor(fetchStats);
   const vm = useDashboardViewModel(stats, user.name);
 
   const srsOverdue = stats?.spacedRepetition?.summary.overdue ?? 0;
@@ -24,7 +24,8 @@ export function useDashboardPage(user: DashboardUser) {
     vm,
     srsOverdue,
     srsDueWeek,
-    ...evaluationEditor,
+    reviewAckTopicId,
+    acknowledgeTopicReview,
   };
 }
 
