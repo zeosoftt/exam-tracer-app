@@ -12,7 +12,6 @@ import { DashboardHeroSection } from '@/components/dashboard/home/DashboardHeroS
 import { DashboardStatsGrid } from '@/components/dashboard/home/DashboardStatsGrid';
 import { DashboardSpacedRepetitionSection } from '@/components/dashboard/home/DashboardSpacedRepetitionSection';
 import { DashboardEvaluationSection } from '@/components/dashboard/home/DashboardEvaluationSection';
-import { DashboardQuickLinksSection } from '@/components/dashboard/home/DashboardQuickLinksSection';
 
 export function DashboardContent({ user }: { user: DashboardUser }) {
   const page = useDashboardPage(user);
@@ -58,8 +57,6 @@ export function DashboardContent({ user }: { user: DashboardUser }) {
             updateQuestionStats={page.updateQuestionStats}
           />
         )}
-
-        <DashboardQuickLinksSection />
       </main>
     </div>
   );
