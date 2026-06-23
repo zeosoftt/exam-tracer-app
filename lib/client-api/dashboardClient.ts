@@ -5,6 +5,7 @@
 import type { DashboardStats, PlanBadge } from '@/components/dashboard/domain/dashboardTypes';
 import type { DetailData } from '@/components/dashboard/detail/dashboardDetailTypes';
 import { fetchApiData } from '@/lib/client-api/http';
+import { fetchJsonCached } from '@/lib/client-api/requestCache';
 
 export type FetchStatsOptions = { manual?: boolean; force?: boolean; lite?: boolean };
 
@@ -20,9 +21,11 @@ export async function fetchDashboardStatsPayload(
 }
 
 export async function fetchBillingPlanBadge(): Promise<PlanBadge | null> {
-  const result = await fetchApiData<{ planCode?: string }>('/api/billing/plan');
-  if (!result.ok || !result.data.planCode) return null;
-  return planCodeToBadge(result.data.planCode);
+  const { ok, body } = await fetchJsonCached<{ success?: boolean; data?: { planCode?: string } }>(
+    '/api/billing/plan',
+  );
+  if (!ok || !body.success || !body.data?.planCode) return null;
+  return planCodeToBadge(body.data.planCode);
 }
 
 export type FetchDetailOptions = { force?: boolean };

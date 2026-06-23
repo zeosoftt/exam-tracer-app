@@ -9,6 +9,7 @@ import {
 import { fetchInstitutionResult } from '@/lib/deneme/institutionResult/fetchInstitutionResult';
 import { mapInstitutionSubjectsToBreakdown } from '@/lib/deneme/institutionResult/mapToDenemeBreakdown';
 import { mapInstitutionTopicsToBreakdown } from '@/lib/deneme/analysis/matchTopics';
+import { pickInstitutionScoreForExam } from '@/lib/deneme/institutionResult/pickInstitutionScore';
 import type { InstitutionResultImport } from '@/lib/deneme/institutionResult/types';
 import { prisma } from '@/lib/db/prisma';
 
@@ -79,9 +80,12 @@ export async function createAttemptFromInstitutionResult(input: {
     throw new Error('Kurum sonucundaki dersler seçilen sınav yapısıyla eşleşmedi.');
   }
 
+  const institutionTotalScore = pickInstitutionScoreForExam(importData.scores, exam.code);
+
   const scores = await computeDenemeScores({
     examId: input.examId,
     examCode: exam.code,
+    totalScore: institutionTotalScore,
     rightCount: importData.totals.right,
     wrongCount: importData.totals.wrong,
     emptyCount: importData.totals.empty,

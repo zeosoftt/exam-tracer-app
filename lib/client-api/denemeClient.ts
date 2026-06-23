@@ -3,7 +3,8 @@
  */
 
 import { fetchAvailableExams } from '@/lib/client-api/examsAvailable';
-import { fetchApiData, fetchJson, getApiErrorMessage, mutateApi } from '@/lib/client-api/http';
+import { fetchJson, getApiErrorMessage, mutateApi } from '@/lib/client-api/http';
+import { fetchJsonCached, invalidateRequestCache } from '@/lib/client-api/requestCache';
 import { fetchUserSettingsRaw } from '@/lib/client-api/userSettings';
 
 export type ExamTopicProgress = {
@@ -86,7 +87,7 @@ export async function fetchDenemeAttempts(
     if (progressExamIds?.length) {
       params.set('progressExamIds', progressExamIds.join(','));
     }
-    const { ok, body } = await fetchJson<DenemeListEnvelope>(`/api/deneme?${params.toString()}`);
+    const { ok, body } = await fetchJsonCached<DenemeListEnvelope>(`/api/deneme?${params.toString()}`);
 
     if (!ok || !body.success) {
       if (body.code === 'PREMIUM_REQUIRED') {
@@ -120,15 +121,20 @@ export async function fetchDenemeAttempts(
 }
 
 export async function fetchDenemeSiteFlags(): Promise<boolean> {
-  const result = await fetchApiData<{ deneme_show_advanced?: boolean }>('/api/site/deneme-flags');
-  return result.ok ? Boolean(result.data.deneme_show_advanced) : false;
+  const { ok, body } = await fetchJsonCached<{ success?: boolean; data?: { deneme_show_advanced?: boolean } }>(
+    '/api/site/deneme-flags',
+  );
+  if (!ok || !body.success) return false;
+  return Boolean(body.data?.deneme_show_advanced);
 }
 
 /** Premium (ADVANCED_ANALYTICS) — deneme detay sayfası ve konu analizi */
 export async function fetchDenemeDetailAccess(): Promise<boolean> {
-  const result = await fetchApiData<{ features?: string[] }>('/api/billing/plan');
-  if (!result.ok) return false;
-  return result.data.features?.includes('ADVANCED_ANALYTICS') ?? false;
+  const { ok, body } = await fetchJsonCached<{ success?: boolean; data?: { features?: string[] } }>(
+    '/api/billing/plan',
+  );
+  if (!ok || !body.success) return false;
+  return body.data?.features?.includes('ADVANCED_ANALYTICS') ?? false;
 }
 
 export async function loadDenemeFormBootstrap(): Promise<{
@@ -162,7 +168,34 @@ export async function postDenemeAttempt(
   if (status === 403 && code === 'PREMIUM_REQUIRED') {
     return { ok: false, data: result, premiumRequired: true };
   }
+  if (ok) {
+    invalidateRequestCache('/api/deneme');
+  }
   return { ok, data: result };
+}
+
+export async function deleteDenemeAttempt(
+  attemptId: string,
+): Promise<{ ok: true } | { ok: false; error: string; featureDisabled?: boolean }> {
+  try {
+    const { ok, status, result } = await mutateApi<undefined, { id: string }>(
+      `/api/deneme/${attemptId}`,
+      'DELETE',
+    );
+
+    if (status === 403 && result.code === 'FEATURE_DISABLED') {
+      return { ok: false, error: getApiErrorMessage(result, 'Deneme takibi kapalı.'), featureDisabled: true };
+    }
+
+    if (!ok || !result.success) {
+      return { ok: false, error: getApiErrorMessage(result, 'Deneme kaydı silinemedi.') };
+    }
+
+    invalidateRequestCache('/api/deneme');
+    return { ok: true };
+  } catch {
+    return { ok: false, error: 'Bağlantı hatası. Lütfen tekrar deneyin.' };
+  }
 }
 
 export type InstitutionResultImport = {
@@ -300,6 +333,7 @@ export async function saveInstitutionResultAsAttempt(
       return { ok: false, error: getApiErrorMessage(result, 'Deneme kaydı oluşturulamadı.') };
     }
 
+    invalidateRequestCache('/api/deneme');
     return { ok: true, data: result.data };
   } catch {
     return { ok: false, error: 'Bağlantı hatası. Lütfen tekrar deneyin.' };

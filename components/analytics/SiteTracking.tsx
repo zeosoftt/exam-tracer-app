@@ -17,7 +17,7 @@ export function SiteTrackingScripts({ tracking }: { tracking: PublicTrackingConf
         <>
           <Script
             id="google-tag-manager"
-            strategy="beforeInteractive"
+            strategy="lazyOnload"
             dangerouslySetInnerHTML={{ __html: gtmBootstrapScript(tracking.gtmContainerId) }}
           />
           <noscript>

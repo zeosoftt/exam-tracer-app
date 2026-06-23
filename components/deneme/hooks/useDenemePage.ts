@@ -1,72 +1,73 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, startTransition } from 'react';
-import { fetchDenemeSiteFlags, fetchDenemeDetailAccess } from '@/lib/client-api/denemeClient';
+import { useCallback, useDeferredValue, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { deleteDenemeAttempt } from '@/lib/client-api/denemeClient';
 import { computeDenemeAnalysis } from '@/lib/deneme/computeDenemeAnalysis';
-import { useDenemeAttemptsList } from '@/components/deneme/hooks/useDenemeAttemptsList';
-import {
-  useDenemeExamBootstrap,
-  useDenemeTopicProgressRefresh,
-} from '@/components/deneme/hooks/useDenemeExamBootstrap';
-import { useDenemeForm } from '@/components/deneme/hooks/useDenemeForm';
+import type { DenemePageInitialData } from '@/lib/deneme/loadDenemePageData';
+import { useDenemePageBootstrap } from '@/components/deneme/hooks/useDenemePageBootstrap';
 
-export function useDenemePage() {
-  const [denemeAdvanced, setDenemeAdvanced] = useState<boolean | null>(null);
-  const [canViewDenemeDetail, setCanViewDenemeDetail] = useState(false);
-
-  const markFeatureDisabled = useCallback(() => {
-    startTransition(() => setDenemeAdvanced(false));
-  }, []);
+export function useDenemePage(initialData?: DenemePageInitialData) {
+  const router = useRouter();
+  const [formModalOpen, setFormModalOpen] = useState(false);
+  const [formMessage, setFormMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [deletingAttemptId, setDeletingAttemptId] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const {
     attempts,
     topicProgressByExam,
     primaryTopicProgress,
-    setTopicProgressByExam,
-    setPrimaryTopicProgress,
     loading,
     listError,
-    fetchAttempts,
-  } = useDenemeAttemptsList(markFeatureDisabled);
-
-  useEffect(() => {
-    fetchDenemeSiteFlags()
-      .then((advanced) => startTransition(() => setDenemeAdvanced(advanced)))
-      .catch(() => startTransition(() => setDenemeAdvanced(true)));
-  }, []);
-
-  useEffect(() => {
-    fetchDenemeDetailAccess()
-      .then((allowed) => startTransition(() => setCanViewDenemeDetail(allowed)))
-      .catch(() => startTransition(() => setCanViewDenemeDetail(false)));
-  }, []);
-
-  const featuresEnabled = denemeAdvanced !== false;
-  const { exams, activeExamId, examIdsKey } = useDenemeExamBootstrap(featuresEnabled);
-
-  useDenemeTopicProgressRefresh(
-    featuresEnabled,
-    examIdsKey,
-    setTopicProgressByExam,
-    setPrimaryTopicProgress,
-  );
-
-  const handlePremiumRequired = useCallback(() => {
-    // denemePremiumRequired is set inside useDenemeForm via postDenemeAttempt response
-    // list hook owns premium state from GET; form POST may also trigger — refetch list
-    fetchAttempts(true);
-  }, [fetchAttempts]);
-
-  const denemeForm = useDenemeForm({
+    denemeAdvanced,
+    canViewDenemeDetail,
     featuresEnabled,
     exams,
     activeExamId,
-    onPremiumRequired: handlePremiumRequired,
-    onSubmitSuccess: () => fetchAttempts(true),
-  });
+    fetchAttempts,
+  } = useDenemePageBootstrap(initialData);
 
-  const analysis = useMemo(() => computeDenemeAnalysis(attempts), [attempts]);
+  const handlePremiumRequired = useCallback(() => {
+    void fetchAttempts(true);
+  }, [fetchAttempts]);
+
+  const closeFormModal = useCallback(() => {
+    setFormModalOpen(false);
+    setFormMessage(null);
+  }, []);
+
+  const handleFormSubmitSuccess = useCallback(() => {
+    setFormModalOpen(false);
+    void fetchAttempts(true);
+    router.refresh();
+  }, [fetchAttempts, router]);
+
+  const analysisImmediate = useMemo(() => computeDenemeAnalysis(attempts), [attempts]);
+  const analysis = useDeferredValue(analysisImmediate);
   const analysisAvg = analysis?.avg ?? null;
+
+  const handleDeleteAttempt = useCallback(
+    async (attemptId: string) => {
+      if (!confirm('Bu deneme kaydını silmek istediğinize emin misiniz?')) return;
+
+      setDeletingAttemptId(attemptId);
+      setActionMessage(null);
+
+      const result = await deleteDenemeAttempt(attemptId);
+      setDeletingAttemptId(null);
+
+      if (result.ok) {
+        setActionMessage({ type: 'success', text: 'Deneme kaydı silindi.' });
+        await fetchAttempts(true);
+        router.refresh();
+        return;
+      }
+
+      setActionMessage({ type: 'error', text: result.error });
+    },
+    [fetchAttempts, router],
+  );
 
   return {
     attempts,
@@ -82,6 +83,15 @@ export function useDenemePage() {
     analysis,
     analysisAvg,
     fetchAttempts,
-    ...denemeForm,
+    formModalOpen,
+    setFormModalOpen,
+    closeFormModal,
+    formMessage,
+    setFormMessage,
+    handleFormSubmitSuccess,
+    handlePremiumRequired,
+    deletingAttemptId,
+    handleDeleteAttempt,
+    actionMessage,
   };
 }

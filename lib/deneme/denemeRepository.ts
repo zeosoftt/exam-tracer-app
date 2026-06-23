@@ -174,6 +174,14 @@ async function readTopicBreakdown(attemptId: string): Promise<unknown> {
   return rows[0]?.topicBreakdown ?? null;
 }
 
+export async function softDeleteUserDenemeAttempt(userId: string, attemptId: string): Promise<boolean> {
+  const result = await prisma.examAttempt.updateMany({
+    where: { id: attemptId, userId, deletedAt: null },
+    data: { deletedAt: new Date() },
+  });
+  return result.count > 0;
+}
+
 export async function createDenemeAttempt(data: CreateDenemeAttemptInput) {
   const { topicBreakdown, ...prismaData } = data;
 

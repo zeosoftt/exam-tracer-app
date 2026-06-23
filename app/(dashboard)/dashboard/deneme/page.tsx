@@ -1,14 +1,30 @@
 /**
- * Deneme takibi — ağır istemci chunk’ı ertelenir (TBT).
+ * Deneme takibi — Suspense ile erken iskelet, ardından sunucu listesi (Speed Index).
  */
 
-import dynamic from 'next/dynamic';
-import { RouteShellSkeleton } from '@/components/ui/RouteShellSkeleton';
+import { Suspense } from 'react';
+import { requirePageSession } from '@/lib/auth/pageSession';
+import { loadDenemePageData } from '@/lib/deneme/loadDenemePageData';
+import { DenemePageStaticContent } from '@/components/deneme/DenemePageStaticContent';
+import { DenemePageOverlays } from '@/components/deneme/DenemePageOverlays';
+import { DenemeRouteSkeleton } from '@/components/ui/DenemeRouteSkeleton';
 
-const DenemePageClient = dynamic(() => import('./DenemePageClient'), {
-  loading: () => <RouteShellSkeleton />,
-});
+async function DenemePageContent() {
+  const session = await requirePageSession();
+  const initialData = await loadDenemePageData(session.user.id);
+
+  return (
+    <>
+      <DenemePageStaticContent data={initialData} />
+      <DenemePageOverlays initialData={initialData} />
+    </>
+  );
+}
 
 export default function DenemePage() {
-  return <DenemePageClient />;
+  return (
+    <Suspense fallback={<DenemeRouteSkeleton />}>
+      <DenemePageContent />
+    </Suspense>
+  );
 }

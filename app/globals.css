@@ -3,8 +3,6 @@
  * Yeni nesil UX/UI, responsive, mobil uyumlu
  */
 
-@import '../components/landing/landing-motion.css';
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

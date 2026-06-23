@@ -4,12 +4,13 @@
 
 import { fetchAvailableExams, type AvailableExam } from '@/lib/client-api/examsAvailable';
 import { fetchJson, mutateApi } from '@/lib/client-api/http';
+import { fetchJsonCached } from '@/lib/client-api/requestCache';
 
 export type { AvailableExam };
 export { fetchAvailableExams };
 
 export async function fetchUserSettingsRaw(): Promise<unknown> {
-  const { body } = await fetchJson('/api/user/settings');
+  const { body } = await fetchJsonCached('/api/user/settings');
   return body;
 }
 

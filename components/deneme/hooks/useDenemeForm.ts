@@ -19,6 +19,7 @@ import {
 
 type UseDenemeFormOptions = {
   featuresEnabled: boolean;
+  formModalOpen: boolean;
   exams: ExamOption[];
   activeExamId: string | null;
   onPremiumRequired: () => void;
@@ -27,12 +28,12 @@ type UseDenemeFormOptions = {
 
 export function useDenemeForm({
   featuresEnabled,
+  formModalOpen,
   exams,
   activeExamId,
   onPremiumRequired,
   onSubmitSuccess,
 }: UseDenemeFormOptions) {
-  const [formModalOpen, setFormModalOpen] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState<DenemeFormState>(createInitialDenemeForm);
@@ -46,13 +47,13 @@ export function useDenemeForm({
     new Map<string, { subjects: SubjectRow[]; sections: Array<{ id: string; code: string; subjects: { id: string }[] }> }>(),
   );
 
-  const closeFormModal = useCallback(() => setFormModalOpen(false), []);
+  const closeFormModal = useCallback(() => {}, []);
 
   useEffect(() => {
-    if (!featuresEnabled) {
-      setFormModalOpen(false);
+    if (!featuresEnabled || !formModalOpen) {
+      setMessage(null);
     }
-  }, [featuresEnabled]);
+  }, [featuresEnabled, formModalOpen]);
 
   useEffect(() => {
     if (!featuresEnabled) return;
@@ -62,7 +63,7 @@ export function useDenemeForm({
   }, [featuresEnabled, formModalOpen, activeExamId, form.examId]);
 
   useEffect(() => {
-    if (!featuresEnabled) return;
+    if (!featuresEnabled || !formModalOpen) return;
     if (!form.examId) {
       setExamSubjects([]);
       setSubjectInputs({});
@@ -117,12 +118,12 @@ export function useDenemeForm({
         setSubjectInputs({});
       })
       .finally(() => setStructureLoading(false));
-  }, [featuresEnabled, form.examId]);
+  }, [featuresEnabled, formModalOpen, form.examId]);
 
   const selectedExamCode = exams.find((e) => e.id === form.examId)?.code ?? '';
 
   useEffect(() => {
-    if (!featuresEnabled) return;
+    if (!featuresEnabled || !formModalOpen) return;
     if (selectedExamCode !== 'KPSS' || sections.length === 0) return;
     fetchKpssDenemeStats()
       .then((raw) => {
@@ -130,7 +131,7 @@ export function useDenemeForm({
         if (json.success && json.data) setKpssStats(json.data);
       })
       .catch(() => {});
-  }, [featuresEnabled, selectedExamCode, sections.length]);
+  }, [featuresEnabled, formModalOpen, selectedExamCode, sections.length]);
 
   const updateSubjectInput = useCallback((subjectId: string, field: 'right' | 'wrong' | 'empty', value: number) => {
     setSubjectInputs((prev) => ({
@@ -165,7 +166,7 @@ export function useDenemeForm({
   }, [kpssStats, selectedExamCode]);
 
   const calculated = useMemo(() => {
-    if (!selectedExamCode) return null;
+    if (!formModalOpen || !selectedExamCode) return null;
     if (breakdownForSubmit.length > 0) {
       return calculateExamScore({
         examCode: selectedExamCode,
@@ -186,6 +187,7 @@ export function useDenemeForm({
       simpleTotals: { right: sr, wrong: sw, empty: se },
     });
   }, [
+    formModalOpen,
     selectedExamCode,
     breakdownForSubmit,
     maxScore,
@@ -247,7 +249,6 @@ export function useDenemeForm({
         setForm(createInitialDenemeForm());
         setExamSubjects([]);
         setSubjectInputs({});
-        setFormModalOpen(false);
         onSubmitSuccess();
       } else {
         const d = data as { error?: string | { message?: string } };
@@ -267,8 +268,6 @@ export function useDenemeForm({
   };
 
   return {
-    formModalOpen,
-    setFormModalOpen,
     closeFormModal,
     message,
     submitting,

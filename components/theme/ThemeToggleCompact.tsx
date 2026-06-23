@@ -22,7 +22,7 @@ export function ThemeToggleCompact() {
   if (!mounted) {
     return (
       <div
-        className="h-9 w-[5.75rem] shrink-0 rounded-lg border border-stone-200 bg-stone-100/80 dark:border-stone-700 dark:bg-stone-900/80"
+        className="flex h-9 w-[5.75rem] shrink-0 items-center rounded-lg border border-stone-200 bg-stone-100/80 p-0.5 dark:border-stone-700 dark:bg-stone-900/80"
         aria-hidden
       />
     );
@@ -30,7 +30,7 @@ export function ThemeToggleCompact() {
 
   return (
     <div
-      className="flex shrink-0 rounded-lg border border-stone-200 bg-stone-100/80 p-0.5 dark:border-stone-700 dark:bg-stone-900/80"
+      className="flex h-9 w-[5.75rem] shrink-0 items-center rounded-lg border border-stone-200 bg-stone-100/80 p-0.5 dark:border-stone-700 dark:bg-stone-900/80"
       role="group"
       aria-label="Görünüm teması"
     >

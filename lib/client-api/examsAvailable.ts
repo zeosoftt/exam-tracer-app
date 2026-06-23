@@ -2,7 +2,7 @@
  * Client-side fetch for available exams (onboarding, settings, deneme, etc.).
  */
 
-import { fetchJson } from '@/lib/client-api/http';
+import { fetchJsonCached } from '@/lib/client-api/requestCache';
 
 export type AvailableExam = {
   id: string;
@@ -17,7 +17,7 @@ export type FetchAvailableExamsResult =
 const LOAD_ERROR = 'Sınavlar yüklenemedi. Lütfen sayfayı yenileyin.';
 
 export async function fetchAvailableExamsWithStatus(): Promise<FetchAvailableExamsResult> {
-  const { ok, body } = await fetchJson<{
+  const { ok, body } = await fetchJsonCached<{
     success?: boolean;
     data?: AvailableExam[];
     message?: string;
