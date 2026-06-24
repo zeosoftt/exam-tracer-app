@@ -669,6 +669,9 @@ export default async function LandingPage() {
                 <Link href="/sinavlar" className="text-sm font-medium text-stone-600 dark:text-stone-300 hover:text-primary-600 transition-colors">
                   Desteklenen sınavlar
                 </Link>
+                <Link href="/ozellikler" className="text-sm font-medium text-stone-600 dark:text-stone-300 hover:text-primary-600 transition-colors">
+                  Özellikler
+                </Link>
                 <Link href="/sss" className="text-sm font-medium text-stone-600 dark:text-stone-300 hover:text-primary-600 transition-colors">
                   Sıkça Sorulan Sorular
                 </Link>

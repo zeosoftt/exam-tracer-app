@@ -6,13 +6,23 @@ export {
   EXAM_SEO_ENTRIES,
   EXAM_SEO_PAGE_DESCRIPTION,
   EXAM_SEO_PAGE_TITLE,
+  getExamSeoEntry,
+  getExamSeoSlugs,
 } from './exams';
+export {
+  FEATURE_SEO_ENTRIES,
+  getFeatureSeoEntry,
+  getFeatureSeoSlugs,
+} from './features';
 export {
   buildBreadcrumbJsonLd,
   buildDestekJsonLd,
+  buildExamPageJsonLd,
+  buildFeaturePageJsonLd,
   buildFaqPageEntity,
   buildHomeJsonLd,
   buildOnboardingJsonLd,
+  buildOzelliklerJsonLd,
   buildSinavlarJsonLd,
   buildSssJsonLd,
 } from './jsonLd';

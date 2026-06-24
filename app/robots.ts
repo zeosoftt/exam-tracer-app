@@ -17,7 +17,7 @@ export default function robots(): MetadataRoute.Robots {
     '/auth/',
   ] as const;
 
-  const publicAllow = ['/', '/sinavlar', '/sss', '/destek', '/onboarding', '/llms.txt', '/llms-full.txt'];
+  const publicAllow = ['/', '/sinavlar', '/ozellikler', '/sss', '/destek', '/onboarding', '/llms.txt', '/llms-full.txt'];
 
   /** Yapay zeka / LLM tarayıcıları — public sayfalar taranabilir (panel ve API kapalı). */
   const aiCrawlers = [

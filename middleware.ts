@@ -76,6 +76,7 @@ export default withAuth(
           '/onboarding',
           '/destek',
           '/sinavlar',
+          '/ozellikler',
           '/sss',
           '/api/auth',
           '/api/auth/dev-verification-code',

@@ -36,6 +36,9 @@ export function MarketingHeader() {
             <Link href="/sinavlar" className="transition-colors hover:text-primary-700 dark:hover:text-primary-300">
               Sınavlar
             </Link>
+            <Link href="/ozellikler" className="transition-colors hover:text-primary-700 dark:hover:text-primary-300">
+              Özellikler
+            </Link>
             <Link href="/sss" className="transition-colors hover:text-primary-700 dark:hover:text-primary-300">
               SSS
             </Link>

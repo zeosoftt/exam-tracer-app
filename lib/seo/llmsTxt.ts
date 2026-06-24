@@ -5,6 +5,7 @@
 
 import { getBaseUrl } from '@/lib/seo/baseUrl';
 import { EXAM_SEO_ENTRIES } from '@/lib/seo/exams';
+import { FEATURE_SEO_ENTRIES } from '@/lib/seo/features';
 import { PUBLIC_FAQ_ITEMS } from '@/lib/seo/faqData';
 import { SEO_DEFAULT_DESCRIPTION, SEO_SITE_NAME } from '@/lib/seo/siteSeo';
 
@@ -15,7 +16,11 @@ export function buildLlmsTxt(): string {
   const base = getBaseUrl();
 
   const examLines = EXAM_SEO_ENTRIES.map(
-    (e) => `- [${e.name} — ${e.headline}](${base}/sinavlar#${e.id}): ${e.description}`,
+    (e) => `- [${e.name} — ${e.headline}](${base}/sinavlar/${e.id}): ${e.description}`,
+  ).join('\n');
+
+  const featureLines = FEATURE_SEO_ENTRIES.map(
+    (f) => `- [${f.name}](${base}/ozellikler/${f.id}): ${f.description}`,
   ).join('\n');
 
   return `# ${SEO_SITE_NAME}
@@ -28,6 +33,7 @@ ${SEO_DEFAULT_DESCRIPTION}
 
 - [Ana sayfa](${base}/): Ürün tanıtımı, özellikler, ücretsiz ve Pro plan özeti.
 - [Desteklenen sınavlar](${base}/sinavlar): KPSS, ÖABT, ALES, YKS, DGS, YDS için konu ve deneme takibi açıklamaları.
+- [Özellikler](${base}/ozellikler): Konu takibi, deneme analizi, aralıklı tekrar, Pomodoro.
 - [Sıkça sorulan sorular](${base}/sss): Ücretsiz plan, desteklenen sınavlar, deneme/ÖSYM puanı, güvenlik, kurumsal kullanım.
 - [Destek ve iletişim](${base}/destek): Teknik destek ve geri bildirim formu.
 - [Ücretsiz kayıt](${base}/onboarding): Hesap oluşturma ve kurulum sihirbazı.
@@ -35,6 +41,10 @@ ${SEO_DEFAULT_DESCRIPTION}
 ## Sınavlar (özet)
 
 ${examLines}
+
+## Özellikler (özet)
+
+${featureLines}
 
 ## Teknik
 
@@ -53,7 +63,11 @@ export function buildLlmsFullTxt(): string {
   const base = getBaseUrl();
   const faqBlock = PUBLIC_FAQ_ITEMS.map(({ q, a }) => `### ${q}\n\n${a}`).join('\n\n');
   const examBlock = EXAM_SEO_ENTRIES.map(
-    (e) => `## ${e.name}\n\n**${e.headline}**\n\n${e.description}`,
+    (e) => `## ${e.name}\n\n**${e.headline}**\n\n${e.description}\n\nURL: ${base}/sinavlar/${e.id}`,
+  ).join('\n\n');
+
+  const featureBlock = FEATURE_SEO_ENTRIES.map(
+    (f) => `## ${f.name}\n\n**${f.headline}**\n\n${f.description}\n\nURL: ${base}/ozellikler/${f.id}`,
   ).join('\n\n');
 
   return `# ${SEO_SITE_NAME} — tam bağlam
@@ -78,6 +92,10 @@ Category: Education technology / exam preparation SaaS
 
 ${examBlock}
 
+## Product features
+
+${featureBlock}
+
 ## Frequently asked questions
 
 ${faqBlock}
@@ -87,7 +105,8 @@ ${faqBlock}
 | Page | URL |
 |------|-----|
 | Home | ${base}/ |
-| Exams | ${base}/sinavlar |
+| Exams index | ${base}/sinavlar |
+| Features index | ${base}/ozellikler |
 | FAQ | ${base}/sss |
 | Support | ${base}/destek |
 | Sign up | ${base}/onboarding |

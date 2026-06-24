@@ -3,7 +3,8 @@
  */
 
 import { PUBLIC_FAQ_ITEMS } from '@/lib/seo/faqData';
-import { EXAM_SEO_ENTRIES } from '@/lib/seo/exams';
+import { EXAM_SEO_ENTRIES, type ExamSeoEntry } from '@/lib/seo/exams';
+import { FEATURE_SEO_ENTRIES, type FeatureSeoEntry } from '@/lib/seo/features';
 import { getBaseUrl } from '@/lib/seo/baseUrl';
 import { getOrganizationSameAs, SEO_DEFAULT_DESCRIPTION, SEO_SITE_NAME } from '@/lib/seo/siteSeo';
 
@@ -124,8 +125,89 @@ export function buildSinavlarJsonLd() {
           '@type': 'ListItem',
           position: i + 1,
           name: exam.headline,
-          url: `${base}/sinavlar#${exam.id}`,
+          url: `${base}/sinavlar/${exam.id}`,
         })),
+      },
+    ],
+  };
+}
+
+export function buildExamPageJsonLd(exam: ExamSeoEntry) {
+  const base = getBaseUrl();
+  const url = `${base}/sinavlar/${exam.id}`;
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      buildBreadcrumbJsonLd([
+        { name: 'Ana sayfa', path: '/' },
+        { name: 'Desteklenen sınavlar', path: '/sinavlar' },
+        { name: exam.name, path: `/sinavlar/${exam.id}` },
+      ]),
+      {
+        '@type': 'WebPage',
+        url,
+        name: exam.pageTitle,
+        description: exam.pageDescription,
+        isPartOf: { '@type': 'WebSite', name: SEO_SITE_NAME, url: base },
+        about: {
+          '@type': 'Thing',
+          name: `${exam.name} sınav hazırlığı`,
+          description: exam.description,
+        },
+        inLanguage: 'tr-TR',
+      },
+    ],
+  };
+}
+
+export function buildOzelliklerJsonLd() {
+  const base = getBaseUrl();
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      buildBreadcrumbJsonLd([
+        { name: 'Ana sayfa', path: '/' },
+        { name: 'Özellikler', path: '/ozellikler' },
+      ]),
+      {
+        '@type': 'ItemList',
+        name: 'The Goal Lab özellikleri',
+        description: 'Konu takibi, deneme analizi, aralıklı tekrar ve Pomodoro.',
+        numberOfItems: FEATURE_SEO_ENTRIES.length,
+        itemListElement: FEATURE_SEO_ENTRIES.map((feature, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: feature.headline,
+          url: `${base}/ozellikler/${feature.id}`,
+        })),
+      },
+    ],
+  };
+}
+
+export function buildFeaturePageJsonLd(feature: FeatureSeoEntry) {
+  const base = getBaseUrl();
+  const url = `${base}/ozellikler/${feature.id}`;
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      buildBreadcrumbJsonLd([
+        { name: 'Ana sayfa', path: '/' },
+        { name: 'Özellikler', path: '/ozellikler' },
+        { name: feature.name, path: `/ozellikler/${feature.id}` },
+      ]),
+      {
+        '@type': 'WebPage',
+        url,
+        name: feature.pageTitle,
+        description: feature.pageDescription,
+        isPartOf: { '@type': 'WebSite', name: SEO_SITE_NAME, url: base },
+        about: {
+          '@type': 'Thing',
+          name: feature.name,
+          description: feature.description,
+        },
+        inLanguage: 'tr-TR',
       },
     ],
   };
