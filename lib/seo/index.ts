@@ -11,6 +11,7 @@ export {
 } from './exams';
 export {
   FEATURE_SEO_ENTRIES,
+  PRODUCT_FEATURES_SUMMARY,
   getFeatureSeoEntry,
   getFeatureSeoSlugs,
 } from './features';

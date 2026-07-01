@@ -4,6 +4,18 @@ import Link from 'next/link';
 import { BookOpen } from 'lucide-react';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
 
+const NAV_LINK_CLASS =
+  'transition-colors hover:text-primary-700 dark:hover:text-primary-300';
+
+/** Ana sayfa bölümleri + SEO sayfaları — header sade tutulur; Destek footer’da */
+const MARKETING_NAV = [
+  { label: 'Nasıl çalışır', href: '/#nasil' },
+  { label: 'Özellikler', href: '/ozellikler' },
+  { label: 'Sınavlar', href: '/sinavlar' },
+  { label: 'Paketler', href: '/#paketler' },
+  { label: 'SSS', href: '/sss' },
+] as const;
+
 export function MarketingHeader() {
   return (
     <header className="fixed top-0 z-50 w-full border-b border-stone-200 bg-white/80 backdrop-blur-xl dark:border-stone-800 dark:bg-stone-950/85">
@@ -18,36 +30,20 @@ export function MarketingHeader() {
             </span>
           </Link>
           <nav
-            className="hidden items-center gap-6 text-sm font-medium text-stone-700 dark:text-stone-300 md:flex"
-            aria-label="Sayfa bölümleri"
+            className="hidden items-center gap-5 text-sm font-medium text-stone-700 dark:text-stone-300 lg:flex"
+            aria-label="Site gezinmesi"
           >
-            <a href="/#sorunlar" className="transition-colors hover:text-primary-700 dark:hover:text-primary-300">
-              Sorunlar
-            </a>
-            <a href="/#nasil" className="transition-colors hover:text-primary-700 dark:hover:text-primary-300">
-              Nasıl çalışır
-            </a>
-            <a href="/#ozellikler" className="transition-colors hover:text-primary-700 dark:hover:text-primary-300">
-              Özellikler
-            </a>
-            <a href="/#paketler" className="transition-colors hover:text-primary-700 dark:hover:text-primary-300">
-              Paketler
-            </a>
-            <Link href="/sinavlar" className="transition-colors hover:text-primary-700 dark:hover:text-primary-300">
-              Sınavlar
-            </Link>
-            <Link href="/ozellikler" className="transition-colors hover:text-primary-700 dark:hover:text-primary-300">
-              Özellikler
-            </Link>
-            <Link href="/sss" className="transition-colors hover:text-primary-700 dark:hover:text-primary-300">
-              SSS
-            </Link>
-            <a href="/#yorumlar" className="transition-colors hover:text-primary-700 dark:hover:text-primary-300">
-              Yorumlar
-            </a>
-            <Link href="/destek" className="transition-colors hover:text-primary-700 dark:hover:text-primary-300">
-              Destek
-            </Link>
+            {MARKETING_NAV.map(({ label, href }) =>
+              href.startsWith('/#') ? (
+                <a key={href} href={href} className={NAV_LINK_CLASS}>
+                  {label}
+                </a>
+              ) : (
+                <Link key={href} href={href} className={NAV_LINK_CLASS}>
+                  {label}
+                </Link>
+              ),
+            )}
           </nav>
           <div className="flex items-center gap-2 sm:gap-4">
             <ThemeToggleCompact />

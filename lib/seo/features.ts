@@ -12,6 +12,10 @@ export type FeatureSeoEntry = {
   highlights: readonly string[];
 };
 
+/** Ana sayfa ve /ozellikler indeksinde ortak özet metin */
+export const PRODUCT_FEATURES_SUMMARY =
+  'The Goal Lab; konu takibi, deneme analizi, aralıklı tekrar ve odaklı çalışma araçlarını tek platformda sunar. KPSS, ALES, YKS ve diğer sınavlarda ilerlemenizi ölçülebilir hale getirin.';
+
 export const FEATURE_SEO_ENTRIES: FeatureSeoEntry[] = [
   {
     id: 'konu-takibi',

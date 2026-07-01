@@ -8,6 +8,7 @@ import {
   buildOzelliklerJsonLd,
   buildPublicPageMetadata,
   FEATURE_SEO_ENTRIES,
+  PRODUCT_FEATURES_SUMMARY,
 } from '@/lib/seo';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { MarketingHeader } from '@/components/layout/MarketingHeader';
@@ -45,8 +46,7 @@ export default function OzelliklerPage() {
             Özellikler
           </h1>
           <p className="text-base leading-relaxed text-stone-600 dark:text-stone-300 sm:text-lg">
-            The Goal Lab; konu takibi, deneme analizi, aralıklı tekrar ve odaklı çalışma araçlarını tek platformda
-            sunar. Aşağıdaki sayfalarda her özelliği detaylı inceleyebilirsiniz.
+            {PRODUCT_FEATURES_SUMMARY} Aşağıdaki sayfalarda her özelliği detaylı inceleyebilirsiniz.
           </p>
         </header>
 

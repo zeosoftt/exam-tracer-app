@@ -17,6 +17,7 @@ import { LandingOutcomeStrip } from '@/components/landing/LandingOutcomeStrip';
 import { LandingMidCta } from '@/components/landing/LandingMidCta';
 import { LandingHeroAnchors } from '@/components/landing/LandingHeroAnchors';
 import { LandingFreeVsPro } from '@/components/landing/LandingFreeVsPro';
+import { LandingProductFeatures } from '@/components/landing/LandingProductFeatures';
 import {
   BookOpen,
   Users,
@@ -342,57 +343,7 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* Features */}
-      <section id="ozellikler" className="py-16 sm:py-24 lg:py-32">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 sm:mb-16">
-            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-900 dark:text-stone-100 mb-3 sm:mb-4">
-              Neden The Goal Lab?
-            </h2>
-            <p className="text-lg sm:text-xl text-stone-600 dark:text-stone-300 max-w-2xl mx-auto">
-              Konu takibi, deneme analizi ve ÖSYM uyumlu puan — KPSS’ten YKS’ye tek platform
-            </p>
-          </div>
-          <div className="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-3">
-            <div className="group relative rounded-3xl border border-stone-100 bg-white p-6 transition-all duration-300 hover:border-primary-200 hover:shadow-soft-lg dark:border-stone-800 dark:bg-stone-900/90 dark:hover:border-primary-800 sm:p-8">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative">
-                <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-primary-600 to-primary-700 rounded-2xl mb-5 sm:mb-6 shadow-lg shadow-primary-500/25 text-white">
-                  <Target className="h-6 w-6 sm:h-7 sm:w-7" />
-                </div>
-                <h3 className="font-display text-xl sm:text-2xl font-bold text-stone-900 dark:text-stone-100 mb-2 sm:mb-3">Hedefli Takip</h3>
-                <p className="text-stone-600 dark:text-stone-300 leading-relaxed text-sm sm:text-base">
-                  Her konuyu detaylı takip edin. Tamamlanan, devam eden ve henüz başlanmamış konuları bir bakışta görün.
-                </p>
-              </div>
-            </div>
-            <div className="group relative rounded-3xl border border-stone-100 bg-white p-6 transition-all duration-300 hover:border-primary-200 hover:shadow-soft-lg dark:border-stone-800 dark:bg-stone-900/90 dark:hover:border-primary-800 sm:p-8">
-              <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative">
-                <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-amber-700 to-amber-800 rounded-2xl mb-5 sm:mb-6 shadow-lg shadow-amber-700/25 text-white">
-                  <BarChart3 className="h-6 w-6 sm:h-7 sm:w-7" />
-                </div>
-                <h3 className="font-display text-xl sm:text-2xl font-bold text-stone-900 dark:text-stone-100 mb-2 sm:mb-3">Görsel İstatistikler</h3>
-                <p className="text-stone-600 dark:text-stone-300 leading-relaxed text-sm sm:text-base">
-                  İlerlemenizi grafikler ve istatistiklerle görselleştirin. Hangi konularda ne kadar ilerleme kaydettiğinizi anında görün.
-                </p>
-              </div>
-            </div>
-            <div className="group relative rounded-3xl border border-stone-100 bg-white p-6 transition-all duration-300 hover:border-primary-200 hover:shadow-soft-lg dark:border-stone-800 dark:bg-stone-900/90 dark:hover:border-primary-800 sm:p-8">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-amber-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative">
-                <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-primary-700 to-primary-800 rounded-2xl mb-5 sm:mb-6 shadow-lg shadow-primary-700/25 text-white">
-                  <Users className="h-6 w-6 sm:h-7 sm:w-7" />
-                </div>
-                <h3 className="font-display text-xl sm:text-2xl font-bold text-stone-900 dark:text-stone-100 mb-2 sm:mb-3">Ekip Yönetimi</h3>
-                <p className="text-stone-600 dark:text-stone-300 leading-relaxed text-sm sm:text-base">
-                  Kurumlar için özel yönetim paneli. Tüm ekibinizin ilerlemesini merkezi olarak takip edin ve raporlayın.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <LandingProductFeatures />
 
       {/* Nasıl Çalışır? */}
       <section id="nasil" className="py-16 sm:py-24 lg:py-32 bg-white dark:bg-stone-900 border-y border-stone-100 dark:border-stone-800">
