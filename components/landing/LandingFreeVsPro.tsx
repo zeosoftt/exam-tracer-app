@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Check, Minus } from 'lucide-react';
 import { LandingReveal } from '@/components/landing/LandingReveal';
+import { LandingSectionHeader } from '@/components/landing/LandingSectionHeader';
 
 const ROWS = [
   { feature: 'Sınav / ders / konu takibi', free: true, pro: true },
@@ -12,31 +13,31 @@ const ROWS = [
 
 export function LandingFreeVsPro() {
   return (
-    <section className="py-12 sm:py-16">
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-        <LandingReveal className="mb-8 text-center">
-          <h2 className="font-display text-2xl font-bold text-stone-900 dark:text-stone-100 sm:text-3xl">
-            Hangi plan size uygun?
-          </h2>
-          <p className="mt-2 text-stone-600 dark:text-stone-300">
-            Ücretsiz başlayın; deneme takibine ihtiyaç duyduğunuzda Pro&apos;ya geçin.
-          </p>
+    <section className="relative py-12 sm:py-16">
+      <div className="landing-dot-grid absolute inset-0 opacity-10 dark:opacity-[0.05]" aria-hidden />
+      <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <LandingReveal>
+          <LandingSectionHeader
+            eyebrow="PLAN KARŞILAŞTIRMA"
+            title="Hangi plan size uygun?"
+            description="Ücretsiz başlayın; deneme takibine ihtiyaç duyduğunuzda Pro'ya geçin."
+          />
         </LandingReveal>
         <LandingReveal delay={80}>
-          <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm dark:border-stone-700 dark:bg-stone-900/90">
-            <div className="grid grid-cols-[1fr_5rem_5rem] border-b border-stone-100 bg-stone-50 text-xs font-semibold uppercase tracking-wide text-stone-500 dark:border-stone-800 dark:bg-stone-950/80 dark:text-stone-400 sm:grid-cols-[1fr_6rem_6rem] sm:text-sm">
-              <div className="px-4 py-3 sm:px-6">Özellik</div>
-              <div className="px-2 py-3 text-center">Ücretsiz</div>
-              <div className="px-2 py-3 text-center text-primary-700 dark:text-primary-300">Pro</div>
+          <div className="landing-vibe-glass overflow-hidden rounded-2xl border border-stone-200/80 shadow-sm dark:border-stone-700/80">
+            <div className="grid grid-cols-[minmax(0,1fr)_3.5rem_3.5rem] border-b border-stone-100/80 bg-stone-50/70 text-[10px] font-semibold uppercase tracking-wide text-stone-500 backdrop-blur-sm dark:border-stone-800 dark:bg-stone-950/60 dark:text-stone-400 sm:grid-cols-[minmax(0,1fr)_6rem_6rem] sm:text-sm">
+              <div className="px-3 py-3 sm:px-6">Özellik</div>
+              <div className="px-1 py-3 text-center sm:px-2">Ücretsiz</div>
+              <div className="px-1 py-3 text-center text-primary-700 dark:text-primary-300 sm:px-2">Pro</div>
             </div>
             {ROWS.map(({ feature, free, pro }, i) => (
               <div
                 key={feature}
-                className={`grid grid-cols-[1fr_5rem_5rem] items-center border-b border-stone-100 last:border-0 dark:border-stone-800 sm:grid-cols-[1fr_6rem_6rem] ${
-                  i % 2 === 0 ? 'bg-white dark:bg-stone-900/90' : 'bg-stone-50/50 dark:bg-stone-950/40'
+                className={`grid grid-cols-[minmax(0,1fr)_3.5rem_3.5rem] items-center border-b border-stone-100/80 last:border-0 dark:border-stone-800 sm:grid-cols-[minmax(0,1fr)_6rem_6rem] ${
+                  i % 2 === 0 ? 'bg-white/50 dark:bg-stone-900/50' : 'bg-stone-50/40 dark:bg-stone-950/30'
                 }`}
               >
-                <div className="px-4 py-3.5 text-sm font-medium text-stone-800 dark:text-stone-200 sm:px-6">
+                <div className="px-3 py-3 text-xs font-medium leading-snug text-stone-800 dark:text-stone-200 sm:px-6 sm:py-3.5 sm:text-sm">
                   {feature}
                 </div>
                 <div className="flex justify-center py-3.5">
@@ -59,7 +60,7 @@ export function LandingFreeVsPro() {
           <p className="mt-6 text-center">
             <Link
               href="/onboarding"
-              className="font-semibold text-primary-700 hover:text-primary-800 dark:text-primary-300 dark:hover:text-primary-200"
+              className="font-semibold text-primary-700 transition-colors hover:text-primary-800 dark:text-primary-300 dark:hover:text-primary-200"
             >
               Ücretsiz hesapla başla →
             </Link>

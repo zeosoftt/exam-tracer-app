@@ -11,6 +11,7 @@ import { SettingsExamSection } from '@/components/settings/sections/SettingsExam
 import { SettingsNotificationsSection } from '@/components/settings/sections/SettingsNotificationsSection';
 import { SettingsAppearanceSection } from '@/components/settings/sections/SettingsAppearanceSection';
 import { SettingsSaveBar } from '@/components/settings/sections/SettingsSaveBar';
+import { AppVersionLabel } from '@/components/layout/AppVersionLabel';
 
 type SettingsPageViewProps = {
   page: SettingsPageState;
@@ -41,6 +42,10 @@ export function SettingsPageView({ page }: SettingsPageViewProps) {
           <SettingsNotificationsSection />
           <SettingsAppearanceSection />
           <SettingsSaveBar saving={page.saving} handleSaveSettings={page.handleSaveSettings} />
+        </div>
+
+        <div className="mt-10 flex justify-center border-t border-stone-200 pt-6 dark:border-stone-800">
+          <AppVersionLabel />
         </div>
       </main>
     </div>

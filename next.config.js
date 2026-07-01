@@ -1,10 +1,14 @@
 /** @type {import('next').NextConfig} */
 const isProd = process.env.NODE_ENV === 'production';
+const { version: appVersion } = require('./package.json');
 
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
+  env: {
+    NEXT_PUBLIC_APP_VERSION: appVersion,
+  },
   /** Cloudflare / özel CDN önünde statik chunk URL’leri için (örn. https://cdn.example.com) */
   assetPrefix: process.env.ASSET_PREFIX?.trim() || undefined,
   // Standalone output only for production builds

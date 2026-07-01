@@ -5,13 +5,13 @@
 import type { Metadata, Viewport } from 'next';
 import { getBaseUrl } from '@/lib/seo/baseUrl';
 
-export const SEO_SITE_NAME = 'The Goal Lab';
+export const SEO_SITE_NAME = 'The Goal Labs';
 
 export const SEO_DEFAULT_TITLE =
-  'The Goal Lab | KPSS, ALES, ÖABT, YKS Konu ve Deneme Takip Platformu';
+  'The Goal Labs | KPSS, ALES, ÖABT, YKS Konu ve Deneme Takip Platformu';
 
 export const SEO_DEFAULT_DESCRIPTION =
-  'KPSS, ÖABT, ALES, YKS (TYT/AYT), DGS ve YDS için konu takibi, deneme kaydı, net trendi ve ÖSYM uyumlu puan hesaplama. The Goal Lab (thegoallab) ile ücretsiz başlayın — kredi kartı gerekmez.';
+  'KPSS, ÖABT, ALES, YKS (TYT/AYT), DGS ve YDS için konu takibi, deneme kaydı, net trendi ve ÖSYM uyumlu puan hesaplama. The Goal Labs (thegoallab) ile ücretsiz başlayın — kredi kartı gerekmez.';
 
 export const SEO_KEYWORDS = [
   'sınav takip',
@@ -41,7 +41,7 @@ export const SEO_KEYWORDS = [
   'sınav hazırlık',
   'online sınav takip',
   'hedef puan takibi',
-  'The Goal Lab',
+  'The Goal Labs',
   'thegoallab',
   'thegoallab.com',
   'eğitim teknolojisi',
@@ -208,7 +208,7 @@ export function buildRootMetadata(): Metadata {
 
   return {
     metadataBase: new URL(baseUrl),
-    title: { default: SEO_DEFAULT_TITLE, template: '%s | The Goal Lab' },
+    title: { default: SEO_DEFAULT_TITLE, template: '%s | The Goal Labs' },
     description: SEO_DEFAULT_DESCRIPTION,
     keywords: [...SEO_KEYWORDS],
     applicationName: SEO_SITE_NAME,

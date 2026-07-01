@@ -79,9 +79,7 @@ export async function sendVerificationEmail(params: SendVerificationEmailParams)
 function logDevVerificationCode(to: string, verificationCode: string): void {
   if (process.env.NODE_ENV !== 'development') return;
   // eslint-disable-next-line no-console -- local geliştirmede kodu terminalde görünür kıl
-  console.log('\n========== DEV: E-POSTA DOĞRULAMA KODU ==========');
-  console.log(`Alıcı: ${to}`);
-  console.log(`Kod:   ${verificationCode}`);
-  console.log('Doğrulama: /auth/verify-email');
-  console.log('==================================================\n');
+  console.log(
+    `\n========== DEV: E-POSTA DOĞRULAMA KODU ==========\nAlıcı: ${to}\nKod:   ${verificationCode}\nDoğrulama: /auth/verify-email\n==================================================\n`,
+  );
 }

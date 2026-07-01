@@ -21,16 +21,19 @@ const OUTCOMES = [
 
 export function LandingOutcomeStrip() {
   return (
-    <section className="border-b border-stone-100 bg-white py-8 dark:border-stone-800 dark:bg-stone-900 sm:py-10">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-8">
+    <section className="relative border-b border-stone-100 py-8 dark:border-stone-800 sm:py-10">
+      <div className="landing-vibe-mesh absolute inset-0 opacity-60 dark:opacity-40" aria-hidden />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-5">
           {OUTCOMES.map(({ icon: Icon, label, desc }, i) => (
-            <LandingReveal key={label} delay={i * 60} className="text-center sm:text-left">
-              <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-primary-100 text-primary-700 dark:bg-primary-950 dark:text-primary-300 sm:mx-0">
-                <Icon className="h-5 w-5" aria-hidden />
+            <LandingReveal key={label} delay={i * 60}>
+              <div className="landing-glass-card landing-hover-lift rounded-2xl p-5 text-center sm:text-left">
+                <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-primary-100/90 text-primary-700 dark:bg-primary-950/80 dark:text-primary-300 sm:mx-0">
+                  <Icon className="h-5 w-5" aria-hidden />
+                </div>
+                <p className="font-display text-base font-bold text-stone-900 dark:text-stone-100">{label}</p>
+                <p className="mt-1 text-sm leading-relaxed text-stone-600 dark:text-stone-300">{desc}</p>
               </div>
-              <p className="font-display text-base font-bold text-stone-900 dark:text-stone-100">{label}</p>
-              <p className="mt-1 text-sm text-stone-600 dark:text-stone-300">{desc}</p>
             </LandingReveal>
           ))}
         </div>

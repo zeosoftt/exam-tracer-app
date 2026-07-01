@@ -47,6 +47,10 @@ export default async function OzellikSlugPage({ params }: PageProps) {
           { href: '/sss', label: 'SSS' },
           { href: '/onboarding', label: 'Ücretsiz kayıt' },
         ]}
+        ctaSecondaryLinks={[
+          { href: '/sss', label: 'SSS' },
+          { href: '/ozellikler', label: 'Tüm özellikler' },
+        ]}
       />
     </>
   );

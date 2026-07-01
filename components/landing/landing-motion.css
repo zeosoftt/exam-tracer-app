@@ -2,6 +2,92 @@
  * Landing motion — GPU-friendly (transform/opacity only), prefers-reduced-motion safe
  */
 
+.landing-vibe-hero {
+  max-width: 100%;
+}
+
+.landing-vibe-mesh {
+  background:
+    radial-gradient(ellipse 90% 70% at 10% 0%, rgba(20, 184, 166, 0.14), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 90% 20%, rgba(245, 158, 11, 0.1), transparent 50%),
+    linear-gradient(180deg, rgb(250 250 249) 0%, rgb(240 253 250 / 0.5) 40%, rgb(250 250 249) 100%);
+}
+
+.dark .landing-vibe-mesh {
+  background:
+    radial-gradient(ellipse 90% 70% at 10% 0%, rgba(20, 184, 166, 0.1), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 90% 20%, rgba(245, 158, 11, 0.06), transparent 50%),
+    linear-gradient(180deg, rgb(12 10 9) 0%, rgb(19 78 74 / 0.15) 45%, rgb(12 10 9) 100%);
+}
+
+.landing-dot-grid {
+  background-image: radial-gradient(circle, rgba(120, 113, 108, 0.18) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(ellipse 85% 70% at 50% 30%, black 20%, transparent 75%);
+}
+
+.landing-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.landing-gradient-text {
+  background: linear-gradient(
+    115deg,
+    #0f766e 0%,
+    #14b8a6 35%,
+    #d97706 70%,
+    #0f766e 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: landing-gradient-shift 8s ease-in-out infinite;
+}
+
+.landing-vibe-cta {
+  animation: landing-gradient-shift 6s ease-in-out infinite;
+}
+
+.landing-vibe-glass {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px);
+}
+
+.dark .landing-vibe-glass {
+  background: rgba(28, 25, 23, 0.72);
+}
+
+.landing-section-eyebrow {
+  font-variant: all-small-caps;
+  letter-spacing: 0.12em;
+}
+
+.landing-marquee-mask {
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+.landing-marquee-track {
+  animation: landing-marquee 28s linear infinite;
+}
+
+.landing-stat-bar {
+  transform-origin: bottom;
+  animation: landing-bar-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.landing-glass-card {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+}
+
+.dark .landing-glass-card {
+  background: rgba(28, 25, 23, 0.55);
+  border-color: rgba(68, 64, 60, 0.65);
+}
+
 .landing-orb {
   pointer-events: none;
   contain: layout style paint;
@@ -56,8 +142,7 @@
     opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
   transition-delay: var(--landing-reveal-delay, 0ms);
-  content-visibility: auto;
-  contain-intrinsic-size: auto 12rem;
+  overflow: visible;
 }
 
 .landing-reveal.is-visible {
@@ -136,14 +221,77 @@
   }
 }
 
+@keyframes landing-gradient-shift {
+  0%,
+  100% {
+    background-position: 0% center;
+  }
+  50% {
+    background-position: 100% center;
+  }
+}
+
+@keyframes landing-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes landing-bar-rise {
+  from {
+    transform: scaleY(0.15);
+    opacity: 0.4;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 0.9;
+  }
+}
+
+.landing-quote-mark {
+  user-select: none;
+}
+
+.landing-exam-pill {
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.landing-exam-pill:hover {
+  border-color: rgba(20, 184, 166, 0.45);
+  background-color: rgba(240, 253, 250, 0.8);
+}
+
+.dark .landing-exam-pill:hover {
+  border-color: rgba(45, 212, 191, 0.35);
+  background-color: rgba(19, 78, 74, 0.35);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .landing-orb,
   .landing-orb--slow,
   .landing-orb--amber,
   .landing-card-float,
   .landing-shimmer,
-  .landing-badge-pulse {
+  .landing-badge-pulse,
+  .landing-gradient-text,
+  .landing-vibe-cta,
+  .landing-marquee-track,
+  .landing-stat-bar {
     animation: none !important;
+  }
+
+  .landing-gradient-text {
+    color: #0f766e;
+    background: none;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+  }
+
+  .dark .landing-gradient-text {
+    color: #99f6e4;
   }
 
   .landing-hero-in,

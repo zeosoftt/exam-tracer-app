@@ -47,6 +47,10 @@ export default async function SinavSlugPage({ params }: PageProps) {
           { href: '/ozellikler/deneme-takibi', label: 'Deneme takibi' },
           { href: '/sss', label: 'SSS' },
         ]}
+        ctaSecondaryLinks={[
+          { href: '/sss', label: 'SSS' },
+          { href: '/sinavlar', label: 'Tüm sınavlar' },
+        ]}
       />
     </>
   );

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { buildOnboardingJsonLd, buildPublicPageMetadata } from '@/lib/seo';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { AuthThemeToggle } from '@/components/layout/AuthThemeToggle';
+import { AuthPageFooter } from '@/components/layout/AuthPageFooter';
 
 export async function generateMetadata(): Promise<Metadata> {
   const title = 'Ücretsiz kayıt — hesabını oluştur';
@@ -12,10 +13,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function OnboardingLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <div className="flex min-h-dvh flex-col">
       <JsonLd data={buildOnboardingJsonLd()} />
       <AuthThemeToggle />
-      {children}
-    </>
+      <div className="flex flex-1 flex-col">{children}</div>
+      <AuthPageFooter />
+    </div>
   );
 }

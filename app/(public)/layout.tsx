@@ -1,5 +1,5 @@
 import '@/components/landing/landing-motion.css';
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return <div className="overflow-x-hidden">{children}</div>;
 }
