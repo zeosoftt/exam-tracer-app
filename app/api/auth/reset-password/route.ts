@@ -1,40 +1,22 @@
 /**
  * Reset Password API
- * Validates token and updates user password
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { hashPassword } from '@/lib/auth/password';
-import { authJsonError, authJsonSuccess, readAuthJsonBody, wrapAuthPostHandler } from '@/lib/auth/authRouteHelpers';
+import { validate } from '@/lib/validation/validate';
+import { resetPasswordSchema } from '@/lib/validation/schemas';
+import { rateLimit } from '@/lib/middleware/rateLimit';
+import { RATE_LIMIT } from '@/config/constants';
+import { authFailure, authMessage } from '@/lib/auth/responses';
+import { wrapAuthPostHandler } from '@/lib/auth/authRouteHelpers';
+import { logAuth } from '@/lib/logger';
 
-async function resetPasswordHandler(req: NextRequest): Promise<NextResponse> {
-  const body = await readAuthJsonBody<{ token?: string; password?: string }>(req);
-  const { token, password } = body;
+const limiter = rateLimit(RATE_LIMIT.LOGIN_MAX_REQUESTS, RATE_LIMIT.LOGIN_WINDOW_MS);
 
-  if (!token || typeof token !== 'string') {
-    return authJsonError('Geçersiz şifre sıfırlama bağlantısı');
-  }
-
-  if (!password || typeof password !== 'string') {
-    return authJsonError('Şifre gereklidir');
-  }
-
-  if (password.length < 8) {
-    return authJsonError('Şifre en az 8 karakter olmalıdır');
-  }
-
-  if (!/[A-Z]/.test(password)) {
-    return authJsonError('Şifre en az bir büyük harf içermelidir');
-  }
-
-  if (!/[a-z]/.test(password)) {
-    return authJsonError('Şifre en az bir küçük harf içermelidir');
-  }
-
-  if (!/[0-9]/.test(password)) {
-    return authJsonError('Şifre en az bir rakam içermelidir');
-  }
+async function resetPasswordHandler(req: NextRequest) {
+  const { token, password } = validate(resetPasswordSchema, await req.json());
 
   const resetToken = await prisma.passwordResetToken.findUnique({
     where: { token },
@@ -42,43 +24,34 @@ async function resetPasswordHandler(req: NextRequest): Promise<NextResponse> {
   });
 
   if (!resetToken) {
-    return authJsonError('Geçersiz veya süresi dolmuş şifre sıfırlama bağlantısı');
+    return authFailure('Geçersiz veya süresi dolmuş şifre sıfırlama bağlantısı');
   }
 
   if (resetToken.used) {
-    return authJsonError('Bu şifre sıfırlama bağlantısı daha önce kullanılmış');
+    return authFailure('Bu şifre sıfırlama bağlantısı daha önce kullanılmış');
   }
 
   if (new Date() > resetToken.expiresAt) {
-    return authJsonError('Şifre sıfırlama bağlantısının süresi dolmuş');
+    return authFailure('Şifre sıfırlama bağlantısının süresi dolmuş');
   }
 
   if (!resetToken.user || resetToken.user.deletedAt !== null || !resetToken.user.isActive) {
-    return authJsonError('Kullanıcı bulunamadı veya hesap aktif değil');
+    return authFailure('Kullanıcı bulunamadı veya hesap aktif değil');
   }
 
   const passwordHash = await hashPassword(password);
 
   await prisma.$transaction([
-    prisma.user.update({
-      where: { id: resetToken.userId },
-      data: { passwordHash },
-    }),
-    prisma.passwordResetToken.update({
-      where: { id: resetToken.id },
-      data: { used: true },
-    }),
+    prisma.user.update({ where: { id: resetToken.userId }, data: { passwordHash } }),
+    prisma.passwordResetToken.update({ where: { id: resetToken.id }, data: { used: true } }),
   ]);
 
   await prisma.passwordResetToken.deleteMany({
-    where: {
-      userId: resetToken.userId,
-      used: false,
-      id: { not: resetToken.id },
-    },
+    where: { userId: resetToken.userId, used: false, id: { not: resetToken.id } },
   });
 
-  return authJsonSuccess({ success: true, message: 'Şifreniz başarıyla güncellendi' });
+  logAuth('Password reset completed', resetToken.userId);
+  return authMessage('Şifreniz başarıyla güncellendi');
 }
 
-export const POST = wrapAuthPostHandler(resetPasswordHandler);
+export const POST = wrapAuthPostHandler(resetPasswordHandler, { limiter });

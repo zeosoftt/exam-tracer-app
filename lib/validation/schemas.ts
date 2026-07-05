@@ -95,6 +95,28 @@ export const changePasswordSchema = z.object({
   newPassword: passwordSchema,
 });
 
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1, 'Token gerekli'),
+  password: passwordSchema,
+});
+
+export const verifyEmailSchema = z.object({
+  email: emailSchema,
+  code: z.string().min(6).max(12),
+});
+
+export const resendVerificationSchema = z.object({
+  email: emailSchema,
+});
+
+export const forgotPasswordSchema = z.object({
+  email: emailSchema,
+});
+
+export const switchOrganizationSchema = z.object({
+  organizationId: z.string().cuid(),
+});
+
 // Exam schemas
 const createExamObjectSchema = z.object({
   name: nameSchema,

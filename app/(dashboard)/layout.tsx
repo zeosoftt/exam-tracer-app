@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { ProtectedSessionGuard } from '@/components/auth/ProtectedSessionGuard';
 
@@ -16,7 +17,9 @@ export const metadata: Metadata = {
 export default function DashboardGroupLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <ProtectedSessionGuard />
+      <Suspense fallback={null}>
+        <ProtectedSessionGuard />
+      </Suspense>
       {children}
     </>
   );

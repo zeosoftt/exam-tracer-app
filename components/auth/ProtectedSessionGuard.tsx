@@ -1,29 +1,32 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { getSession, useSession } from 'next-auth/react';
-
-const LOGIN_PATH = '/auth/login';
+import { buildLoginUrl } from '@/lib/auth/authPaths';
 
 /**
- * Çıkış sonrası geri tuşu (bfcache) ile korumalı sayfanın önbellekten açılmasını engeller.
+ * Çıkış sonrası bfcache ile korumalı sayfanın açılmasını engeller.
+ * Oturum yoksa callbackUrl ile login'e yönlendirir.
  */
 export function ProtectedSessionGuard() {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const callbackPath = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
   const { status } = useSession({ required: false });
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.replace(LOGIN_PATH);
+      router.replace(buildLoginUrl({ callbackUrl: callbackPath }));
     }
-  }, [status, router]);
+  }, [status, router, callbackPath]);
 
   useEffect(() => {
     const ensureAuthenticated = async () => {
       const session = await getSession();
       if (!session?.user?.id) {
-        router.replace(LOGIN_PATH);
+        router.replace(buildLoginUrl({ callbackUrl: callbackPath }));
         return false;
       }
       return true;
@@ -47,7 +50,7 @@ export function ProtectedSessionGuard() {
       window.removeEventListener('pageshow', onPageShow);
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
-  }, [router]);
+  }, [router, callbackPath]);
 
   return null;
 }

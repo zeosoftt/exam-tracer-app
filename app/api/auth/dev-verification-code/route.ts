@@ -3,17 +3,34 @@
  * Yalnızca development — local test için son doğrulama kodunu döner.
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
+import { rateLimit } from '@/lib/middleware/rateLimit';
+import { RATE_LIMIT } from '@/config/constants';
+import { authSuccess } from '@/lib/auth/responses';
+import { wrapAuthGetHandler } from '@/lib/auth/authRouteHelpers';
+import { NotFoundError } from '@/lib/errors/AppError';
 
-export async function GET(req: NextRequest) {
-  if (process.env.NODE_ENV !== 'development') {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+const limiter = rateLimit(20, RATE_LIMIT.LOGIN_WINDOW_MS);
+
+function isDevVerificationEnabled(): boolean {
+  return (
+    process.env.NODE_ENV === 'development' &&
+    process.env.ENABLE_DEV_VERIFICATION_CODE === 'true'
+  );
+}
+
+async function devVerificationCodeHandler(req: NextRequest) {
+  if (!isDevVerificationEnabled()) {
+    throw new NotFoundError();
   }
+
+  const limited = limiter(req);
+  if (limited) return limited;
 
   const email = new URL(req.url).searchParams.get('email')?.toLowerCase().trim();
   if (!email) {
-    return NextResponse.json({ error: 'email required' }, { status: 400 });
+    return authSuccess({ code: null });
   }
 
   const user = await prisma.user.findUnique({
@@ -22,7 +39,7 @@ export async function GET(req: NextRequest) {
   });
 
   if (!user || user.emailVerified) {
-    return NextResponse.json({ code: null });
+    return authSuccess({ code: null });
   }
 
   const token = await prisma.emailVerificationToken.findFirst({
@@ -31,5 +48,7 @@ export async function GET(req: NextRequest) {
     select: { token: true },
   });
 
-  return NextResponse.json({ code: token?.token ?? null });
+  return authSuccess({ code: token?.token ?? null });
 }
+
+export const GET = wrapAuthGetHandler(devVerificationCodeHandler);

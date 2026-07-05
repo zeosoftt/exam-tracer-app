@@ -37,27 +37,37 @@ export function toUserPermissions(session: AuthenticatedSession): UserPermission
 /** asyncHandler kullanan route'lar — yetkisiz/ yasak durumda throw eder. */
 export async function requireAdminSession(): Promise<AuthenticatedSession> {
   const session = await requireSession();
-  if (session.user.role !== USER_ROLES.ADMIN) {
-    throw new ForbiddenError();
+  if (session.user.role === USER_ROLES.ADMIN) {
+    return session;
   }
-  return session;
+
+  const { isSuperAdmin } = await import('@/lib/auth/authorization');
+  if (await isSuperAdmin(session.user.id)) {
+    return session;
+  }
+
+  throw new ForbiddenError();
 }
 
 export type AdminSessionGuard =
   | { authorized: true; session: AuthenticatedSession }
   | { authorized: false; response: NextResponse };
 
-/** Manuel JSON response dönen route'lar — UnauthorizedError / ForbiddenError → NextResponse. */
+/** Manuel JSON response dönen route'lar — standart auth hata zarfı. */
 export function toAuthErrorResponse(error: unknown): NextResponse | null {
   if (error instanceof UnauthorizedError) {
     return NextResponse.json(
-      { success: false, error: ERROR_MESSAGES.UNAUTHORIZED },
+      { success: false, message: ERROR_MESSAGES.UNAUTHORIZED, errors: [] },
       { status: HTTP_STATUS.UNAUTHORIZED },
     );
   }
   if (error instanceof ForbiddenError) {
     return NextResponse.json(
-      { success: false, error: error.message || ERROR_MESSAGES.FORBIDDEN },
+      {
+        success: false,
+        message: error.message || ERROR_MESSAGES.FORBIDDEN,
+        errors: [],
+      },
       { status: HTTP_STATUS.FORBIDDEN },
     );
   }

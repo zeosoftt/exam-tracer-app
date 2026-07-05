@@ -7,6 +7,7 @@ import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { applySecurityHeaders } from '@/lib/security/headers';
+import { isPublicPath } from '@/lib/auth/publicRoutes';
 
 export default withAuth(
   function middleware(req: NextRequest) {
@@ -52,49 +53,10 @@ export default withAuth(
   {
     callbacks: {
       authorized: ({ token, req }) => {
-        // Public routes that don't require authentication
         const path = req.nextUrl.pathname;
-
-        /** Sitemap / robots / manifest / ikon / OG — oturum olmadan erişilebilir olmalı (Google, sosyal önizleme) */
-        if (
-          path === '/icon.svg' ||
-          path === '/robots.txt' ||
-          path === '/sitemap.xml' ||
-          path === '/llms.txt' ||
-          path === '/llms-full.txt' ||
-          path === '/manifest.webmanifest' ||
-          path === '/opengraph-image' ||
-          path.startsWith('/opengraph-image/')
-        ) {
+        if (isPublicPath(path)) {
           return true;
         }
-
-        const publicPaths = [
-          '/',
-          '/auth/login',
-          '/auth/register',
-          '/auth/verify-email',
-          '/auth/forgot-password',
-          '/auth/reset-password',
-          '/onboarding',
-          '/destek',
-          '/sinavlar',
-          '/ozellikler',
-          '/rehber',
-          '/sss',
-          '/api/auth',
-          '/api/auth/dev-verification-code',
-          '/api/health',
-          '/api/exams/available',
-          '/api/support',
-          '/api/analytics',
-        ];
-
-        if (publicPaths.some((p) => path === p || path.startsWith(p))) {
-          return true;
-        }
-
-        // Protected routes require authentication
         return !!token;
       },
     },

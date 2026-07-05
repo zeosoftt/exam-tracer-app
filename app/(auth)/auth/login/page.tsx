@@ -43,6 +43,8 @@ function LoginForm() {
   const registered = searchParams.get('registered');
   const passwordReset = searchParams.get('passwordReset');
   const verified = searchParams.get('verified');
+  const sessionExpired = searchParams.get('expired') === '1';
+  const callbackUrl = searchParams.get('callbackUrl');
 
   const {
     register,
@@ -119,7 +121,7 @@ function LoginForm() {
           return;
         }
 
-        router.push('/dashboard');
+        router.push(callbackUrl && callbackUrl.startsWith('/') ? callbackUrl : '/dashboard');
         router.refresh();
       } catch {
         setError('Bir hata oluştu. Lütfen tekrar deneyin.');
@@ -127,7 +129,7 @@ function LoginForm() {
         setIsLoading(false);
       }
     },
-    [rememberMe, router],
+    [rememberMe, router, callbackUrl],
   );
 
   return (
@@ -147,6 +149,14 @@ function LoginForm() {
             <h1 className="mb-2 font-display text-3xl font-extrabold text-stone-900 dark:text-stone-100">Hoş Geldiniz</h1>
             <p className="text-stone-600 dark:text-stone-400">Hesabınıza giriş yapın</p>
           </div>
+
+          {sessionExpired && (
+            <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/50 dark:bg-amber-950/40">
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                Oturumunuz sona erdi. Devam etmek için tekrar giriş yapın.
+              </p>
+            </div>
+          )}
 
           {registered && (
             <div className="mb-6 rounded-xl border border-green-200 bg-green-50 p-4 dark:border-green-900/50 dark:bg-green-950/40">

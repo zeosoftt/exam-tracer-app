@@ -163,8 +163,7 @@ export const authOptions: NextAuthOptions = {
     },
   },
   callbacks: {
-    async jwt({ token, user }) {
-      // When user logs in, set token data from user object
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
@@ -185,6 +184,30 @@ export const authOptions: NextAuthOptions = {
 
         // NEW: Active organization ID for multi-tenant support
         token.activeOrganizationId = userWithAuth.activeOrganizationId;
+      }
+
+      if (trigger === 'update' && session && typeof token.id === 'string') {
+        const nextOrgId =
+          session.activeOrganizationId === null || session.activeOrganizationId === undefined
+            ? null
+            : String(session.activeOrganizationId);
+
+        if (nextOrgId) {
+          const membership = await prisma.membership.findFirst({
+            where: {
+              userId: token.id,
+              organizationId: nextOrgId,
+              isActive: true,
+              deletedAt: null,
+            },
+            select: { id: true },
+          });
+          if (membership) {
+            token.activeOrganizationId = nextOrgId;
+          }
+        } else {
+          token.activeOrganizationId = null;
+        }
       }
 
       const remember = token.remember === true;
