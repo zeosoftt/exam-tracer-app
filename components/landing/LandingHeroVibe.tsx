@@ -8,46 +8,37 @@ const MINI_BARS = [42, 58, 51, 72, 68, 80, 74] as const;
 
 export function LandingHeroVibe() {
   return (
-    <section className="landing-vibe-hero relative overflow-hidden pt-20 pb-12 sm:pt-28 sm:pb-16 lg:pt-24 lg:pb-20">
-      <div className="landing-vibe-mesh absolute inset-0" aria-hidden />
-      <div className="landing-dot-grid absolute inset-0 opacity-[0.35] dark:opacity-[0.12]" aria-hidden />
-      <div className="landing-grain pointer-events-none absolute inset-0 opacity-[0.04] dark:opacity-[0.06]" aria-hidden />
+    <section className="landing-vibe-hero relative overflow-x-clip pt-20 pb-10 sm:pt-28 sm:pb-16 lg:overflow-hidden lg:pt-24 lg:pb-20">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+        <div className="landing-vibe-mesh absolute inset-0" />
+        <div className="landing-dot-grid absolute inset-0 opacity-[0.35] dark:opacity-[0.12]" />
+        <div className="landing-grain absolute inset-0 opacity-[0.04] dark:opacity-[0.06]" />
+        <div className="landing-orb absolute top-16 -right-8 h-48 w-48 rounded-full bg-primary-400/10 blur-3xl sm:-right-4 sm:h-[min(60vw,320px)] sm:w-[min(80vw,420px)]" />
+        <div className="landing-orb landing-orb--amber absolute -bottom-8 -left-8 h-40 w-40 rounded-full bg-amber-400/15 blur-3xl sm:-left-4 sm:h-[min(50vw,280px)] sm:w-[min(70vw,380px)]" />
+        <div className="landing-orb landing-orb--slow absolute left-1/2 top-1/3 h-32 w-32 -translate-x-1/2 rounded-full bg-primary-300/5 blur-2xl sm:h-64 sm:w-64" />
+      </div>
 
-      <div
-        className="landing-orb absolute top-16 right-0 h-[min(60vw,320px)] w-[min(80vw,420px)] rounded-full bg-primary-400/10 blur-3xl"
-        aria-hidden
-      />
-      <div
-        className="landing-orb landing-orb--amber absolute bottom-0 left-0 h-[min(50vw,280px)] w-[min(70vw,380px)] rounded-full bg-amber-400/15 blur-3xl"
-        aria-hidden
-      />
-      <div
-        className="landing-orb landing-orb--slow absolute left-1/2 top-1/3 h-48 w-48 -translate-x-1/2 rounded-full bg-primary-300/5 blur-2xl sm:h-64 sm:w-64"
-        aria-hidden
-      />
-
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid min-h-[calc(100vh-6rem)] items-center gap-10 lg:min-h-[calc(100vh-8rem)] lg:grid-cols-2 lg:gap-14 xl:gap-20">
-          <div className="order-1 flex flex-col justify-center text-center lg:text-left">
-            <div className="landing-hero-in landing-badge-pulse mx-auto mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-primary-200/80 bg-white/70 px-3 py-1.5 text-sm font-medium text-primary-800 shadow-sm backdrop-blur-md dark:border-primary-800/60 dark:bg-stone-900/70 dark:text-primary-200 sm:mb-6 lg:mx-0">
-              <Sparkles className="h-4 w-4 text-amber-700 dark:text-amber-400" aria-hidden />
-              <span className="landing-section-eyebrow text-[11px] tracking-[0.14em] text-primary-800 dark:text-primary-200">
+      <div className="relative mx-auto w-full min-w-0 max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid w-full min-w-0 items-center gap-8 lg:min-h-[calc(100vh-8rem)] lg:grid-cols-2 lg:gap-14 xl:gap-20">
+          <div className="order-1 flex min-w-0 w-full flex-col justify-center text-center lg:text-left">
+            <div className="landing-hero-in landing-badge-pulse mx-auto mb-4 inline-flex w-fit max-w-full items-center gap-2 rounded-full border border-primary-200/80 bg-white/70 px-3 py-1.5 text-sm font-medium text-primary-800 shadow-sm backdrop-blur-md dark:border-primary-800/60 dark:bg-stone-900/70 dark:text-primary-200 sm:mb-6 lg:mx-0">
+              <Sparkles className="h-4 w-4 shrink-0 text-amber-700 dark:text-amber-400" aria-hidden />
+              <span className="landing-section-eyebrow text-[10px] tracking-[0.12em] text-primary-800 dark:text-primary-200 sm:text-[11px] sm:tracking-[0.14em]">
                 SINAV HAZIRLIĞI · TEK PANEL
               </span>
             </div>
 
-            <h1 className="landing-hero-in landing-hero-in-1 font-display mb-4 text-4xl font-extrabold tracking-tight text-stone-900 dark:text-stone-100 sm:mb-5 sm:text-5xl lg:text-5xl xl:text-6xl">
-              KPSS, ALES, ÖABT ve YKS için
-              <br />
+            <h1 className="landing-hero-in landing-hero-in-1 font-display mb-4 text-[1.75rem] font-extrabold leading-[1.15] tracking-tight text-balance text-stone-900 dark:text-stone-100 sm:mb-5 sm:text-5xl lg:text-5xl xl:text-6xl">
+              KPSS, ALES, ÖABT ve YKS için{' '}
               <span className="landing-gradient-text">konu ve deneme takibi</span>
             </h1>
 
-            <p className="landing-hero-in landing-hero-in-2 mx-auto mb-6 max-w-xl text-lg leading-relaxed text-stone-600 dark:text-stone-300 sm:mb-8 sm:text-xl lg:mx-0">
+            <p className="landing-hero-in landing-hero-in-2 mx-auto mb-6 max-w-xl text-base leading-relaxed text-stone-600 dark:text-stone-300 sm:mb-8 sm:text-xl lg:mx-0">
               The Goal Lab ile hazırlığını tek ekranda topla — konu ilerlemesi, deneme kaydı, net trendi ve
               hedef puan takibi. DGS, TYT/AYT dahil.
             </p>
 
-            <div className="landing-hero-in landing-hero-in-3 mb-6 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4 lg:justify-start">
+            <div className="landing-hero-in landing-hero-in-3 mb-6 flex w-full min-w-0 flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center sm:gap-4 lg:justify-start">
               <Link
                 href="/onboarding"
                 className="landing-vibe-cta group inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-primary-700 via-primary-600 to-primary-700 bg-[length:200%_100%] px-6 py-3.5 text-base font-bold text-white shadow-xl shadow-primary-500/30 transition-all hover:scale-[1.02] active:scale-[0.98] sm:w-auto sm:px-8 sm:py-4"
@@ -73,9 +64,9 @@ export function LandingHeroVibe() {
 
             <LandingHeroAnchors />
 
-            <div className="landing-hero-in landing-hero-in-4 mt-8 overflow-hidden lg:mt-10">
+            <div className="landing-hero-in landing-hero-in-4 mt-6 w-full min-w-0 overflow-hidden sm:mt-8 lg:mt-10">
               <div className="landing-marquee-mask">
-                <div className="landing-marquee-track flex w-max gap-2">
+                <div className="landing-marquee-track flex w-max max-w-none gap-2">
                   {[...EXAM_PILLS, ...EXAM_PILLS].map((exam, i) => (
                     <span
                       key={`${exam}-${i}`}
@@ -89,7 +80,7 @@ export function LandingHeroVibe() {
             </div>
           </div>
 
-          <div className="landing-hero-in landing-hero-in-2 relative order-2 flex justify-center lg:justify-end">
+          <div className="landing-hero-in landing-hero-in-2 relative order-2 hidden min-w-0 justify-center lg:flex lg:justify-end">
             <div className="landing-card-float relative w-full max-w-md">
               <div
                 className="absolute -inset-3 rounded-[1.85rem] bg-gradient-to-br from-primary-500/25 via-transparent to-amber-500/20 blur-2xl"

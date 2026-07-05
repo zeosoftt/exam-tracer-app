@@ -65,11 +65,13 @@
 
 .landing-marquee-mask {
   overflow: hidden;
+  max-width: 100%;
   mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
 }
 
 .landing-marquee-track {
   animation: landing-marquee 28s linear infinite;
+  will-change: transform;
 }
 
 .landing-stat-bar {

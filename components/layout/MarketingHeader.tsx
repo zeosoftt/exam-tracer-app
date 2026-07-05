@@ -52,8 +52,10 @@ export function MarketingHeader() {
             )}
           </nav>
 
-          <div className="hidden shrink-0 items-center gap-1 sm:gap-2 md:flex md:gap-4">
-            <ThemeToggleCompact />
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2 md:gap-4">
+            <div className="hidden md:block">
+              <ThemeToggleCompact />
+            </div>
             <Link
               href="/auth/login"
               className="hidden text-sm font-medium text-stone-700 transition-colors hover:text-stone-900 dark:text-stone-300 dark:hover:text-stone-100 md:block"

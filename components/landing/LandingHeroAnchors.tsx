@@ -11,7 +11,7 @@ const ANCHORS = [
 export function LandingHeroAnchors() {
   return (
     <nav
-      className="landing-hero-in landing-hero-in-4 mt-6 grid w-full grid-cols-2 gap-2 sm:mt-8 sm:grid-cols-4 lg:flex lg:flex-wrap lg:justify-start lg:gap-2"
+      className="landing-hero-in landing-hero-in-4 mt-6 grid w-full min-w-0 grid-cols-1 gap-2 min-[400px]:grid-cols-2 sm:mt-8 lg:flex lg:flex-wrap lg:justify-start lg:gap-2"
       aria-label="Sayfa içi gezinme"
     >
       {ANCHORS.map(({ href, label, icon: Icon }) => (
