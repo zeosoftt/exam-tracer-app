@@ -441,25 +441,6 @@ export function SuperAdminPanel() {
               </div>
             </Link>
 
-            {/* Kurumlar & organizasyonlar */}
-            <div className="flex flex-col justify-between rounded-xl border border-stone-200 bg-white p-4 shadow-sm dark:border-stone-800 dark:bg-stone-900/90">
-              <div>
-                <h3 className="mb-1 text-sm font-semibold text-stone-900 dark:text-stone-100">Kurumlar &amp; Organizasyonlar</h3>
-                <p className="text-xs text-stone-500 dark:text-stone-400">
-                  Kurum listesi, kota kullanımı, aktif sınavlar ve yöneticiler için yönetim ekranı.
-                </p>
-              </div>
-              <div className="mt-3">
-                <button
-                  type="button"
-                  disabled
-                  className="inline-flex cursor-not-allowed items-center rounded-lg border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-medium text-stone-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-500"
-                >
-                  Yakında
-                </button>
-              </div>
-            </div>
-
             {/* Sınav & içerik yönetimi */}
             <Link
               href="/dashboard/super-admin/exam-content"
@@ -479,25 +460,6 @@ export function SuperAdminPanel() {
                 </span>
               </div>
             </Link>
-
-            {/* Sistem & güvenlik */}
-            <div className="flex flex-col justify-between rounded-xl border border-stone-200 bg-white p-4 shadow-sm dark:border-stone-800 dark:bg-stone-900/90">
-              <div>
-                <h3 className="mb-1 text-sm font-semibold text-stone-900 dark:text-stone-100">Sistem &amp; Güvenlik</h3>
-                <p className="text-xs text-stone-500 dark:text-stone-400">
-                  Loglar, hata raporları, oran limitleri ve kritik sistem ayarları için yönetim araçları.
-                </p>
-              </div>
-              <div className="mt-3">
-                <button
-                  type="button"
-                  disabled
-                  className="inline-flex cursor-not-allowed items-center rounded-lg border border-stone-200 bg-stone-50 px-3 py-1.5 text-xs font-medium text-stone-500 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-500"
-                >
-                  Yakında
-                </button>
-              </div>
-            </div>
           </div>
         </section>
       </main>

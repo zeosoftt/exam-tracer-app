@@ -1,6 +1,7 @@
 import Link from 'next/link';
-import { ArrowRight, BookOpen, Facebook, Instagram, Linkedin, Youtube } from 'lucide-react';
+import { ArrowRight, BookOpen, Instagram } from 'lucide-react';
 import { AppVersionLabel } from '@/components/layout/AppVersionLabel';
+import { getOrganizationSameAs } from '@/lib/seo/siteSeo';
 
 const FOOTER_SECTIONS = [
   {
@@ -9,6 +10,7 @@ const FOOTER_SECTIONS = [
       { label: 'Nasıl çalışır', href: '/#nasil' },
       { label: 'Özellikler', href: '/ozellikler' },
       { label: 'Sınavlar', href: '/sinavlar' },
+      { label: 'Rehber', href: '/rehber' },
       { label: 'Paketler', href: '/#paketler' },
     ],
   },
@@ -28,24 +30,22 @@ const FOOTER_SECTIONS = [
   },
 ] as const;
 
-const SOCIAL_LINKS = [
-  {
-    href: 'https://x.com',
-    icon: ({ className }: { className?: string }) => (
-      <span className={`inline-flex items-center justify-center text-sm font-bold ${className ?? ''}`}>𝕏</span>
-    ),
-    label: 'X',
-  },
-  { href: 'https://instagram.com/zeosoft.io', icon: Instagram, label: 'Instagram' },
-  { href: 'https://linkedin.com', icon: Linkedin, label: 'LinkedIn' },
-  { href: 'https://youtube.com', icon: Youtube, label: 'YouTube' },
-  { href: 'https://facebook.com', icon: Facebook, label: 'Facebook' },
-] as const;
-
 const linkClass =
   'text-sm text-stone-600 transition-colors hover:text-primary-700 dark:text-stone-300 dark:hover:text-primary-300';
 
+function buildSocialLinks() {
+  return getOrganizationSameAs().map((href) => {
+    const host = href.toLowerCase();
+    if (host.includes('instagram')) {
+      return { href, label: 'Instagram', icon: Instagram };
+    }
+    return null;
+  }).filter((item): item is { href: string; label: string; icon: typeof Instagram } => item !== null);
+}
+
 export function MarketingFooter() {
+  const socialLinks = buildSocialLinks();
+
   return (
     <footer className="relative border-t border-stone-200/80 bg-white/85 backdrop-blur-md dark:border-stone-800/80 dark:bg-stone-950/85">
       <div className="landing-dot-grid absolute inset-0 opacity-[0.12] dark:opacity-[0.05]" aria-hidden />
@@ -106,20 +106,22 @@ export function MarketingFooter() {
             <AppVersionLabel className="inline text-stone-400 dark:text-stone-500" />
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            {SOCIAL_LINKS.map(({ href, icon: Icon, label }) => (
-              <a
-                key={label}
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex h-9 w-9 items-center justify-center rounded-xl border border-stone-200/80 bg-stone-50/80 text-stone-600 transition-colors hover:border-primary-200 hover:bg-primary-50 hover:text-primary-700 dark:border-stone-700/80 dark:bg-stone-900/80 dark:text-stone-300 dark:hover:border-primary-800 dark:hover:bg-primary-950/50 dark:hover:text-primary-300"
-                aria-label={label}
-              >
-                <Icon className="h-4 w-4 shrink-0" />
-              </a>
-            ))}
-          </div>
+          {socialLinks.length > 0 ? (
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              {socialLinks.map(({ href, icon: Icon, label }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-stone-200/80 bg-stone-50/80 text-stone-600 transition-colors hover:border-primary-200 hover:bg-primary-50 hover:text-primary-700 dark:border-stone-700/80 dark:bg-stone-900/80 dark:text-stone-300 dark:hover:border-primary-800 dark:hover:bg-primary-950/50 dark:hover:text-primary-300"
+                  aria-label={label}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                </a>
+              ))}
+            </div>
+          ) : null}
         </div>
       </div>
     </footer>

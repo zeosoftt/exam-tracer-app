@@ -19,28 +19,8 @@ import {
   mapDenemeAttemptToDto,
 } from '@/lib/deneme/denemeRepository';
 import { prisma } from '@/lib/db/prisma';
-import { z } from 'zod';
-
-const breakdownItemSchema = z.object({
-  subjectId: z.string(),
-  subjectName: z.string(),
-  right: z.number().int().min(0),
-  wrong: z.number().int().min(0),
-  empty: z.number().int().min(0),
-});
-
-const createDenemeSchema = z.object({
-  examId: z.string().min(1, 'Sınav seçiniz'),
-  attemptedAt: z.union([z.string(), z.coerce.date()]).optional(),
-  totalScore: z.number().min(0).optional().nullable(),
-  netScore: z.number().optional().nullable(),
-  rightCount: z.number().int().min(0).optional().nullable(),
-  wrongCount: z.number().int().min(0).optional().nullable(),
-  emptyCount: z.number().int().min(0).optional().nullable(),
-  durationMinutes: z.number().int().min(0).optional().nullable(),
-  notes: z.string().max(2000).optional().nullable(),
-  breakdown: z.array(breakdownItemSchema).optional(),
-});
+import { validate } from '@/lib/validation/validate';
+import { createDenemeAttemptSchema } from '@/lib/validation/schemas';
 
 async function getDenemeHandler(req: NextRequest): Promise<NextResponse> {
   const session = await requireSession();
@@ -101,15 +81,6 @@ async function postDenemeHandler(req: NextRequest): Promise<NextResponse> {
   if (denied) return denied;
 
   const body = await req.json();
-  const parsed = createDenemeSchema.safeParse(body);
-  if (!parsed.success) {
-    const first = Object.values(parsed.error.flatten().fieldErrors).flat()[0];
-    return NextResponse.json(
-      { success: false, error: typeof first === 'string' ? first : 'Geçersiz veri.' },
-      { status: HTTP_STATUS.BAD_REQUEST },
-    );
-  }
-
   const {
     examId,
     attemptedAt,
@@ -121,7 +92,7 @@ async function postDenemeHandler(req: NextRequest): Promise<NextResponse> {
     durationMinutes,
     notes,
     breakdown,
-  } = parsed.data;
+  } = validate(createDenemeAttemptSchema, body);
 
   const exam = await findActiveExamById(examId);
   if (!exam) {

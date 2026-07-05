@@ -76,22 +76,24 @@ export async function setUserActiveExam(userId: string, examId: string): Promise
   });
   if (!exam) return false;
 
-  const currentAssignment = await prisma.examAssignment.findFirst({
-    where: { userId, deletedAt: null },
-    orderBy: { assignedAt: 'desc' },
-  });
-
-  if (currentAssignment?.examId === examId) return true;
-
-  if (currentAssignment) {
-    await prisma.examAssignment.update({
-      where: { id: currentAssignment.id },
-      data: { deletedAt: new Date() },
+  return prisma.$transaction(async (tx) => {
+    const currentAssignment = await tx.examAssignment.findFirst({
+      where: { userId, deletedAt: null },
+      orderBy: { assignedAt: 'desc' },
     });
-  }
 
-  await prisma.examAssignment.create({ data: { examId: exam.id, userId } });
-  return true;
+    if (currentAssignment?.examId === examId) return true;
+
+    if (currentAssignment) {
+      await tx.examAssignment.update({
+        where: { id: currentAssignment.id },
+        data: { deletedAt: new Date() },
+      });
+    }
+
+    await tx.examAssignment.create({ data: { examId: exam.id, userId } });
+    return true;
+  });
 }
 
 export async function clearUserActiveExam(userId: string): Promise<void> {

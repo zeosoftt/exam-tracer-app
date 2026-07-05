@@ -5,9 +5,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { guardAdminSession } from '@/lib/auth/requireSession';
+import { withAdminHandler } from '@/lib/api/withAdminHandler';
 import { prisma } from '@/lib/db/prisma';
-import { HTTP_STATUS, ERROR_MESSAGES, PAGINATION } from '@/config/constants';
+import { PAGINATION } from '@/config/constants';
 import { getAcquisitionSourceLabel } from '@/lib/marketing/acquisitionSources';
 
 const examAssignmentsSelect = {
@@ -50,12 +50,8 @@ function isMissingAcquisitionColumns(error: unknown): boolean {
   );
 }
 
-export async function GET(req: NextRequest) {
-  const guard = await guardAdminSession();
-  if (!guard.authorized) return guard.response;
-
-  try {
-    const { searchParams } = new URL(req.url);
+async function getUsersHandler(req: NextRequest): Promise<NextResponse> {
+  const { searchParams } = new URL(req.url);
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
     const limit = Math.min(
       PAGINATION.MAX_PAGE_SIZE,
@@ -153,11 +149,6 @@ export async function GET(req: NextRequest) {
         },
       },
     });
-  } catch (error) {
-    console.error('Super admin users list error:', error);
-    return NextResponse.json(
-      { success: false, error: ERROR_MESSAGES.INTERNAL_ERROR },
-      { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
-    );
-  }
 }
+
+export const GET = withAdminHandler(getUsersHandler);

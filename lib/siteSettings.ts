@@ -25,7 +25,7 @@ export const SITE_KEYS = {
 } as const;
 
 const DEFAULTS: Record<string, string> = {
-  [SITE_KEYS.LANDING_SHOW_PARTNERS]: 'true',
+  [SITE_KEYS.LANDING_SHOW_PARTNERS]: 'false',
   [SITE_KEYS.DENEME_SHOW_ADVANCED]: 'true',
   [SITE_KEYS.SHOPIER_CHECKOUT_CLICKS]: '0',
   [SITE_KEYS.TRACKING_GTM_ENABLED]: 'false',

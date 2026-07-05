@@ -6,7 +6,8 @@ import { LandingSectionHeader } from '@/components/landing/LandingSectionHeader'
 const ROWS = [
   { feature: 'Sınav / ders / konu takibi', free: true, pro: true },
   { feature: 'Dashboard ve temel istatistikler', free: true, pro: true },
-  { feature: 'Deneme kaydı ve ÖSYM puan önizlemesi', free: false, pro: true },
+  { feature: 'Deneme listesi ve yeni kayıt', free: true, pro: true },
+  { feature: 'Deneme detayı, ders/konu analizi ve ÖSYM puan önizlemesi', free: false, pro: true },
   { feature: 'Net trendi ve gelişmiş analiz', free: false, pro: true },
   { feature: 'Pomodoro zamanlayıcı', free: true, pro: true },
 ] as const;
@@ -20,7 +21,7 @@ export function LandingFreeVsPro() {
           <LandingSectionHeader
             eyebrow="PLAN KARŞILAŞTIRMA"
             title="Hangi plan size uygun?"
-            description="Ücretsiz başlayın; deneme takibine ihtiyaç duyduğunuzda Pro'ya geçin."
+            description="Ücretsiz başlayın; deneme detayı ve gelişmiş analiz için Pro'ya geçin."
           />
         </LandingReveal>
         <LandingReveal delay={80}>

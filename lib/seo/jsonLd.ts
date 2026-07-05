@@ -5,6 +5,7 @@
 import { PUBLIC_FAQ_ITEMS } from '@/lib/seo/faqData';
 import { EXAM_SEO_ENTRIES, type ExamSeoEntry } from '@/lib/seo/exams';
 import { FEATURE_SEO_ENTRIES, type FeatureSeoEntry } from '@/lib/seo/features';
+import { GUIDE_SEO_ENTRIES, type GuideSeoEntry } from '@/lib/seo/guides';
 import { getBaseUrl } from '@/lib/seo/baseUrl';
 import { getOrganizationSameAs, SEO_DEFAULT_DESCRIPTION, SEO_SITE_NAME } from '@/lib/seo/siteSeo';
 
@@ -180,6 +181,56 @@ export function buildOzelliklerJsonLd() {
           name: feature.headline,
           url: `${base}/ozellikler/${feature.id}`,
         })),
+      },
+    ],
+  };
+}
+
+export function buildRehberJsonLd() {
+  const base = getBaseUrl();
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      buildBreadcrumbJsonLd([
+        { name: 'Ana sayfa', path: '/' },
+        { name: 'Rehber', path: '/rehber' },
+      ]),
+      {
+        '@type': 'ItemList',
+        name: 'The Goal Lab rehberleri',
+        description: 'KPSS konu takibi, kurum sonuç linki ve deneme net takibi rehberleri.',
+        numberOfItems: GUIDE_SEO_ENTRIES.length,
+        itemListElement: GUIDE_SEO_ENTRIES.map((guide, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: guide.headline,
+          url: `${base}/rehber/${guide.id}`,
+        })),
+      },
+    ],
+  };
+}
+
+export function buildGuidePageJsonLd(guide: GuideSeoEntry) {
+  const base = getBaseUrl();
+  const url = `${base}/rehber/${guide.id}`;
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      buildBreadcrumbJsonLd([
+        { name: 'Ana sayfa', path: '/' },
+        { name: 'Rehber', path: '/rehber' },
+        { name: guide.title, path: `/rehber/${guide.id}` },
+      ]),
+      {
+        '@type': 'Article',
+        url,
+        headline: guide.headline,
+        name: guide.pageTitle,
+        description: guide.pageDescription,
+        isPartOf: { '@type': 'WebSite', name: SEO_SITE_NAME, url: base },
+        inLanguage: 'tr-TR',
+        author: { '@type': 'Organization', name: SEO_SITE_NAME, url: base },
       },
     ],
   };

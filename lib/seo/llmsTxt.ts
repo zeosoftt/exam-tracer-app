@@ -6,6 +6,7 @@
 import { getBaseUrl } from '@/lib/seo/baseUrl';
 import { EXAM_SEO_ENTRIES } from '@/lib/seo/exams';
 import { FEATURE_SEO_ENTRIES } from '@/lib/seo/features';
+import { GUIDE_SEO_ENTRIES } from '@/lib/seo/guides';
 import { PUBLIC_FAQ_ITEMS } from '@/lib/seo/faqData';
 import { SEO_DEFAULT_DESCRIPTION, SEO_SITE_NAME } from '@/lib/seo/siteSeo';
 
@@ -23,6 +24,10 @@ export function buildLlmsTxt(): string {
     (f) => `- [${f.name}](${base}/ozellikler/${f.id}): ${f.description}`,
   ).join('\n');
 
+  const guideLines = GUIDE_SEO_ENTRIES.map(
+    (g) => `- [${g.title}](${base}/rehber/${g.id}): ${g.description}`,
+  ).join('\n');
+
   return `# ${SEO_SITE_NAME}
 
 > ${PRODUCT_SUMMARY}
@@ -34,6 +39,7 @@ ${SEO_DEFAULT_DESCRIPTION}
 - [Ana sayfa](${base}/): Ürün tanıtımı, özellikler, ücretsiz ve Pro plan özeti.
 - [Desteklenen sınavlar](${base}/sinavlar): KPSS, ÖABT, ALES, YKS, DGS, YDS için konu ve deneme takibi açıklamaları.
 - [Özellikler](${base}/ozellikler): Konu takibi, deneme analizi, aralıklı tekrar, Pomodoro.
+- [Rehber](${base}/rehber): KPSS konu takibi, kurum sonuç linki ve deneme net takibi rehberleri.
 - [Sıkça sorulan sorular](${base}/sss): Ücretsiz plan, desteklenen sınavlar, deneme/ÖSYM puanı, güvenlik, kurumsal kullanım.
 - [Destek ve iletişim](${base}/destek): Teknik destek ve geri bildirim formu.
 - [Ücretsiz kayıt](${base}/onboarding): Hesap oluşturma ve kurulum sihirbazı.
@@ -45,6 +51,10 @@ ${examLines}
 ## Özellikler (özet)
 
 ${featureLines}
+
+## Rehberler (özet)
+
+${guideLines}
 
 ## Teknik
 
@@ -68,6 +78,10 @@ export function buildLlmsFullTxt(): string {
 
   const featureBlock = FEATURE_SEO_ENTRIES.map(
     (f) => `## ${f.name}\n\n**${f.headline}**\n\n${f.description}\n\nURL: ${base}/ozellikler/${f.id}`,
+  ).join('\n\n');
+
+  const guideBlock = GUIDE_SEO_ENTRIES.map(
+    (g) => `## ${g.title}\n\n**${g.headline}**\n\n${g.description}\n\nURL: ${base}/rehber/${g.id}`,
   ).join('\n\n');
 
   return `# ${SEO_SITE_NAME} — tam bağlam
@@ -96,6 +110,10 @@ ${examBlock}
 
 ${featureBlock}
 
+## Guides
+
+${guideBlock}
+
 ## Frequently asked questions
 
 ${faqBlock}
@@ -107,6 +125,7 @@ ${faqBlock}
 | Home | ${base}/ |
 | Exams index | ${base}/sinavlar |
 | Features index | ${base}/ozellikler |
+| Guides index | ${base}/rehber |
 | FAQ | ${base}/sss |
 | Support | ${base}/destek |
 | Sign up | ${base}/onboarding |

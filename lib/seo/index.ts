@@ -16,14 +16,21 @@ export {
   getFeatureSeoSlugs,
 } from './features';
 export {
+  GUIDE_SEO_ENTRIES,
+  getGuideSeoEntry,
+  getGuideSeoSlugs,
+} from './guides';
+export {
   buildBreadcrumbJsonLd,
   buildDestekJsonLd,
   buildExamPageJsonLd,
   buildFeaturePageJsonLd,
+  buildGuidePageJsonLd,
   buildFaqPageEntity,
   buildHomeJsonLd,
   buildOnboardingJsonLd,
   buildOzelliklerJsonLd,
+  buildRehberJsonLd,
   buildSinavlarJsonLd,
   buildSssJsonLd,
 } from './jsonLd';

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { Lock, Sparkles, Target } from 'lucide-react';
-import { SHOPIER_CHECKOUT_URL } from '@/config/constants';
+import { Lock, Target } from 'lucide-react';
+import { DenemePremiumShopierCta } from '@/components/deneme/DenemePremiumShopierCta';
 import { computeDenemeAnalysis } from '@/lib/deneme/computeDenemeAnalysis';
 import type { DenemePageInitialData } from '@/lib/deneme/loadDenemePageData';
 import { DenemeAttemptCardServer } from '@/components/deneme/DenemeAttemptCardServer';
@@ -55,15 +55,7 @@ export function DenemePageStaticContent({ data, topContent }: DenemePageStaticCo
             <p className="mb-4 text-sm text-stone-600 dark:text-stone-400">
               Deneme listesi ve yeni kayıt ücretsizdir. Ders bazlı sonuçlar ve konu analizi için Premium plan gerekir.
             </p>
-            <a
-              href={SHOPIER_CHECKOUT_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-amber-600"
-            >
-              <Sparkles className="h-4 w-4" />
-              Pro&apos;yu Shopier&apos;da satın al
-            </a>
+            <DenemePremiumShopierCta className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-amber-600" />
           </div>
         ) : null}
 

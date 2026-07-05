@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next';
 import { getBaseUrl } from '@/lib/seo/baseUrl';
 import { getExamSeoSlugs } from '@/lib/seo/exams';
 import { getFeatureSeoSlugs } from '@/lib/seo/features';
+import { getGuideSeoSlugs } from '@/lib/seo/guides';
 
 /** Statik pazarlama sayfaları — auth ve dashboard dahil değil */
 const PUBLIC_ROUTES: Array<{
@@ -13,6 +14,7 @@ const PUBLIC_ROUTES: Array<{
   { path: '/onboarding', changeFrequency: 'weekly', priority: 0.95 },
   { path: '/sinavlar', changeFrequency: 'monthly', priority: 0.9 },
   { path: '/ozellikler', changeFrequency: 'monthly', priority: 0.88 },
+  { path: '/rehber', changeFrequency: 'monthly', priority: 0.86 },
   { path: '/sss', changeFrequency: 'monthly', priority: 0.85 },
   { path: '/destek', changeFrequency: 'monthly', priority: 0.75 },
 ];
@@ -42,5 +44,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
-  return [...staticEntries, ...examEntries, ...featureEntries];
+  const guideEntries = getGuideSeoSlugs().map((slug) => ({
+    url: `${base}/rehber/${slug}`,
+    lastModified,
+    changeFrequency: 'monthly' as const,
+    priority: 0.78,
+  }));
+
+  return [...staticEntries, ...examEntries, ...featureEntries, ...guideEntries];
 }

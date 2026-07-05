@@ -12,13 +12,14 @@ const ShopierCheckoutLink = dynamic(
 const FREE_FEATURES = [
   'Sınırsız sınav / ders / konu (politikaya tabi)',
   'İlerleme ve temel istatistikler',
+  'Deneme listesi ve yeni kayıt',
   'Mobil uyumlu arayüz',
 ] as const;
 
 const PRO_FEATURES = [
   'Ücretsiz plandaki her şey',
-  'Deneme kaydı ve ÖSYM uyumlu puan hesaplama',
-  'Net trendi ve gelişmiş deneme analizi',
+  'Deneme detayı, ders/konu analizi',
+  'ÖSYM uyumlu puan hesaplama ve net trendi',
 ] as const;
 
 export function LandingPricing() {
@@ -40,7 +41,7 @@ export function LandingPricing() {
               </p>
               <p className="mt-2 font-display text-3xl font-bold text-stone-900 dark:text-stone-100">0 ₺</p>
               <p className="mt-2 text-sm text-stone-600 dark:text-stone-300">
-                Sınav, ders ve konu takibi; dashboard; deneme kayıtları.
+                Sınav, ders ve konu takibi; dashboard; deneme listesi ve kayıt.
               </p>
               <ul className="mt-6 flex flex-1 flex-col gap-3 text-sm text-stone-700 dark:text-stone-300">
                 {FREE_FEATURES.map((line) => (
@@ -70,7 +71,7 @@ export function LandingPricing() {
               </p>
               <p className="mt-2 font-display text-3xl font-bold text-stone-900 dark:text-stone-100">İhtiyaca göre</p>
               <p className="mt-2 text-sm text-stone-600 dark:text-stone-300">
-                Deneme takibi, ÖSYM uyumlu puan hesaplama ve gelişmiş analitik.
+                Deneme detayı, ders/konu analizi, ÖSYM uyumlu puan ve gelişmiş analitik.
               </p>
               <ul className="mt-6 flex flex-1 flex-col gap-3 text-sm text-stone-700 dark:text-stone-300">
                 {PRO_FEATURES.map((line) => (

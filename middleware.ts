@@ -6,6 +6,7 @@
 import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { applySecurityHeaders } from '@/lib/security/headers';
 
 export default withAuth(
   function middleware(req: NextRequest) {
@@ -44,6 +45,8 @@ export default withAuth(
       response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     }
 
+    applySecurityHeaders(response);
+
     return response;
   },
   {
@@ -77,6 +80,7 @@ export default withAuth(
           '/destek',
           '/sinavlar',
           '/ozellikler',
+          '/rehber',
           '/sss',
           '/api/auth',
           '/api/auth/dev-verification-code',

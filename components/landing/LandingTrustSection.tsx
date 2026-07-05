@@ -49,7 +49,7 @@ export function LandingTrustSection() {
           <LandingSectionHeader
             eyebrow="RİSK YOK · NET PLAN"
             title="Planınız net, risk yok"
-            description="Kredi kartı olmadan deneyin. İhtiyaç duyduğunuzda Pro'yu Shopier üzerinden satın alarak deneme takibi ve gelişmiş analitiklere geçebilirsiniz."
+            description="Kredi kartı olmadan deneyin. Deneme detayı ve gelişmiş analiz için Pro'yu Shopier üzerinden satın alabilirsiniz."
           />
         </LandingReveal>
 

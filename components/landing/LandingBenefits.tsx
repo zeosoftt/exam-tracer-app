@@ -11,11 +11,11 @@ const FEATURES = [
   'Detaylı raporlama araçları',
 ] as const;
 
-const STATS = [
-  { label: 'Aktif Sınavlar', sub: 'Şu anda devam eden', value: '12', tone: 'primary' as const },
-  { label: 'Tamamlanan Konular', sub: 'Bu ay içinde', value: '247', tone: 'amber' as const },
-  { label: 'Genel İlerleme', sub: 'Tüm sınavlar için', value: '84%', tone: 'primary' as const },
-];
+const PREVIEW_ITEMS = [
+  { label: 'Haftalık hedef', sub: 'Çalışma günü takibi', tone: 'primary' as const },
+  { label: 'Tamamlanan konular', sub: 'Sınav bazlı ilerleme', tone: 'amber' as const },
+  { label: 'Genel ilerleme', sub: 'Tüm sınavlar için özet', tone: 'primary' as const },
+] as const;
 
 const statBorder = {
   primary: 'border-primary-100 dark:border-primary-900/50',
@@ -23,8 +23,8 @@ const statBorder = {
 } as const;
 
 const statValue = {
-  primary: 'text-primary-700',
-  amber: 'text-amber-800 dark:text-amber-400',
+  primary: 'text-primary-600 dark:text-primary-400',
+  amber: 'text-amber-700 dark:text-amber-400',
 } as const;
 
 export function LandingBenefits() {
@@ -58,23 +58,24 @@ export function LandingBenefits() {
               <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary-500/20 to-amber-500/10 blur-3xl" aria-hidden />
               <div className="landing-vibe-glass relative rounded-3xl p-6 sm:p-8">
                 <div className="space-y-4 sm:space-y-5">
-                  {STATS.map(({ label, sub, value, tone }) => (
+                  {PREVIEW_ITEMS.map(({ label, sub, tone }) => (
                     <div
                       key={label}
-                      className={`landing-hover-lift flex items-center justify-between gap-3 rounded-2xl border bg-white/70 p-4 backdrop-blur-sm dark:bg-stone-900/70 sm:gap-4 sm:p-6 ${statBorder[tone]}`}
+                      className={`landing-hover-lift flex items-center gap-4 rounded-2xl border bg-white/70 p-4 backdrop-blur-sm dark:bg-stone-900/70 sm:p-6 ${statBorder[tone]}`}
                     >
+                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${tone === 'primary' ? 'from-primary-600 to-primary-700' : 'from-amber-600 to-amber-700'} text-white shadow-md`}>
+                        <CheckCircle className="h-5 w-5" />
+                      </div>
                       <div className="min-w-0 flex-1">
-                        <p className="font-display text-sm font-bold text-stone-900 dark:text-stone-100 sm:text-lg">
-                          {label}
-                        </p>
+                        <p className={`font-display text-sm font-bold sm:text-base ${statValue[tone]}`}>{label}</p>
                         <p className="text-xs text-stone-500 sm:text-sm">{sub}</p>
                       </div>
-                      <span className={`shrink-0 font-display text-2xl font-extrabold tabular-nums sm:text-4xl ${statValue[tone]}`}>
-                        {value}
-                      </span>
                     </div>
                   ))}
                 </div>
+                <p className="mt-4 text-center text-xs text-stone-500 dark:text-stone-400">
+                  Örnek panel görünümü — gerçek veriler hesabınıza özeldir.
+                </p>
               </div>
             </div>
           </LandingReveal>

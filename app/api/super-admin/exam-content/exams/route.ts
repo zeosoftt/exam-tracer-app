@@ -3,43 +3,39 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { guardAdminSession } from '@/lib/auth/requireSession';
+import { withAdminHandler } from '@/lib/api/withAdminHandler';
+import { assertPrismaOrThrow } from '@/lib/api/prismaErrors';
 import { prisma } from '@/lib/db/prisma';
-import { HTTP_STATUS, EXAM_STATUS } from '@/config/constants';
+import { EXAM_STATUS } from '@/config/constants';
+import { validate } from '@/lib/validation/validate';
+import { adminCreateExamSchema } from '@/lib/validation/schemas';
 
-export async function POST(req: NextRequest) {
-  const guard = await guardAdminSession();
-  if (!guard.authorized) return guard.response;
+async function createExamContentHandler(req: NextRequest): Promise<NextResponse> {
+  const body = await req.json();
+  const data = validate(adminCreateExamSchema, body);
+
+  const statusVal =
+    data.status === EXAM_STATUS.INACTIVE || data.status === EXAM_STATUS.ARCHIVED
+      ? data.status
+      : EXAM_STATUS.ACTIVE;
+
   try {
-    const body = await req.json();
-    const name = body?.name;
-    const code = body?.code;
-    const description = body?.description;
-    const status = body?.status;
-    if (!name || !code) {
-      return NextResponse.json(
-        { success: false, error: 'name ve code zorunludur.' },
-        { status: HTTP_STATUS.BAD_REQUEST }
-      );
-    }
-    const statusVal = status === EXAM_STATUS.INACTIVE || status === EXAM_STATUS.ARCHIVED ? status : EXAM_STATUS.ACTIVE;
-    const startDate = body?.startDate && String(body.startDate).trim() ? new Date(String(body.startDate).trim()) : null;
     const exam = await prisma.exam.create({
       data: {
-        name: String(name).trim(),
-        code: String(code).trim().toUpperCase(),
-        description: description ? String(description).trim() : null,
+        name: data.name.trim(),
+        code: data.code.trim().toUpperCase(),
+        description: data.description?.trim() ?? null,
         status: statusVal,
-        startDate,
+        startDate: data.startDate ?? null,
+        endDate: data.endDate ?? null,
       },
     });
     return NextResponse.json({ success: true, data: exam });
-  } catch (e: unknown) {
-    const err = e as { code?: string };
-    const msg = err?.code === 'P2002' ? 'Bu sınav kodu zaten kullanılıyor.' : 'Sınav oluşturulamadı.';
-    return NextResponse.json(
-      { success: false, error: msg },
-      { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
-    );
+  } catch (error) {
+    assertPrismaOrThrow(error, {
+      P2002: 'Bu sınav kodu zaten kullanılıyor.',
+    });
   }
 }
+
+export const POST = withAdminHandler(createExamContentHandler);

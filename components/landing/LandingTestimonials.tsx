@@ -29,7 +29,7 @@ export function LandingTestimonials() {
         <LandingSectionHeader
           eyebrow="KULLANICI DENEYİMİ"
           title="Kullanıcılarımız Ne Diyor?"
-          description="Adaylar ve kurumlar sınav takibini The Goal Lab ile sadeleştiriyor"
+          description="Örnek kullanıcı yorumları — adaylar ve kurumlar sınav takibini The Goal Lab ile sadeleştiriyor"
         />
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-6">

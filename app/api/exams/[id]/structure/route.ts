@@ -4,68 +4,71 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { requireSession } from '@/lib/auth/requireSession';
-import { handleError } from '@/lib/errors/errorHandler';
+import { requireSession, getSessionUserId } from '@/lib/auth/requireSession';
+import { asyncHandler } from '@/lib/errors/errorHandler';
+import { jsonOk } from '@/lib/api/responses';
+import { userHasExamAssignment } from '@/lib/exams/examAccessRepository';
+import { ForbiddenError, BadRequestError, NotFoundError } from '@/lib/errors/AppError';
 import { prisma } from '@/lib/db/prisma';
-import { HTTP_STATUS } from '@/config/constants';
 
-export async function GET(
+async function getExamStructureHandler(
   _req: NextRequest,
   context: { params: Promise<{ id: string }> },
-) {
-  try {
-    await requireSession();
+): Promise<NextResponse> {
+  const session = await requireSession();
+  const userId = getSessionUserId(session);
+  const { id: examId } = await context.params;
 
-    const { id: examId } = await context.params;
-    if (!examId) {
-      return NextResponse.json({ error: 'examId gerekli' }, { status: HTTP_STATUS.BAD_REQUEST });
-    }
+  if (!examId) {
+    throw new BadRequestError('examId gerekli');
+  }
 
-    const exam = await prisma.exam.findFirst({
-      where: { id: examId, status: 'ACTIVE', deletedAt: null },
-      include: {
-        sections: {
-          orderBy: { order: 'asc' },
-          include: {
-            subjects: {
-              orderBy: { order: 'asc' },
-              select: { id: true, name: true, code: true, order: true },
-            },
+  const hasAccess = await userHasExamAssignment(userId, examId);
+  if (!hasAccess) {
+    throw new ForbiddenError('Bu sınav yapısına erişim yetkiniz yok.');
+  }
+
+  const exam = await prisma.exam.findFirst({
+    where: { id: examId, status: 'ACTIVE', deletedAt: null },
+    include: {
+      sections: {
+        orderBy: { order: 'asc' },
+        include: {
+          subjects: {
+            orderBy: { order: 'asc' },
+            select: { id: true, name: true, code: true, order: true },
           },
         },
       },
-    });
+    },
+  });
 
-    if (!exam) {
-      return NextResponse.json({ error: 'Sınav bulunamadı' }, { status: HTTP_STATUS.NOT_FOUND });
-    }
-
-    const subjects = exam.sections.flatMap((s) =>
-      s.subjects.map((sub) => ({
-        id: sub.id,
-        name: sub.name,
-        code: sub.code,
-        sectionName: s.name,
-        order: sub.order,
-      })),
-    );
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        examId: exam.id,
-        examName: exam.name,
-        examCode: exam.code,
-        sections: exam.sections.map((s) => ({
-          id: s.id,
-          name: s.name,
-          code: s.code,
-          subjects: s.subjects,
-        })),
-        subjects,
-      },
-    });
-  } catch (error) {
-    return handleError(error);
+  if (!exam) {
+    throw new NotFoundError('Sınav bulunamadı');
   }
+
+  const subjects = exam.sections.flatMap((s) =>
+    s.subjects.map((sub) => ({
+      id: sub.id,
+      name: sub.name,
+      code: sub.code,
+      sectionName: s.name,
+      order: sub.order,
+    })),
+  );
+
+  return jsonOk({
+    examId: exam.id,
+    examName: exam.name,
+    examCode: exam.code,
+    sections: exam.sections.map((s) => ({
+      id: s.id,
+      name: s.name,
+      code: s.code,
+      subjects: s.subjects,
+    })),
+    subjects,
+  });
 }
+
+export const GET = asyncHandler(getExamStructureHandler);

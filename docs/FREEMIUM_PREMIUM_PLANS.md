@@ -1,6 +1,19 @@
 # Freemium ve Premium Plan Sistemi
 
-Bu dokümanda **ücretsiz (freemium)** ve **premium** planların kapsamı açıklanır. Ödeme entegrasyonu (Stripe vb.) kullanılmamaktadır; plan ataması yönetici/panel veya ileride eklenecek bir ödeme sağlayıcı ile yapılabilir.
+Bu dokümanda **ücretsiz (freemium)** ve **premium** planların kapsamı açıklanır. Pro satın alma **Shopier** üzerinden yapılır; tıklamalar `ShopierCheckoutLink` ile izlenir.
+
+---
+
+## Deneme takibi — ücretsiz vs Pro
+
+| Özellik | Ücretsiz | Pro |
+|---------|----------|-----|
+| Deneme listesi | Evet | Evet |
+| Yeni deneme kaydı | Evet | Evet |
+| Deneme detayı, ders/konu analizi | Hayır | Evet |
+| ÖSYM uyumlu puan önizlemesi, net trendi | Hayır | Evet |
+
+Kaynak: `lib/deneme/denemeAccess.ts` — Premium yalnızca detay/analiz için zorunludur.
 
 ---
 
@@ -68,5 +81,5 @@ Uygulama tarafında: Temel takip için ekstra bir “feature” kodu yok; tüm k
 
 1. **Plan ve feature** — `lib/auth/seedPermissions.ts` içinde FREE = freemium (sadece temel takip), PRO = premium tanımlandı. Seed: `npm run db:seed:auth`.
 2. **Yeni kayıt** — `app/api/auth/register` kayıttan hemen sonra `createFreemiumPersonalOrganization` ile FREE planlı kişisel org atar.
-3. **Plan ataması** — Organizasyonun planı `Organization.currentPlanId` veya `Subscription` kaydı ile yönetilir; yönetici paneli veya ileride eklenecek bir ödeme sağlayıcı ile güncellenebilir.
+3. **Plan ataması** — Organizasyonun planı `Organization.currentPlanId` veya `Subscription` kaydı ile yönetilir; Shopier satın alma sonrası manuel/yarı otomatik atama veya yönetici paneli ile güncellenebilir.
 4. **UI** — Ayarlar sayfasında “Plan ve Faturalandırma” kartı: mevcut plan ve limitler gösterilir.

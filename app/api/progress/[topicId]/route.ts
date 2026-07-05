@@ -11,21 +11,13 @@ import { prisma } from '@/lib/db/prisma';
 import { logApi } from '@/lib/logger';
 import { HTTP_STATUS } from '@/config/constants';
 import { BadRequestError } from '@/lib/errors/AppError';
-import { z } from 'zod';
+import { validate } from '@/lib/validation/validate';
+import { patchProgressBodySchema } from '@/lib/validation/schemas';
 import { ProgressStatus } from '@prisma/client';
 import {
   advanceAfterReviewAcknowledged,
   computeInitialNextReview,
 } from '@/lib/utils/spacedRepetition';
-
-const updateProgressSchema = z.object({
-  status: z.enum(['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED', 'REVIEWED']).optional(),
-  totalQuestions: z.number().int().min(0).optional(),
-  correctAnswers: z.number().int().min(0).optional(),
-  wrongAnswers: z.number().int().min(0).optional(),
-  /** Konu tamamlanmışken tekrarı yaptığını işaretle → aralıklı tekrar takvimini ilerlet */
-  reviewCompleted: z.boolean().optional(),
-});
 
 async function updateProgressHandler(
   req: NextRequest,
@@ -41,7 +33,7 @@ async function updateProgressHandler(
     }
 
     const body = await req.json();
-    const parsed = updateProgressSchema.parse(body);
+    const parsed = validate(patchProgressBodySchema, body);
     const { status, totalQuestions, correctAnswers, wrongAnswers, reviewCompleted } = parsed;
 
     const topic = await prisma.topic.findUnique({

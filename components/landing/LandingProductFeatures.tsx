@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { ArrowRight, BarChart3, RefreshCw, Target, Timer } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { FEATURE_SEO_ENTRIES, PRODUCT_FEATURES_SUMMARY } from '@/lib/seo';
+import { LandingReveal } from '@/components/landing/LandingReveal';
+import { LandingSectionHeader } from '@/components/landing/LandingSectionHeader';
 
 const FEATURE_ICONS: Record<(typeof FEATURE_SEO_ENTRIES)[number]['id'], LucideIcon> = {
   'konu-takibi': Target,
@@ -38,61 +40,62 @@ const FEATURE_ACCENTS: Record<
 
 export function LandingProductFeatures() {
   return (
-    <section id="ozellikler" className="py-16 sm:py-24 lg:py-32">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-12 text-center sm:mb-16">
-          <h2 className="mb-3 font-display text-3xl font-bold text-stone-900 dark:text-stone-100 sm:mb-4 sm:text-4xl lg:text-5xl">
-            Neden The Goal Lab?
-          </h2>
-          <p className="mx-auto max-w-2xl text-lg text-stone-600 dark:text-stone-300 sm:text-xl">
-            {PRODUCT_FEATURES_SUMMARY}
-          </p>
-        </div>
+    <section id="ozellikler" className="relative py-16 sm:py-24 lg:py-32">
+      <div className="landing-vibe-mesh absolute inset-0 opacity-45 dark:opacity-30" aria-hidden />
+      <div className="landing-dot-grid absolute inset-0 opacity-15 dark:opacity-[0.06]" aria-hidden />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <LandingSectionHeader
+          eyebrow="ÖZELLİKLER"
+          title="Neden The Goal Lab?"
+          description={PRODUCT_FEATURES_SUMMARY}
+        />
 
         <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2">
-          {FEATURE_SEO_ENTRIES.map(({ id, name, headline, description }) => {
+          {FEATURE_SEO_ENTRIES.map(({ id, name, headline, description }, i) => {
             const Icon = FEATURE_ICONS[id];
             const accent = FEATURE_ACCENTS[id];
 
             return (
-              <article
-                key={id}
-                className={`group relative rounded-3xl border border-stone-100 bg-white p-6 transition-all duration-300 hover:shadow-soft-lg dark:border-stone-800 dark:bg-stone-900/90 sm:p-8 ${accent.hover}`}
-              >
-                <div
-                  className={`absolute inset-0 rounded-3xl bg-gradient-to-br ${accent.glow} to-transparent opacity-0 transition-opacity group-hover:opacity-100`}
-                />
-                <div className="relative flex h-full flex-col">
-                  <div className="mb-4 flex items-center gap-3">
-                    <div
-                      className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br text-white shadow-lg sm:h-14 sm:w-14 ${accent.icon}`}
-                    >
-                      <Icon className="h-6 w-6 sm:h-7 sm:w-7" aria-hidden />
+              <LandingReveal key={id} delay={i * 70}>
+                <article
+                  className={`landing-glass-card landing-hover-lift group relative h-full rounded-3xl p-6 sm:p-8 ${accent.hover}`}
+                >
+                  <div
+                    className={`absolute inset-0 rounded-3xl bg-gradient-to-br ${accent.glow} to-transparent opacity-0 transition-opacity group-hover:opacity-100`}
+                    aria-hidden
+                  />
+                  <div className="relative flex h-full flex-col">
+                    <div className="mb-4 flex items-center gap-3">
+                      <div
+                        className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br text-white shadow-lg sm:h-14 sm:w-14 ${accent.icon}`}
+                      >
+                        <Icon className="h-6 w-6 sm:h-7 sm:w-7" aria-hidden />
+                      </div>
+                      <span className="landing-section-eyebrow text-xs font-bold tracking-[0.12em] text-primary-700 dark:text-primary-300">
+                        {name}
+                      </span>
                     </div>
-                    <span className="text-xs font-bold uppercase tracking-wide text-primary-700 dark:text-primary-300">
-                      {name}
-                    </span>
+                    <h3 className="font-display text-xl font-bold text-stone-900 dark:text-stone-100 sm:text-2xl">
+                      {headline}
+                    </h3>
+                    <p className="mt-2 flex-1 text-sm leading-relaxed text-stone-600 dark:text-stone-300 sm:text-base">
+                      {description}
+                    </p>
+                    <Link
+                      href={`/ozellikler/${id}`}
+                      className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary-700 transition-colors hover:text-primary-800 dark:text-primary-300 dark:hover:text-primary-200"
+                    >
+                      Detaylı incele
+                      <ArrowRight className="h-4 w-4" aria-hidden />
+                    </Link>
                   </div>
-                  <h3 className="font-display text-xl font-bold text-stone-900 dark:text-stone-100 sm:text-2xl">
-                    {headline}
-                  </h3>
-                  <p className="mt-2 flex-1 text-sm leading-relaxed text-stone-600 dark:text-stone-300 sm:text-base">
-                    {description}
-                  </p>
-                  <Link
-                    href={`/ozellikler/${id}`}
-                    className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary-700 transition-colors hover:text-primary-800 dark:text-primary-300 dark:hover:text-primary-200"
-                  >
-                    Detaylı incele
-                    <ArrowRight className="h-4 w-4" aria-hidden />
-                  </Link>
-                </div>
-              </article>
+                </article>
+              </LandingReveal>
             );
           })}
         </div>
 
-        <div className="mt-10 text-center">
+        <LandingReveal delay={280} className="mt-10 text-center">
           <Link
             href="/ozellikler"
             className="inline-flex items-center gap-2 font-semibold text-primary-700 transition-colors hover:text-primary-800 dark:text-primary-300 dark:hover:text-primary-200"
@@ -100,7 +103,7 @@ export function LandingProductFeatures() {
             Tüm özellikleri gör
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
-        </div>
+        </LandingReveal>
       </div>
     </section>
   );

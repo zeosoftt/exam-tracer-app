@@ -241,7 +241,11 @@ export function useDenemeForm({
       const { ok, data, premiumRequired } = await postDenemeAttempt(body);
       if (premiumRequired) {
         onPremiumRequired();
-        setMessage({ type: 'error', text: 'Deneme kaydı eklemek için Premium plan gerekir.' });
+        const apiError = (data as { error?: string }).error;
+        setMessage({
+          type: 'error',
+          text: typeof apiError === 'string' ? apiError : 'Gelişmiş deneme özellikleri Premium plan gerektirir.',
+        });
         return;
       }
       if (ok) {

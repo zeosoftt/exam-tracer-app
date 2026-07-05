@@ -17,7 +17,7 @@ export const PUBLIC_FAQ_ITEMS = [
   },
   {
     q: 'Deneme takibi ve ÖSYM puanı nasıl çalışır?',
-    a: 'Pro planda deneme kaydı, net hesaplama ve KPSS, ALES, TYT gibi sınavlara uygun ÖSYM uyumlu puan önizlemesi sunulur. Ücretsiz planda konu ilerlemenizi takip etmeye devam edersiniz.',
+    a: 'Deneme listesi ve yeni kayıt ücretsiz planda kullanılabilir. Pro planda deneme detayı, ders/konu analizi, net trendi ve KPSS, ALES, TYT gibi sınavlara uygun ÖSYM uyumlu puan önizlemesi sunulur.',
   },
   {
     q: 'Kurum sonuç linkinden deneme eklenebilir mi?',

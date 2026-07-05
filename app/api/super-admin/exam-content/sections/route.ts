@@ -4,29 +4,29 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { guardAdminSession } from '@/lib/auth/requireSession';
+import { withAdminHandler } from '@/lib/api/withAdminHandler';
+import { assertPrismaOrThrow } from '@/lib/api/prismaErrors';
 import { prisma } from '@/lib/db/prisma';
 import { HTTP_STATUS } from '@/config/constants';
 
-export async function POST(req: NextRequest) {
-  const guard = await guardAdminSession();
-  if (!guard.authorized) return guard.response;
+async function createSectionHandler(req: NextRequest): Promise<NextResponse> {
+  const body = await req.json();
+  const { examId, name, code, description, order } = body as {
+    examId?: string;
+    name?: string;
+    code?: string;
+    description?: string;
+    order?: number;
+  };
+
+  if (!examId || !name || !code) {
+    return NextResponse.json(
+      { success: false, error: 'examId, name ve code zorunludur.' },
+      { status: HTTP_STATUS.BAD_REQUEST },
+    );
+  }
 
   try {
-    const body = await req.json();
-    const { examId, name, code, description, order } = body as {
-      examId?: string;
-      name?: string;
-      code?: string;
-      description?: string;
-      order?: number;
-    };
-    if (!examId || !name || !code) {
-      return NextResponse.json(
-        { success: false, error: 'examId, name ve code zorunludur.' },
-        { status: HTTP_STATUS.BAD_REQUEST }
-      );
-    }
     const section = await prisma.section.create({
       data: {
         examId,
@@ -37,12 +37,12 @@ export async function POST(req: NextRequest) {
       },
     });
     return NextResponse.json({ success: true, data: section });
-  } catch (e: unknown) {
-    const code = e && typeof e === 'object' && 'code' in e ? (e as { code: string }).code : null;
-    const msg = code === 'P2002' ? 'Bu bölüm kodu bu sınavda zaten var.' : code === 'P2003' ? 'Geçersiz sınav.' : 'Bölüm oluşturulamadı.';
-    return NextResponse.json(
-      { success: false, error: msg },
-      { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
-    );
+  } catch (error) {
+    assertPrismaOrThrow(error, {
+      P2002: 'Bu bölüm kodu bu sınavda zaten var.',
+      P2003: 'Geçersiz sınav.',
+    });
   }
 }
+
+export const POST = withAdminHandler(createSectionHandler);

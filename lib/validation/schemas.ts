@@ -96,18 +96,22 @@ export const changePasswordSchema = z.object({
 });
 
 // Exam schemas
-export const createExamSchema = z.object({
+const createExamObjectSchema = z.object({
   name: nameSchema,
   code: codeSchema,
   description: descriptionSchema,
   startDate: z.coerce.date().optional(),
   endDate: z.coerce.date().optional(),
-}).refine((data) => {
+});
+
+function refineExamDateRange(data: { startDate?: Date; endDate?: Date }) {
   if (data.startDate && data.endDate) {
     return data.endDate >= data.startDate;
   }
   return true;
-}, {
+}
+
+export const createExamSchema = createExamObjectSchema.refine(refineExamDateRange, {
   message: 'End date must be after start date',
   path: ['endDate'],
 });
@@ -183,6 +187,44 @@ export const updateProgressSchema = z.object({
   notes: notesSchema,
 });
 
+/** PATCH /api/progress/[topicId] — topicId URL'den gelir */
+export const patchProgressBodySchema = z.object({
+  status: z.enum(['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED', 'REVIEWED']).optional(),
+  totalQuestions: z.number().int().min(0).optional(),
+  correctAnswers: z.number().int().min(0).optional(),
+  wrongAnswers: z.number().int().min(0).optional(),
+  reviewCompleted: z.boolean().optional(),
+});
+
+// Deneme schemas
+export const denemeBreakdownItemSchema = z.object({
+  subjectId: z.string(),
+  subjectName: z.string(),
+  right: z.number().int().min(0),
+  wrong: z.number().int().min(0),
+  empty: z.number().int().min(0),
+});
+
+export const createDenemeAttemptSchema = z.object({
+  examId: z.string().min(1, 'Sınav seçiniz'),
+  attemptedAt: z.union([z.string(), z.coerce.date()]).optional(),
+  totalScore: z.number().min(0).optional().nullable(),
+  netScore: z.number().optional().nullable(),
+  rightCount: z.number().int().min(0).optional().nullable(),
+  wrongCount: z.number().int().min(0).optional().nullable(),
+  emptyCount: z.number().int().min(0).optional().nullable(),
+  durationMinutes: z.number().int().min(0).optional().nullable(),
+  notes: z.string().max(2000).optional().nullable(),
+  breakdown: z.array(denemeBreakdownItemSchema).optional(),
+});
+
+// Client error logging
+export const clientLogErrorSchema = z.object({
+  message: z.string().min(1).max(500),
+  stack: z.string().max(8000).optional(),
+  componentStack: z.string().max(8000).optional(),
+});
+
 // Pagination schema
 export const paginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -212,3 +254,25 @@ export const createExamAssignmentSchema = z.object({
 }, {
   message: 'Either institutionId or userId must be provided',
 });
+
+/** Super-admin site ayarları PATCH */
+export const adminSiteSettingsPatchSchema = z.object({
+  landing_show_partners: z.boolean().optional(),
+  deneme_show_advanced: z.boolean().optional(),
+  tracking_gtm_enabled: z.boolean().optional(),
+  tracking_ga_enabled: z.boolean().optional(),
+  tracking_adsense_enabled: z.boolean().optional(),
+  gtm_container_id: z.string().max(32).optional(),
+  ga_measurement_id: z.string().max(32).optional(),
+  adsense_client_id: z.string().max(64).optional(),
+});
+
+/** Super-admin master exam create */
+export const adminCreateExamSchema = createExamObjectSchema
+  .extend({
+    status: z.enum(['ACTIVE', 'INACTIVE', 'ARCHIVED']).optional(),
+  })
+  .refine(refineExamDateRange, {
+    message: 'End date must be after start date',
+    path: ['endDate'],
+  });
