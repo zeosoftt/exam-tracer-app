@@ -11,7 +11,7 @@ import { prisma } from '@/lib/db/prisma';
 import { hashPassword } from '@/lib/auth/password';
 import { createFreemiumPersonalOrganization } from '@/lib/billing/createFreemiumOrganization';
 import { logAuth, logError } from '@/lib/logger';
-import { HTTP_STATUS, ERROR_MESSAGES } from '@/config/constants';
+import { ERROR_MESSAGES } from '@/config/constants';
 import { ConflictError } from '@/lib/errors/AppError';
 import { issueVerificationEmailForUser } from '@/lib/auth/issueVerificationEmail';
 import { jsonCreated } from '@/lib/api/responses';

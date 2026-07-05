@@ -4,7 +4,7 @@
  * POST /api/exams - Create exam
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { toUserPermissions } from '@/lib/auth/requireSession';
 import { getActiveOrganizationId } from '@/lib/auth/authorization';
 import { canPerformAction } from '@/lib/auth/planLimits';
