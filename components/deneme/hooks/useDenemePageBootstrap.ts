@@ -12,6 +12,7 @@ import {
   type PrimaryTopicProgress,
 } from '@/lib/client-api/denemeClient';
 import type { DenemePageInitialData } from '@/lib/deneme/loadDenemePageData';
+import { sortDenemeAttemptsByDateDesc } from '@/lib/deneme/sortDenemeAttempts';
 import { invalidateRequestCache } from '@/lib/client-api/requestCache';
 import type { ExamOption } from '@/components/deneme/hooks/denemeFormTypes';
 
@@ -46,7 +47,7 @@ const failedAttemptsResult: DenemeFetchResult = {
 
 function stateFromInitialData(data: DenemePageInitialData): BootstrapState {
   return {
-    attempts: data.attempts,
+    attempts: sortDenemeAttemptsByDateDesc(data.attempts),
     topicProgressByExam: data.topicProgressByExam,
     primaryTopicProgress: data.primaryTopicProgress,
     loading: false,
@@ -66,7 +67,7 @@ function applyAttemptsResult(
 ): Partial<BootstrapState> {
   if (result.ok) {
     return {
-      attempts: result.data,
+      attempts: sortDenemeAttemptsByDateDesc(result.data),
       topicProgressByExam: result.topicProgressByExam,
       primaryTopicProgress: result.primaryTopicProgress,
       loading: false,
@@ -119,7 +120,7 @@ export function useDenemePageBootstrap(
       fetchInFlightRef.current = true;
       if (force) {
         invalidateRequestCache('/api/deneme');
-        setState((prev) => ({ ...prev, listError: null, loading: true }));
+        setState((prev) => ({ ...prev, listError: null }));
       }
 
       try {
@@ -151,9 +152,14 @@ export function useDenemePageBootstrap(
         }
 
         if (result.ok) {
-          startTransition(() => {
-            setState(applyAttemptsResult(result, canViewDetail, bootstrap, true) as BootstrapState);
-          });
+          const nextState = applyAttemptsResult(result, canViewDetail, bootstrap, true) as BootstrapState;
+          if (force) {
+            setState(nextState);
+          } else {
+            startTransition(() => {
+              setState(nextState);
+            });
+          }
 
           const examIds = [
             ...new Set([
@@ -228,10 +234,26 @@ export function useDenemePageBootstrap(
     void loadPage();
   }, [loadPage, initialData]);
 
+  const prependAttempt = useCallback((attempt: DenemeAttemptListItem) => {
+    setState((prev) => {
+      if (prev.attempts.some((item) => item.id === attempt.id)) {
+        return prev;
+      }
+      return {
+        ...prev,
+        attempts: sortDenemeAttemptsByDateDesc([attempt, ...prev.attempts]),
+        loading: false,
+        listError: null,
+      };
+    });
+    lastFetchAtRef.current = Date.now();
+  }, []);
+
   return {
     ...state,
     featuresEnabled: state.denemeAdvanced !== false,
     fetchAttempts: loadPage,
+    prependAttempt,
     setTopicProgressByExam: (
       updater:
         | Record<string, ExamTopicProgress>

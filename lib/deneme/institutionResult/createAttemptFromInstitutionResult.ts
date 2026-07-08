@@ -7,60 +7,50 @@ import {
   mapDenemeAttemptToDto,
 } from '@/lib/deneme/denemeRepository';
 import { fetchInstitutionResult } from '@/lib/deneme/institutionResult/fetchInstitutionResult';
+import { assertNotDuplicateImport, buildImportNotes } from '@/lib/deneme/institutionResult/duplicateImport';
 import { mapInstitutionSubjectsToBreakdown } from '@/lib/deneme/institutionResult/mapToDenemeBreakdown';
 import { mapInstitutionTopicsToBreakdown } from '@/lib/deneme/analysis/matchTopics';
+import { normalizeInstitutionSourceUrl } from '@/lib/deneme/institutionResult/normalizeSourceUrl';
 import { pickInstitutionScoreForExam } from '@/lib/deneme/institutionResult/pickInstitutionScore';
 import type { InstitutionResultImport } from '@/lib/deneme/institutionResult/types';
-import { prisma } from '@/lib/db/prisma';
+import { validateImportExamMapping } from '@/lib/deneme/institutionResult/validateImportExamMapping';
 
-function buildImportNotes(importData: InstitutionResultImport): string {
-  const lines = [
-    `Kurum sonucu: ${importData.sourceUrl}`,
-    importData.institution ? `Kurum: ${importData.institution}` : null,
-    importData.examNumber ? `Deneme no: ${importData.examNumber}` : null,
-    `Kaynak: ${importData.sourceHost}`,
-  ].filter(Boolean);
-  return lines.join('\n');
-}
-
-async function assertNotDuplicateImport(userId: string, sourceUrl: string): Promise<void> {
-  const existing = await prisma.examAttempt.findFirst({
-    where: {
-      userId,
-      deletedAt: null,
-      notes: { contains: sourceUrl },
-    },
-    select: { id: true },
-  });
-
-  if (existing) {
-    throw new Error('Bu sonuç linki zaten deneme kaydı olarak eklenmiş.');
+function assertImportMatchesSourceUrl(importData: InstitutionResultImport, sourceUrl: string): void {
+  const normalizedInput = normalizeInstitutionSourceUrl(sourceUrl);
+  const normalizedImport = normalizeInstitutionSourceUrl(importData.sourceUrl);
+  if (normalizedInput !== normalizedImport) {
+    throw new Error('Önizleme verisi ile kayıt linki uyuşmuyor. Lütfen sonucu yeniden getirin.');
   }
 }
 
-export async function createAttemptFromInstitutionResult(input: {
+export async function createAttemptFromInstitutionImport(input: {
   userId: string;
   examId: string;
-  sourceUrl: string;
+  importData: InstitutionResultImport;
 }): Promise<ReturnType<typeof mapDenemeAttemptToDto>> {
   const exam = await findActiveExamById(input.examId);
   if (!exam) {
     throw new Error('Sınav bulunamadı veya aktif değil.');
   }
 
-  const importData = await fetchInstitutionResult(input.sourceUrl);
-  await assertNotDuplicateImport(input.userId, importData.sourceUrl);
+  await assertNotDuplicateImport(input.userId, input.importData);
 
   const examSubjects = await findExamSubjectsByExamId(input.examId);
-  if (examSubjects.length === 0) {
-    throw new Error('Seçilen sınavın ders yapısı bulunamadı.');
+  const mapping = validateImportExamMapping(input.importData, examSubjects);
+  if (!mapping.ok) {
+    throw new Error(mapping.message);
   }
+
+  const { breakdown, unmatchedInstitutionSubjects } = mapInstitutionSubjectsToBreakdown(
+    input.importData.subjects,
+    examSubjects,
+  );
 
   const examTopics = await findExamTopicsByExamId(input.examId);
   const topicBreakdown =
-    importData.topics.length > 0
+    input.importData.topics.length > 0
       ? mapInstitutionTopicsToBreakdown(
-          importData.topics,
+          input.importData.topics,
           examTopics.map((topic) => ({
             id: topic.id,
             name: topic.name,
@@ -70,36 +60,28 @@ export async function createAttemptFromInstitutionResult(input: {
         )
       : [];
 
-  const { breakdown, unmatchedInstitutionSubjects } = mapInstitutionSubjectsToBreakdown(
-    importData.subjects,
-    examSubjects,
-  );
-
-  const hasAnyAnswer = breakdown.some((item) => item.right > 0 || item.wrong > 0 || item.empty > 0);
-  if (!hasAnyAnswer) {
-    throw new Error('Kurum sonucundaki dersler seçilen sınav yapısıyla eşleşmedi.');
-  }
-
-  const institutionTotalScore = pickInstitutionScoreForExam(importData.scores, exam.code);
+  const institutionTotalScore = pickInstitutionScoreForExam(input.importData.scores, exam.code);
 
   const scores = await computeDenemeScores({
     examId: input.examId,
     examCode: exam.code,
     totalScore: institutionTotalScore,
-    rightCount: importData.totals.right,
-    wrongCount: importData.totals.wrong,
-    emptyCount: importData.totals.empty,
-    netScore: importData.totals.net,
+    rightCount: input.importData.totals.right,
+    wrongCount: input.importData.totals.wrong,
+    emptyCount: input.importData.totals.empty,
+    netScore: input.importData.totals.net,
     breakdown,
   });
 
-  const notesParts = [buildImportNotes(importData)];
+  const notesParts = [buildImportNotes(input.importData)];
   if (unmatchedInstitutionSubjects.length > 0) {
     notesParts.push(`Eşleşmeyen dersler: ${unmatchedInstitutionSubjects.join(', ')}`);
   }
   const notes = notesParts.join('\n').slice(0, 2000);
 
-  const attemptedAt = importData.examDate ? new Date(`${importData.examDate}T12:00:00`) : new Date();
+  const attemptedAt = input.importData.examDate
+    ? new Date(`${input.importData.examDate}T12:00:00`)
+    : new Date();
 
   const createData: Parameters<typeof createDenemeAttempt>[0] = {
     userId: input.userId,
@@ -123,4 +105,20 @@ export async function createAttemptFromInstitutionResult(input: {
 
   const attempt = await createDenemeAttempt(createData);
   return mapDenemeAttemptToDto(attempt);
+}
+
+export async function createAttemptFromInstitutionResult(input: {
+  userId: string;
+  examId: string;
+  sourceUrl: string;
+  importData?: InstitutionResultImport;
+}): Promise<ReturnType<typeof mapDenemeAttemptToDto>> {
+  const importData = input.importData ?? (await fetchInstitutionResult(input.sourceUrl));
+  assertImportMatchesSourceUrl(importData, input.sourceUrl);
+
+  return createAttemptFromInstitutionImport({
+    userId: input.userId,
+    examId: input.examId,
+    importData,
+  });
 }

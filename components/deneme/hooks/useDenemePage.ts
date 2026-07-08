@@ -6,6 +6,7 @@ import { deleteDenemeAttempt } from '@/lib/client-api/denemeClient';
 import { computeDenemeAnalysis } from '@/lib/deneme/computeDenemeAnalysis';
 import type { DenemePageInitialData } from '@/lib/deneme/loadDenemePageData';
 import { useDenemePageBootstrap } from '@/components/deneme/hooks/useDenemePageBootstrap';
+import type { DenemeAttemptListItem } from '@/lib/client-api/denemeClient';
 
 export function useDenemePage(initialData?: DenemePageInitialData) {
   const router = useRouter();
@@ -26,6 +27,7 @@ export function useDenemePage(initialData?: DenemePageInitialData) {
     exams,
     activeExamId,
     fetchAttempts,
+    prependAttempt,
   } = useDenemePageBootstrap(initialData);
 
   const handlePremiumRequired = useCallback(() => {
@@ -37,11 +39,17 @@ export function useDenemePage(initialData?: DenemePageInitialData) {
     setFormMessage(null);
   }, []);
 
-  const handleFormSubmitSuccess = useCallback(() => {
-    setFormModalOpen(false);
-    void fetchAttempts(true);
-    router.refresh();
-  }, [fetchAttempts, router]);
+  const handleFormSubmitSuccess = useCallback(
+    (attempt?: DenemeAttemptListItem) => {
+      setFormModalOpen(false);
+      if (attempt) {
+        prependAttempt(attempt);
+      }
+      router.refresh();
+      void fetchAttempts(true);
+    },
+    [fetchAttempts, prependAttempt, router],
+  );
 
   const analysisImmediate = useMemo(() => computeDenemeAnalysis(attempts), [attempts]);
   const analysis = useDeferredValue(analysisImmediate);
@@ -83,6 +91,7 @@ export function useDenemePage(initialData?: DenemePageInitialData) {
     analysis,
     analysisAvg,
     fetchAttempts,
+    prependAttempt,
     formModalOpen,
     setFormModalOpen,
     closeFormModal,

@@ -311,15 +311,16 @@ export async function fetchDenemeAttemptDetail(
 export async function saveInstitutionResultAsAttempt(
   url: string,
   examId: string,
+  importData?: InstitutionResultImport,
 ): Promise<
   | { ok: true; data: DenemeAttemptListItem }
   | { ok: false; error: string; premiumRequired?: boolean }
 > {
   try {
     const { ok, status, result } = await mutateApi<
-      { url: string; examId: string },
+      { url: string; examId: string; importData?: InstitutionResultImport },
       DenemeAttemptListItem
-    >('/api/deneme/import/result/save', 'POST', { url, examId });
+    >('/api/deneme/import/result/save', 'POST', { url, examId, importData });
 
     if (status === 403 && result.code === 'PREMIUM_REQUIRED') {
       return {

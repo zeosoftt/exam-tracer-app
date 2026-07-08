@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { Calculator, Loader2 } from 'lucide-react';
-import type { ExamTopicProgress } from '@/lib/client-api/denemeClient';
+import type { DenemeAttemptListItem, ExamTopicProgress } from '@/lib/client-api/denemeClient';
 import { DenemeFormModal } from '@/components/deneme/denemeUi';
 import { useDenemeForm } from '@/components/deneme/hooks/useDenemeForm';
 import type { ExamOption } from '@/components/deneme/hooks/denemeFormTypes';
@@ -15,7 +15,7 @@ type DenemeAddFormModalProps = {
   activeExamId: string | null;
   topicProgressByExam: Record<string, ExamTopicProgress>;
   onPremiumRequired: () => void;
-  onSubmitSuccess: () => void;
+  onSubmitSuccess: (attempt?: DenemeAttemptListItem) => void;
   onMessage: (message: { type: 'success' | 'error'; text: string } | null) => void;
 };
 

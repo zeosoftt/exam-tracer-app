@@ -1,8 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight, Calendar, Clock, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
-import { getDenemeDetailPath } from '@/lib/client-api/denemeClient';
-import type { DenemeAttemptDto } from '@/lib/deneme/denemeRepository';
+import { getDenemeDetailPath, type DenemeAttemptListItem } from '@/lib/client-api/denemeClient';
 import { formatDenemeDate } from '@/lib/deneme/computeDenemeAnalysis';
 import {
   getNetTrendState,
@@ -13,7 +12,7 @@ import {
 import { DenemeDeleteForm } from '@/components/deneme/DenemeDeleteForm';
 
 type DenemeAttemptCardServerProps = {
-  attempt: DenemeAttemptDto;
+  attempt: DenemeAttemptListItem;
   avgNet: number | null;
   canViewDetail: boolean;
   featuresEnabled: boolean;

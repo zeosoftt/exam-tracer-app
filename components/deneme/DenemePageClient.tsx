@@ -7,6 +7,7 @@ import { DenemeDashboardPanel } from '@/components/deneme/DenemeDashboardPanel';
 import { DenemeAddPanel } from '@/components/deneme/DenemeAddPanel';
 import { DENEME_OPEN_ADD_EVENT } from '@/components/deneme/DenemeAddButtonTrigger';
 import { useDenemePageContext } from '@/components/deneme/DenemePageContext';
+import type { DenemeAttemptListItem } from '@/lib/client-api/denemeClient';
 
 const DenemeAddFormModal = dynamic(
   () => import('@/components/deneme/DenemeAddFormModal').then((m) => m.DenemeAddFormModal),
@@ -40,19 +41,23 @@ export function DenemePageSummary() {
 
 export function DenemePageAdd() {
   const router = useRouter();
-  const { featuresEnabled, exams, activeExamId, formMessage, fetchAttempts } = useDenemePageContext();
+  const { featuresEnabled, exams, activeExamId, formMessage, fetchAttempts, prependAttempt } =
+    useDenemePageContext();
 
   if (!featuresEnabled) return null;
+
+  const handleImportSaved = (attempt: DenemeAttemptListItem) => {
+    prependAttempt(attempt);
+    router.refresh();
+    void fetchAttempts(true);
+  };
 
   return (
     <DenemeAddPanel
       exams={exams}
       activeExamId={activeExamId}
       formMessage={formMessage}
-      onImportSaved={() => {
-        void fetchAttempts(true);
-        router.refresh();
-      }}
+      onImportSaved={handleImportSaved}
     />
   );
 }

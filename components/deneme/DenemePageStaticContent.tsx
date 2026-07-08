@@ -2,9 +2,8 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { Lock, Target } from 'lucide-react';
 import { DenemePremiumShopierCta } from '@/components/deneme/DenemePremiumShopierCta';
-import { computeDenemeAnalysis } from '@/lib/deneme/computeDenemeAnalysis';
 import type { DenemePageInitialData } from '@/lib/deneme/loadDenemePageData';
-import { DenemeAttemptCardServer } from '@/components/deneme/DenemeAttemptCardServer';
+import { DenemeAttemptsListSection } from '@/components/deneme/DenemeAttemptsListSection';
 
 type DenemePageStaticContentProps = {
   data: DenemePageInitialData;
@@ -12,9 +11,7 @@ type DenemePageStaticContentProps = {
 };
 
 export function DenemePageStaticContent({ data, topContent }: DenemePageStaticContentProps) {
-  const analysisAvg = computeDenemeAnalysis(data.attempts)?.avg ?? null;
   const showPremiumBanner = data.denemeAdvanced && !data.canViewDenemeDetail;
-  const featuresEnabled = data.denemeAdvanced;
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
@@ -63,30 +60,7 @@ export function DenemePageStaticContent({ data, topContent }: DenemePageStaticCo
           <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">Deneme kayıtları</h2>
         </div>
 
-        {data.attempts.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-stone-300 bg-white px-6 py-12 text-center dark:border-stone-600 dark:bg-stone-900/80">
-            <Target className="mx-auto h-10 w-10 text-stone-300 dark:text-stone-600" />
-            <p className="mt-4 font-medium text-stone-700 dark:text-stone-300">Henüz deneme kaydı yok</p>
-            <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
-              {featuresEnabled
-                ? 'Yukarıdaki “Deneme ekle” kartından kurum linki veya manuel kayıt ile deneme ekleyin.'
-                : 'Yeni kayıt ekleme şu an kapalı.'}
-            </p>
-          </div>
-        ) : (
-          <ul className="space-y-4">
-            {data.attempts.map((attempt) => (
-              <DenemeAttemptCardServer
-                key={attempt.id}
-                attempt={attempt}
-                avgNet={analysisAvg}
-                canViewDetail={data.canViewDenemeDetail}
-                featuresEnabled={featuresEnabled}
-                topicPct={data.topicProgressByExam[attempt.examId]?.pct}
-              />
-            ))}
-          </ul>
-        )}
+        <DenemeAttemptsListSection />
 
       </main>
     </div>

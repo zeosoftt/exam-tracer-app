@@ -46,7 +46,8 @@ export async function fetchInstitutionResult(sourceUrl: string): Promise<Institu
       );
     }
 
-    return parseInstitutionResultHtml(html, url.toString());
+    const finalUrl = response.url || url.toString();
+    return parseInstitutionResultHtml(html, finalUrl);
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
       throw new Error('Sonuç sayfası zaman aşımına uğradı. Lütfen tekrar deneyin.');

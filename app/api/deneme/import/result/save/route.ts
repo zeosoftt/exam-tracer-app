@@ -9,10 +9,12 @@ import { asyncHandler } from '@/lib/errors/errorHandler';
 import { HTTP_STATUS } from '@/config/constants';
 import { denemeSiteDisabledResponse } from '@/lib/deneme/denemeAccess';
 import { createAttemptFromInstitutionResult } from '@/lib/deneme/institutionResult/createAttemptFromInstitutionResult';
+import { institutionResultImportSchema } from '@/lib/deneme/institutionResult/importSchema';
 
 const bodySchema = z.object({
   url: z.string().min(10, 'Sonuç linki girin.'),
   examId: z.string().min(1, 'Sınav seçiniz.'),
+  importData: institutionResultImportSchema.optional(),
 });
 
 async function postInstitutionResultSaveHandler(req: NextRequest): Promise<NextResponse> {
@@ -27,7 +29,10 @@ async function postInstitutionResultSaveHandler(req: NextRequest): Promise<NextR
   if (!parsed.success) {
     const fieldErrors = parsed.error.flatten().fieldErrors;
     const message =
-      fieldErrors.url?.[0] ?? fieldErrors.examId?.[0] ?? 'Geçersiz istek.';
+      fieldErrors.url?.[0] ??
+      fieldErrors.examId?.[0] ??
+      fieldErrors.importData?.[0] ??
+      'Geçersiz istek.';
     return NextResponse.json({ success: false, error: message }, { status: HTTP_STATUS.BAD_REQUEST });
   }
 
@@ -36,6 +41,7 @@ async function postInstitutionResultSaveHandler(req: NextRequest): Promise<NextR
       userId,
       examId: parsed.data.examId,
       sourceUrl: parsed.data.url,
+      importData: parsed.data.importData,
     });
     return NextResponse.json({ success: true, data }, { status: HTTP_STATUS.CREATED });
   } catch (error) {

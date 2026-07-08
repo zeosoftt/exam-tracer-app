@@ -8,6 +8,7 @@ import {
   fetchExamStructure,
   fetchKpssDenemeStats,
   postDenemeAttempt,
+  type DenemeAttemptListItem,
 } from '@/lib/client-api/denemeClient';
 import {
   createInitialDenemeForm,
@@ -23,7 +24,7 @@ type UseDenemeFormOptions = {
   exams: ExamOption[];
   activeExamId: string | null;
   onPremiumRequired: () => void;
-  onSubmitSuccess: () => void;
+  onSubmitSuccess: (attempt?: DenemeAttemptListItem) => void;
 };
 
 export function useDenemeForm({
@@ -253,7 +254,8 @@ export function useDenemeForm({
         setForm(createInitialDenemeForm());
         setExamSubjects([]);
         setSubjectInputs({});
-        onSubmitSuccess();
+        const envelope = data as { success?: boolean; data?: DenemeAttemptListItem };
+        onSubmitSuccess(envelope.data);
       } else {
         const d = data as { error?: string | { message?: string } };
         const errMsg =

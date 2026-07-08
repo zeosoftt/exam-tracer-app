@@ -9,13 +9,14 @@ import {
   InstitutionImportUrlField,
   useInstitutionImport,
 } from '@/components/deneme/PegemImportPanel';
+import type { DenemeAttemptListItem } from '@/lib/client-api/denemeClient';
 import type { ExamOption } from '@/components/deneme/hooks/denemeFormTypes';
 
 type DenemeAddPanelProps = {
   exams: ExamOption[];
   activeExamId: string | null;
   formMessage: { type: 'success' | 'error'; text: string } | null;
-  onImportSaved: () => void;
+  onImportSaved: (attempt: DenemeAttemptListItem) => void;
 };
 
 function OrDivider({ vertical = false }: { vertical?: boolean }) {

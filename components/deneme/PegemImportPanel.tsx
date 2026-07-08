@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils/cn';
 import {
   fetchInstitutionResultImport,
   saveInstitutionResultAsAttempt,
+  type DenemeAttemptListItem,
   type InstitutionResultImport,
 } from '@/lib/client-api/denemeClient';
 import { denemeCardClass } from '@/components/deneme/denemeUi';
@@ -16,7 +17,7 @@ export type InstitutionImportOptions = {
   disabled?: boolean;
   exams?: ExamOption[];
   activeExamId?: string | null;
-  onSaved?: () => void;
+  onSaved?: (attempt: DenemeAttemptListItem) => void;
 };
 
 export type InstitutionImportViewModel = {
@@ -77,13 +78,16 @@ export function useInstitutionImport({
   }
 
   async function handleSave() {
-    if (disabled || saving || !result || !examId || !url.trim()) return;
+    if (disabled || saving || !result || !examId) return;
+
+    const saveUrl = result.sourceUrl.trim();
+    if (!saveUrl) return;
 
     setSaving(true);
     setError(null);
     setSaveMessage(null);
 
-    const response = await saveInstitutionResultAsAttempt(url.trim(), examId);
+    const response = await saveInstitutionResultAsAttempt(saveUrl, examId, result);
     setSaving(false);
 
     if (!response.ok) {
@@ -95,7 +99,7 @@ export function useInstitutionImport({
     setUrl('');
     setResult(null);
     setExamId('');
-    onSaved?.();
+    onSaved?.(response.data);
   }
 
   return {
