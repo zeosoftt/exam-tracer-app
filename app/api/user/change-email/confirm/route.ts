@@ -12,7 +12,7 @@ import { isValidVerificationCode, normalizeVerificationCode } from '@/lib/auth/v
 import { incrementUserTokenVersion } from '@/lib/auth/incrementTokenVersion';
 import { ensureProductionTablesOnce } from '@/lib/db/ensureProductionTables';
 import { rateLimit } from '@/lib/middleware/rateLimit';
-import { RATE_LIMIT, HTTP_STATUS } from '@/config/constants';
+import { RATE_LIMIT } from '@/config/constants';
 import { BadRequestError } from '@/lib/errors/AppError';
 
 const limiter = rateLimit(10, RATE_LIMIT.LOGIN_WINDOW_MS);

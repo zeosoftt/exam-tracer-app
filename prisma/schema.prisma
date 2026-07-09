@@ -44,6 +44,8 @@ model User {
   pomodoroSessions       PomodoroSession[]
   sessions               Session[]
   userProgress           UserProgress[]
+  parentLinksAsParent    ParentStudentLink[] @relation("ParentStudentLinks")
+  parentLinksAsStudent   ParentStudentLink[] @relation("StudentChildLinks")
   institution            Institution?      @relation(fields: [institutionId], references: [id])
   personalOrganization   Organization?     @relation("UserPersonalOrganization", fields: [personalOrganizationId], references: [id])
   currentPlan            Plan?             @relation(fields: [currentPlanId], references: [id])
@@ -116,6 +118,23 @@ model AuditLog {
   @@index([action])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+model ParentStudentLink {
+  id             String        @id @default(cuid())
+  parentUserId   String
+  studentUserId  String
+  organizationId String?
+  createdAt      DateTime      @default(now())
+  deletedAt      DateTime?
+  parent         User          @relation("ParentStudentLinks", fields: [parentUserId], references: [id], onDelete: Cascade)
+  student        User          @relation("StudentChildLinks", fields: [studentUserId], references: [id], onDelete: Cascade)
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+
+  @@index([parentUserId])
+  @@index([studentUserId])
+  @@index([organizationId])
+  @@map("parent_student_links")
 }
 
 model Institution {
@@ -361,7 +380,10 @@ model Organization {
   memberships     Membership[]
   roles           Role[]
   subscriptions   Subscription[]
+  parentStudentLinks ParentStudentLink[]
   personalUsers   User?            @relation("UserPersonalOrganization")
+  currentPlan     Plan?            @relation("OrganizationCurrentPlan", fields: [currentPlanId], references: [id])
+  currentSubscription Subscription? @relation("OrganizationCurrentSubscription", fields: [subscriptionId], references: [id])
 
   @@index([slug])
   @@index([code])
@@ -478,6 +500,7 @@ model Plan {
   planFeatures  PlanFeature[]
   subscriptions Subscription[]
   users         User[]
+  organizationsCurrentPlan Organization[] @relation("OrganizationCurrentPlan")
 
   @@index([code])
   @@index([type])
@@ -542,6 +565,7 @@ model Subscription {
   deletedAt          DateTime?
   organization       Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   plan               Plan               @relation(fields: [planId], references: [id])
+  organizationAsCurrent Organization[]  @relation("OrganizationCurrentSubscription")
 
   @@index([organizationId])
   @@index([planId])

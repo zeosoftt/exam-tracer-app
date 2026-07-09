@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { captureException } from '@/lib/sentry/capture';
 
 type ErrorPageProps = {
   error: Error & { digest?: string };
@@ -12,6 +13,7 @@ type ErrorPageProps = {
 export default function GlobalError({ error, reset }: ErrorPageProps) {
   useEffect(() => {
     console.error(error);
+    captureException(error);
   }, [error]);
 
   return (

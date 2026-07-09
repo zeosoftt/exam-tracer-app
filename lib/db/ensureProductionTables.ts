@@ -39,6 +39,18 @@ export async function ensureProductionTablesOnce(prisma: PrismaClient): Promise<
     `CREATE UNIQUE INDEX IF NOT EXISTS "memberships_user_org_active_unique"
       ON "memberships" ("userId", "organizationId")
       WHERE "deletedAt" IS NULL;`,
+    `CREATE TABLE IF NOT EXISTS "parent_student_links" (
+      "id" TEXT NOT NULL,
+      "parentUserId" TEXT NOT NULL,
+      "studentUserId" TEXT NOT NULL,
+      "organizationId" TEXT,
+      "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "deletedAt" TIMESTAMP(3),
+      CONSTRAINT "parent_student_links_pkey" PRIMARY KEY ("id")
+    );`,
+    `CREATE INDEX IF NOT EXISTS "parent_student_links_parentUserId_idx" ON "parent_student_links"("parentUserId");`,
+    `CREATE INDEX IF NOT EXISTS "parent_student_links_studentUserId_idx" ON "parent_student_links"("studentUserId");`,
+    `CREATE INDEX IF NOT EXISTS "parent_student_links_organizationId_idx" ON "parent_student_links"("organizationId");`,
   ];
 
   for (const sql of statements) {

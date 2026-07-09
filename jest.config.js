@@ -2,8 +2,8 @@ module.exports = {
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   /** Standalone build sonrası ikinci package.json Jest haste çakışmasını önler */
-  modulePathIgnorePatterns: ['<rootDir>/.next/'],
-  watchPathIgnorePatterns: ['<rootDir>/.next/'],
+  modulePathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/e2e/'],
+  watchPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/e2e/'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
   },

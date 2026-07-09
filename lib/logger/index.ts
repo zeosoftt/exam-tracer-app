@@ -6,6 +6,7 @@
  */
 
 import winston from 'winston';
+import { captureException } from '@/lib/sentry/capture';
 
 const logLevel = process.env.LOG_LEVEL || 'info';
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -71,6 +72,11 @@ export const logError = (message: string, error?: Error | unknown, meta?: Record
         : { error }),
     };
     logger.error(message, errorMeta);
+    if (error instanceof Error) {
+      captureException(error, { logMessage: message, ...meta });
+    } else if (error !== undefined) {
+      captureException(new Error(String(error)), { logMessage: message, ...meta });
+    }
   }
 };
 

@@ -30,17 +30,25 @@ export function useSuperAdminPanel() {
   const [pagination, setPagination] = useState({ limit: 10, total: 0, totalPages: 0 });
   const [isLoadingStats, setIsLoadingStats] = useState(true);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+  const [statsLoadError, setStatsLoadError] = useState<string | null>(null);
   const [usersLoadError, setUsersLoadError] = useState<string | null>(null);
   const [siteSettings, setSiteSettings] = useState<AdminSiteSettings | null>(null);
   const [siteSettingsLoading, setSiteSettingsLoading] = useState(true);
   const [siteSettingsPatching, setSiteSettingsPatching] = useState(false);
+  const [siteSettingsLoadError, setSiteSettingsLoadError] = useState<string | null>(null);
+  const [siteSettingsPatchError, setSiteSettingsPatchError] = useState<string | null>(null);
 
   const loadSiteSettings = useCallback(async () => {
+    setSiteSettingsLoadError(null);
     try {
       const data = await fetchSuperAdminSiteSettings();
-      startTransition(() => setSiteSettings(data));
+      if (data) {
+        startTransition(() => setSiteSettings(data));
+      } else {
+        setSiteSettingsLoadError('Site ayarları yüklenemedi.');
+      }
     } catch {
-      // ignore
+      setSiteSettingsLoadError('Site ayarları yüklenemedi.');
     } finally {
       setSiteSettingsLoading(false);
     }
@@ -48,20 +56,32 @@ export function useSuperAdminPanel() {
 
   const patchSiteSettings = useCallback(async (patch: Partial<AdminSiteSettings>) => {
     setSiteSettingsPatching(true);
+    setSiteSettingsPatchError(null);
     try {
       const data = await patchSuperAdminSiteSettings(patch);
-      if (data) startTransition(() => setSiteSettings(data));
+      if (data) {
+        startTransition(() => setSiteSettings(data));
+      } else {
+        setSiteSettingsPatchError('Ayar kaydedilemedi.');
+      }
+    } catch {
+      setSiteSettingsPatchError('Ayar kaydedilemedi.');
     } finally {
       setSiteSettingsPatching(false);
     }
   }, []);
 
   const loadStats = useCallback(async () => {
+    setStatsLoadError(null);
     try {
       const data = await fetchSuperAdminStats();
-      if (data) startTransition(() => setStats(data));
+      if (data) {
+        startTransition(() => setStats(data));
+      } else {
+        setStatsLoadError('İstatistikler yüklenemedi.');
+      }
     } catch {
-      // ignore
+      setStatsLoadError('İstatistikler yüklenemedi.');
     } finally {
       setIsLoadingStats(false);
     }
@@ -114,10 +134,13 @@ export function useSuperAdminPanel() {
     pagination,
     isLoadingStats,
     isLoadingUsers,
+    statsLoadError,
     usersLoadError,
     siteSettings,
     siteSettingsLoading,
     siteSettingsPatching,
+    siteSettingsLoadError,
+    siteSettingsPatchError,
     patchSiteSettings,
     formatAdminDateTime,
   };

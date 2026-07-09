@@ -34,10 +34,13 @@ export function SuperAdminPanel() {
     pagination,
     isLoadingStats,
     isLoadingUsers,
+    statsLoadError,
     usersLoadError,
     siteSettings,
     siteSettingsLoading,
     siteSettingsPatching,
+    siteSettingsLoadError,
+    siteSettingsPatchError,
     patchSiteSettings,
     formatAdminDateTime,
   } = useSuperAdminPanel();
@@ -67,6 +70,12 @@ export function SuperAdminPanel() {
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <h1 className="mb-6 text-2xl font-bold text-stone-900 dark:text-stone-100">Sistem Özeti</h1>
+
+        {statsLoadError ? (
+          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
+            {statsLoadError}
+          </div>
+        ) : null}
 
         {/* Stats */}
         {isLoadingStats ? (
@@ -299,6 +308,16 @@ export function SuperAdminPanel() {
         {/* Ana sayfa bölümleri: göster/gizle */}
         <section className="mt-10 space-y-4">
           <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100">Ana Sayfa Bölümleri</h2>
+          {siteSettingsLoadError ? (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
+              {siteSettingsLoadError}
+            </div>
+          ) : null}
+          {siteSettingsPatchError ? (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
+              {siteSettingsPatchError}
+            </div>
+          ) : null}
           <p className="text-sm text-stone-500 dark:text-stone-400">
             Ana sayfada (landing) hangi bölümlerin görüneceğini açıp kapatabilirsiniz.
           </p>

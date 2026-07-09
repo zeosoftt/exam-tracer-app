@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { AppError } from './AppError';
 import { HTTP_STATUS, ERROR_MESSAGES } from '@/config/constants';
 import { logError } from '@/lib/logger';
+import { captureException } from '@/lib/sentry/capture';
 
 /** Prisma connection error codes → return 503 (service unavailable) */
 const PRISMA_CONNECTION_CODES = new Set([
@@ -99,6 +100,10 @@ export function handleError(error: unknown): NextResponse<ErrorResponse> {
   }
 
   // Handle unknown errors - never expose stack trace
+  if (!(error instanceof AppError)) {
+    captureException(error instanceof Error ? error : new Error(String(error)));
+  }
+
   return NextResponse.json(
     {
       success: false,
