@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db/prisma';
+import { ensureUserSecurityColumnsOnce } from '@/lib/db/ensureUserSecurityColumns';
 
 export type SettingsUserRecord = {
   id: string;
@@ -7,6 +8,8 @@ export type SettingsUserRecord = {
   lastName: string;
   targetScore: number | null;
   dailyStudyHours: number | null;
+  emailNotifications: boolean;
+  studyReminders: boolean;
 };
 
 export type SettingsExamOption = { id: string; name: string; code: string };
@@ -23,6 +26,8 @@ const userSelect = {
   lastName: true,
   targetScore: true,
   dailyStudyHours: true,
+  emailNotifications: true,
+  studyReminders: true,
 } as const;
 
 function toSettingsPayload(
@@ -37,6 +42,7 @@ function toSettingsPayload(
 
 /** Kullanıcı ayarları + aktif sınav — GET/PATCH ortak sorgu (DRY). */
 export async function findUserSettings(userId: string): Promise<SettingsPayload | null> {
+  await ensureUserSecurityColumnsOnce(prisma);
   const user = await prisma.user.findUnique({ where: { id: userId }, select: userSelect });
   if (!user) return null;
 
@@ -58,6 +64,8 @@ export type UpdateProfileInput = {
   lastName?: string;
   targetScore?: number | null;
   dailyStudyHours?: number | null;
+  emailNotifications?: boolean;
+  studyReminders?: boolean;
 };
 
 export async function updateUserProfile(userId: string, input: UpdateProfileInput): Promise<void> {
@@ -66,6 +74,8 @@ export async function updateUserProfile(userId: string, input: UpdateProfileInpu
   if (input.lastName !== undefined) data.lastName = input.lastName;
   if (input.targetScore !== undefined) data.targetScore = input.targetScore;
   if (input.dailyStudyHours !== undefined) data.dailyStudyHours = input.dailyStudyHours;
+  if (input.emailNotifications !== undefined) data.emailNotifications = input.emailNotifications;
+  if (input.studyReminders !== undefined) data.studyReminders = input.studyReminders;
   if (Object.keys(data).length === 0) return;
   await prisma.user.update({ where: { id: userId }, data });
 }

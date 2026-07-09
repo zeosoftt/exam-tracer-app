@@ -35,6 +35,8 @@ export function useSettingsPage() {
   const [targetScore, setTargetScore] = useState('');
   const [dailyStudyHours, setDailyStudyHours] = useState('');
   const [examId, setExamId] = useState('');
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [studyReminders, setStudyReminders] = useState(true);
 
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -63,6 +65,8 @@ export function useSettingsPage() {
           setTargetScore(fields.targetScore);
           setDailyStudyHours(fields.dailyStudyHours);
           setExamId(fields.examId);
+          setEmailNotifications(fields.emailNotifications);
+          setStudyReminders(fields.studyReminders);
         });
       }
 
@@ -95,6 +99,8 @@ export function useSettingsPage() {
         examId,
         targetScore,
         dailyStudyHours,
+        emailNotifications,
+        studyReminders,
       });
 
       const { ok, result: data } = await patchUserSettings(body);
@@ -117,7 +123,7 @@ export function useSettingsPage() {
     } finally {
       setSaving(false);
     }
-  }, [firstName, lastName, examId, targetScore, dailyStudyHours, updateSession]);
+  }, [firstName, lastName, examId, targetScore, dailyStudyHours, emailNotifications, studyReminders, updateSession]);
 
   const handleChangePassword = useCallback(
     async (e: React.FormEvent) => {
@@ -176,6 +182,10 @@ export function useSettingsPage() {
     setDailyStudyHours,
     examId,
     setExamId,
+    emailNotifications,
+    setEmailNotifications,
+    studyReminders,
+    setStudyReminders,
     showPasswordForm,
     setShowPasswordForm,
     currentPassword,

@@ -1,4 +1,6 @@
-/** Şifre değiştirme — istemci doğrulama (iş kuralı). */
+/** Şifre değiştirme — istemci doğrulama (sunucu şeması ile uyumlu). */
+
+import { passwordSchema } from '@/lib/validation/schemas';
 
 export type PasswordValidationResult =
   | { valid: true }
@@ -11,8 +13,9 @@ export function validatePasswordChange(
   if (newPassword !== confirmPassword) {
     return { valid: false, message: 'Yeni şifreler eşleşmiyor.' };
   }
-  if (newPassword.length < 8) {
-    return { valid: false, message: 'Yeni şifre en az 8 karakter olmalı.' };
+  const parsed = passwordSchema.safeParse(newPassword);
+  if (!parsed.success) {
+    return { valid: false, message: parsed.error.errors[0]?.message ?? 'Geçersiz şifre.' };
   }
   return { valid: true };
 }

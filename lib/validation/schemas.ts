@@ -85,9 +85,11 @@ export const updateUserSchema = z.object({
 export const updateUserSettingsSchema = z.object({
   firstName: nameSchema.optional(),
   lastName: nameSchema.optional(),
-  targetScore: z.number().int().min(0).max(1000).nullable().optional(),
+  targetScore: z.number().int().min(0).max(100).nullable().optional(),
   dailyStudyHours: z.number().int().min(0).max(24).nullable().optional(),
   examId: z.union([z.string().cuid(), z.literal('')]).optional(),
+  emailNotifications: z.boolean().optional(),
+  studyReminders: z.boolean().optional(),
 });
 
 export const changePasswordSchema = z.object({

@@ -101,8 +101,8 @@ export const BCRYPT_ROUNDS = getEnvInt('BCRYPT_ROUNDS', '12');
 export const JWT_CONFIG = {
   /** Ayrı JWT API’leri için; NextAuth’ta doğrudan kullanılmıyor */
   EXPIRES_IN: getEnvString('JWT_EXPIRES_IN', '30d'),
-  /** “Beni hatırla” kapalıyken oturum süresi (örn. 7d) */
-  SESSION_EXPIRES_IN: getEnvString('SESSION_EXPIRES_IN', '30d'),
+  /** “Beni hatırla” kapalıyken oturum süresi */
+  SESSION_EXPIRES_IN: getEnvString('SESSION_EXPIRES_IN', '7d'),
   /** “Beni hatırla” açıkken üst süre (örn. 30d); çerez maxAge = max(ikisi) */
   SESSION_REMEMBER_EXPIRES_IN: getEnvString('SESSION_REMEMBER_EXPIRES_IN', '30d'),
 } as const;

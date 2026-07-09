@@ -49,3 +49,11 @@ export async function changeUserPassword(body: {
   const { ok, result } = await mutateApi('/api/user/change-password', 'POST', body);
   return { ok, result };
 }
+
+export async function deleteUserAccount(body: {
+  password: string;
+  confirm: true;
+}): Promise<{ ok: boolean; result: unknown }> {
+  const { ok, result } = await mutateApi('/api/user/delete-account', 'POST', body);
+  return { ok, result };
+}

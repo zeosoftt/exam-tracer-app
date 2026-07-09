@@ -32,12 +32,10 @@ export async function registerUser(input: RegisterInput): Promise<RegisterResult
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
-    if (existingUser.deletedAt === null) {
-      logAuth('Registration denied: duplicate email', existingUser.id);
-      throw new ConflictError(ERROR_MESSAGES.EMAIL_EXISTS);
-    }
-    logAuth('Registration blocked: soft-deleted email', existingUser.id);
-    throw new ConflictError('Bu e-posta adresi daha önce kullanılmış. Lütfen farklı bir e-posta adresi deneyin.');
+    logAuth('Registration attempt for existing email', existingUser.id);
+    throw new ConflictError(
+      'Bu e-posta ile kayıt işlemi alındı. Zaten hesabınız varsa giriş yapın; doğrulama bekliyorsanız e-postanızı kontrol edin.',
+    );
   }
 
   const passwordHash = await hashPassword(input.password);

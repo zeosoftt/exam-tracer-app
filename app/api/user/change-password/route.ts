@@ -12,8 +12,16 @@ import { changePasswordSchema } from '@/lib/validation/schemas';
 import { asyncHandler } from '@/lib/errors/errorHandler';
 import { UnauthorizedError } from '@/lib/errors/AppError';
 import { HTTP_STATUS } from '@/config/constants';
+import { incrementUserTokenVersion } from '@/lib/auth/incrementTokenVersion';
+import { rateLimit } from '@/lib/middleware/rateLimit';
+import { RATE_LIMIT } from '@/config/constants';
+
+const limiter = rateLimit(5, RATE_LIMIT.LOGIN_WINDOW_MS);
 
 async function changePasswordHandler(req: NextRequest): Promise<NextResponse> {
+  const limited = limiter(req);
+  if (limited) return limited;
+
   const session = await requireSession();
   const userId = getSessionUserId(session);
 
@@ -41,6 +49,7 @@ async function changePasswordHandler(req: NextRequest): Promise<NextResponse> {
     where: { id: userId },
     data: { passwordHash },
   });
+  await incrementUserTokenVersion(userId);
 
   return NextResponse.json({ success: true, message: 'Şifre güncellendi' });
 }

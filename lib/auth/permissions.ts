@@ -97,8 +97,8 @@ export function canViewExam(
     return userPermissions.institutionId === examInstitutionId;
   }
 
-  // Individual users can view their assigned exams
-  return true;
+  // Individual users — assignment checked async via userCanViewExam()
+  return false;
 }
 
 /**

@@ -11,6 +11,7 @@ import { validate } from '@/lib/validation/validate';
 import { createSubjectSchema } from '@/lib/validation/schemas';
 import { prisma } from '@/lib/db/prisma';
 import { canCreateExam } from '@/lib/auth/permissions';
+import { userCanViewExam } from '@/lib/exams/examAccessRepository';
 import { logApi } from '@/lib/logger';
 import { HTTP_STATUS } from '@/config/constants';
 import { ForbiddenError, NotFoundError } from '@/lib/errors/AppError';
@@ -37,6 +38,21 @@ async function getSubjectsHandler(req: NextRequest): Promise<NextResponse> {
 
     if (!exam) {
       throw new NotFoundError('Exam not found');
+    }
+
+    const userPermissions = toUserPermissions(session);
+    const examInstitutionId = await prisma.examAssignment.findFirst({
+      where: { examId, deletedAt: null, institutionId: { not: null } },
+      select: { institutionId: true },
+    });
+    const canView = await userCanViewExam(
+      userId,
+      examId,
+      userPermissions,
+      examInstitutionId?.institutionId ?? null,
+    );
+    if (!canView) {
+      throw new ForbiddenError();
     }
 
     const subjects = await prisma.subject.findMany({

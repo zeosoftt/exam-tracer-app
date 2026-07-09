@@ -41,5 +41,7 @@ export function applySettingsDataToFormFields(data: SettingsData) {
     targetScore: data.user?.targetScore != null ? String(data.user.targetScore) : '',
     dailyStudyHours: data.user?.dailyStudyHours != null ? String(data.user.dailyStudyHours) : '',
     examId: data.activeExam?.id ?? '',
+    emailNotifications: data.user?.emailNotifications ?? true,
+    studyReminders: data.user?.studyReminders ?? true,
   };
 }

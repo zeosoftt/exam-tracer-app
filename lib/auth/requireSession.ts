@@ -6,8 +6,9 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import type { Session } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
-import { ERROR_MESSAGES, HTTP_STATUS, USER_ROLES } from '@/config/constants';
+import { ERROR_MESSAGES, HTTP_STATUS } from '@/config/constants';
 import { ForbiddenError, UnauthorizedError } from '@/lib/errors/AppError';
+import { userHasAdminAccess } from '@/lib/auth/adminAccess';
 import type { UserPermissions } from '@/lib/auth/permissions';
 
 export type AuthenticatedSession = Session & {
@@ -37,15 +38,9 @@ export function toUserPermissions(session: AuthenticatedSession): UserPermission
 /** asyncHandler kullanan route'lar — yetkisiz/ yasak durumda throw eder. */
 export async function requireAdminSession(): Promise<AuthenticatedSession> {
   const session = await requireSession();
-  if (session.user.role === USER_ROLES.ADMIN) {
+  if (await userHasAdminAccess(session)) {
     return session;
   }
-
-  const { isSuperAdmin } = await import('@/lib/auth/authorization');
-  if (await isSuperAdmin(session.user.id)) {
-    return session;
-  }
-
   throw new ForbiddenError();
 }
 

@@ -18,7 +18,7 @@ export function ProtectedSessionGuard() {
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.replace(buildLoginUrl({ callbackUrl: callbackPath }));
+      router.replace(buildLoginUrl({ callbackUrl: callbackPath, expired: true }));
     }
   }, [status, router, callbackPath]);
 

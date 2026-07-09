@@ -15,6 +15,8 @@ export type SettingsData = {
     name: string;
     targetScore: number | null;
     dailyStudyHours: number | null;
+    emailNotifications?: boolean;
+    studyReminders?: boolean;
   };
   activeExam: { id: string; name: string; code: string } | null;
 };

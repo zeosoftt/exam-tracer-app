@@ -7,6 +7,7 @@ import { fetchDashboardStatsPayload, type FetchStatsOptions } from '@/lib/client
 export function useDashboardStats() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [statsUpdatedAt, setStatsUpdatedAt] = useState<Date | null>(null);
   const lastLiteStatsFetchAtRef = useRef(0);
   const lastFullStatsFetchAtRef = useRef(0);
@@ -21,6 +22,7 @@ export function useDashboardStats() {
     }
     if (statsFetchInFlightRef.current) return;
     statsFetchInFlightRef.current = true;
+    setLoadError(null);
     try {
       const data = await fetchDashboardStatsPayload(options);
       if (data !== undefined) {
@@ -54,6 +56,7 @@ export function useDashboardStats() {
       }
     } catch (error) {
       console.error('Failed to fetch stats:', error);
+      setLoadError('İstatistikler yüklenemedi. Lütfen tekrar deneyin.');
     } finally {
       statsFetchInFlightRef.current = false;
       setIsLoading(false);
@@ -88,6 +91,7 @@ export function useDashboardStats() {
   return {
     stats,
     isLoading,
+    loadError,
     statsUpdatedAt,
     fetchStats,
   };

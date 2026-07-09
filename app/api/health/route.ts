@@ -29,9 +29,8 @@ export async function GET() {
         status: 'healthy',
         timestamp: new Date().toISOString(),
         database: 'connected',
-        environment: process.env.NODE_ENV || 'development',
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     // Log the error for debugging
@@ -50,7 +49,6 @@ export async function GET() {
         status: 'unhealthy',
         timestamp: new Date().toISOString(),
         database: 'disconnected',
-        environment: process.env.NODE_ENV || 'development',
         ...(isDevelopment && {
           error: {
             message: errorMessage,

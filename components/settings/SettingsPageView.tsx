@@ -10,6 +10,7 @@ import { SettingsGoalsSection } from '@/components/settings/sections/SettingsGoa
 import { SettingsExamSection } from '@/components/settings/sections/SettingsExamSection';
 import { SettingsNotificationsSection } from '@/components/settings/sections/SettingsNotificationsSection';
 import { SettingsAppearanceSection } from '@/components/settings/sections/SettingsAppearanceSection';
+import { SettingsDeleteAccountSection } from '@/components/settings/sections/SettingsDeleteAccountSection';
 import { SettingsSaveBar } from '@/components/settings/sections/SettingsSaveBar';
 import { AppVersionLabel } from '@/components/layout/AppVersionLabel';
 
@@ -39,8 +40,14 @@ export function SettingsPageView({ page }: SettingsPageViewProps) {
             setDailyStudyHours={page.setDailyStudyHours}
           />
           <SettingsExamSection exams={page.exams} examId={page.examId} setExamId={page.setExamId} />
-          <SettingsNotificationsSection />
+          <SettingsNotificationsSection
+            emailNotifications={page.emailNotifications}
+            setEmailNotifications={page.setEmailNotifications}
+            studyReminders={page.studyReminders}
+            setStudyReminders={page.setStudyReminders}
+          />
           <SettingsAppearanceSection />
+          <SettingsDeleteAccountSection />
           <SettingsSaveBar saving={page.saving} handleSaveSettings={page.handleSaveSettings} />
         </div>
 

@@ -6,7 +6,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireSession, getSessionUserId } from '@/lib/auth/requireSession';
 import { asyncHandler } from '@/lib/errors/errorHandler';
-import { HTTP_STATUS } from '@/config/constants';
+import { HTTP_STATUS, RATE_LIMIT } from '@/config/constants';
+import { rateLimit } from '@/lib/middleware/rateLimit';
 import { denemeSiteDisabledResponse } from '@/lib/deneme/denemeAccess';
 import { createAttemptFromInstitutionResult } from '@/lib/deneme/institutionResult/createAttemptFromInstitutionResult';
 import { institutionResultImportSchema } from '@/lib/deneme/institutionResult/importSchema';
@@ -17,7 +18,12 @@ const bodySchema = z.object({
   importData: institutionResultImportSchema.optional(),
 });
 
+const saveLimiter = rateLimit(10, RATE_LIMIT.WINDOW_MS);
+
 async function postInstitutionResultSaveHandler(req: NextRequest): Promise<NextResponse> {
+  const limited = saveLimiter(req);
+  if (limited) return limited;
+
   const session = await requireSession();
   const userId = getSessionUserId(session);
 

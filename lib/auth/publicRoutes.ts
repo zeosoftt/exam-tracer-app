@@ -31,6 +31,9 @@ export const PUBLIC_PREFIX_PATHS = [
   '/api/exams/available',
   '/api/support',
   '/api/analytics',
+  '/api/log-error',
+  '/api/site',
+  '/api/billing/shopier/webhook',
 ] as const;
 
 export function isPublicPath(pathname: string): boolean {

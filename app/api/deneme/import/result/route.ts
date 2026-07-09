@@ -6,15 +6,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireSession } from '@/lib/auth/requireSession';
 import { asyncHandler } from '@/lib/errors/errorHandler';
-import { HTTP_STATUS } from '@/config/constants';
+import { HTTP_STATUS, RATE_LIMIT } from '@/config/constants';
+import { rateLimit } from '@/lib/middleware/rateLimit';
 import { denemeSiteDisabledResponse } from '@/lib/deneme/denemeAccess';
 import { fetchInstitutionResult } from '@/lib/deneme/institutionResult/fetchInstitutionResult';
+
+const importLimiter = rateLimit(10, RATE_LIMIT.WINDOW_MS);
 
 const bodySchema = z.object({
   url: z.string().min(10, 'Sonuç linki girin.'),
 });
 
 async function postInstitutionResultImportHandler(req: NextRequest): Promise<NextResponse> {
+  const limited = importLimiter(req);
+  if (limited) return limited;
+
   await requireSession();
 
   const denied = await denemeSiteDisabledResponse();

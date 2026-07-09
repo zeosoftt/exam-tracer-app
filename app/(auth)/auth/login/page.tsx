@@ -14,6 +14,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema } from '@/lib/validation/schemas';
 import type { z } from 'zod';
 import { AUTH_ERROR_CODES, SERVICE_UNAVAILABLE_COPY } from '@/config/constants';
+import { sanitizeCallbackUrl, AUTH_PATHS } from '@/lib/auth/authPaths';
 import {
   BookOpen,
   Mail,
@@ -121,7 +122,9 @@ function LoginForm() {
           return;
         }
 
-        router.push(callbackUrl && callbackUrl.startsWith('/') ? callbackUrl : '/dashboard');
+        const safeCallback =
+          sanitizeCallbackUrl(callbackUrl, window.location.origin) ?? AUTH_PATHS.defaultPostLogin;
+        router.push(safeCallback);
         router.refresh();
       } catch {
         setError('Bir hata oluştu. Lütfen tekrar deneyin.');

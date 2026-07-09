@@ -7,7 +7,7 @@ import { useDashboardViewModel } from '@/components/dashboard/hooks/useDashboard
 import type { DashboardUser } from '@/components/dashboard/home/dashboardHomeTypes';
 
 export function useDashboardPage(user: DashboardUser) {
-  const { stats, isLoading, statsUpdatedAt, fetchStats } = useDashboardStats();
+  const { stats, isLoading, loadError, statsUpdatedAt, fetchStats } = useDashboardStats();
   const planBadge = usePlanBadge();
   const { reviewAckTopicId, acknowledgeTopicReview } = useEvaluationTopicEditor(fetchStats);
   const vm = useDashboardViewModel(stats, user.name);
@@ -18,7 +18,9 @@ export function useDashboardPage(user: DashboardUser) {
     user,
     stats,
     isLoading,
+    loadError,
     statsUpdatedAt,
+    fetchStats,
     planBadge,
     vm,
     srsOverdue,

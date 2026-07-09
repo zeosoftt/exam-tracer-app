@@ -12,6 +12,7 @@ import { RATE_LIMIT } from '@/config/constants';
 import { authFailure, authMessage } from '@/lib/auth/responses';
 import { wrapAuthPostHandler } from '@/lib/auth/authRouteHelpers';
 import { logAuth } from '@/lib/logger';
+import { incrementUserTokenVersion } from '@/lib/auth/incrementTokenVersion';
 
 const limiter = rateLimit(RATE_LIMIT.LOGIN_MAX_REQUESTS, RATE_LIMIT.LOGIN_WINDOW_MS);
 
@@ -45,6 +46,7 @@ async function resetPasswordHandler(req: NextRequest) {
     prisma.user.update({ where: { id: resetToken.userId }, data: { passwordHash } }),
     prisma.passwordResetToken.update({ where: { id: resetToken.id }, data: { used: true } }),
   ]);
+  await incrementUserTokenVersion(resetToken.userId);
 
   await prisma.passwordResetToken.deleteMany({
     where: { userId: resetToken.userId, used: false, id: { not: resetToken.id } },

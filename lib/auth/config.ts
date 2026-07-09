@@ -15,6 +15,9 @@ import {
   NEXTAUTH_SESSION_SHORT_SECONDS,
   NEXTAUTH_SESSION_REMEMBER_SECONDS,
 } from '@/config/constants';
+import { ensureUserSecurityColumnsOnce } from '@/lib/db/ensureUserSecurityColumns';
+
+const JWT_REVALIDATE_MS = 5 * 60 * 1000;
 
 function isDatabaseConnectionError(err: unknown): boolean {
   if (!err || typeof err !== 'object') return false;
@@ -130,6 +133,7 @@ export const authOptions: NextAuthOptions = {
             institutionId: user.institutionId ?? undefined, // DEPRECATED: kept for backward compatibility
             activeOrganizationId, // NEW: Active organization ID (null if not migrated yet)
             remember,
+            tokenVersion: (user as { tokenVersion?: number }).tokenVersion ?? 0,
           } as const;
         } catch (error) {
           if (isDatabaseConnectionError(error)) {
@@ -173,10 +177,13 @@ export const authOptions: NextAuthOptions = {
           institutionId?: string | null;
           activeOrganizationId?: string | null;
           remember?: boolean;
+          tokenVersion?: number;
         };
         token.emailVerified = userWithAuth.emailVerified === true;
         token.remember = userWithAuth.remember === true;
         token.sessionStartedAt = Date.now();
+        token.tokenVersion = userWithAuth.tokenVersion ?? 0;
+        token.userValidatedAt = Date.now();
 
         // DEPRECATED: Legacy fields (kept for backward compatibility)
         token.role = userWithAuth.role;
@@ -221,6 +228,42 @@ export const authOptions: NextAuthOptions = {
       if (token.id && Date.now() - startedMs > limitSec * 1000) {
         logAuth('JWT expired (session length policy)', String(token.id));
         return { ...token, id: undefined, exp: Math.floor(Date.now() / 1000) - 10 };
+      }
+
+      if (typeof token.id === 'string') {
+        const lastValidated =
+          typeof token.userValidatedAt === 'number' ? token.userValidatedAt : 0;
+        if (Date.now() - lastValidated > JWT_REVALIDATE_MS) {
+          try {
+            await ensureUserSecurityColumnsOnce(prisma);
+            const dbUser = await prisma.user.findUnique({
+              where: { id: token.id },
+              select: {
+                isActive: true,
+                deletedAt: true,
+                emailVerified: true,
+                role: true,
+                tokenVersion: true,
+              },
+            });
+            if (!dbUser || dbUser.deletedAt !== null || !dbUser.isActive) {
+              logAuth('JWT invalidated: user inactive or deleted', token.id);
+              return { ...token, id: undefined, exp: Math.floor(Date.now() / 1000) - 10 };
+            }
+            const jwtVersion = typeof token.tokenVersion === 'number' ? token.tokenVersion : 0;
+            const dbVersion = dbUser.tokenVersion ?? 0;
+            if (jwtVersion !== dbVersion) {
+              logAuth('JWT invalidated: tokenVersion mismatch', token.id);
+              return { ...token, id: undefined, exp: Math.floor(Date.now() / 1000) - 10 };
+            }
+            token.emailVerified = dbUser.emailVerified;
+            token.role = dbUser.role ?? undefined;
+            token.tokenVersion = dbVersion;
+            token.userValidatedAt = Date.now();
+          } catch (revalidateError) {
+            logError('JWT revalidation failed (non-fatal)', revalidateError);
+          }
+        }
       }
 
       // Verify token still has valid user ID

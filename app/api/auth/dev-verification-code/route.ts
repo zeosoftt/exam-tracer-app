@@ -14,6 +14,9 @@ import { NotFoundError } from '@/lib/errors/AppError';
 const limiter = rateLimit(20, RATE_LIMIT.LOGIN_WINDOW_MS);
 
 function isDevVerificationEnabled(): boolean {
+  if (process.env.NODE_ENV === 'production') {
+    return false;
+  }
   return (
     process.env.NODE_ENV === 'development' &&
     process.env.ENABLE_DEV_VERIFICATION_CODE === 'true'

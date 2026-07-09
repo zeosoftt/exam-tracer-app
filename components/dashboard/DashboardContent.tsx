@@ -29,7 +29,13 @@ export function DashboardContent({ user }: { user: DashboardUser }) {
           srsOverdue={page.srsOverdue}
         />
 
-        <DashboardStatsGrid isLoading={page.isLoading} stats={page.stats} vm={page.vm} />
+        <DashboardStatsGrid
+          isLoading={page.isLoading}
+          loadError={page.loadError}
+          stats={page.stats}
+          vm={page.vm}
+          onRetry={() => void page.fetchStats({ force: true, lite: false })}
+        />
 
         {!page.isLoading && page.stats?.spacedRepetition && (
           <DashboardSpacedRepetitionSection

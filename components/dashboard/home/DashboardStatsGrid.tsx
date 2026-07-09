@@ -18,8 +18,10 @@ type DashboardViewModel = ReturnType<typeof useDashboardViewModel>;
 
 type DashboardStatsGridProps = {
   isLoading: boolean;
+  loadError?: string | null;
   stats: DashboardStats | null;
   vm: DashboardViewModel;
+  onRetry?: () => void;
 };
 
 function StatsPanelSkeleton() {
@@ -185,7 +187,7 @@ function TopicProgressSummary({
   );
 }
 
-export function DashboardStatsGrid({ isLoading, stats, vm }: DashboardStatsGridProps) {
+export function DashboardStatsGrid({ isLoading, loadError, stats, vm, onRetry }: DashboardStatsGridProps) {
   const denemeSparkline = vm.denemeSparkline;
   const completedTopics = stats?.completedTopics ?? 0;
   const inProgressTopics = stats?.inProgressTopics ?? 0;
@@ -193,6 +195,23 @@ export function DashboardStatsGrid({ isLoading, stats, vm }: DashboardStatsGridP
 
   if (isLoading) {
     return <StatsPanelSkeleton />;
+  }
+
+  if (loadError) {
+    return (
+      <section className="mb-8 rounded-2xl border border-red-200 bg-red-50 p-6 text-center dark:border-red-900/50 dark:bg-red-950/20 sm:mb-10">
+        <p className="text-sm font-medium text-red-800 dark:text-red-300">{loadError}</p>
+        {onRetry ? (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="mt-3 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+          >
+            Tekrar dene
+          </button>
+        ) : null}
+      </section>
+    );
   }
 
   return (

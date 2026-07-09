@@ -11,7 +11,8 @@ import { asyncHandler, handleError } from '@/lib/errors/errorHandler';
 import { validate } from '@/lib/validation/validate';
 import { updateExamSchema } from '@/lib/validation/schemas';
 import { prisma } from '@/lib/db/prisma';
-import { canUpdateExam, canViewExam } from '@/lib/auth/permissions';
+import { canUpdateExam } from '@/lib/auth/permissions';
+import { userCanViewExam } from '@/lib/exams/examAccessRepository';
 import { logApi } from '@/lib/logger';
 import { HTTP_STATUS } from '@/config/constants';
 import { ForbiddenError, NotFoundError } from '@/lib/errors/AppError';
@@ -59,7 +60,13 @@ async function getExamHandler(
 
     // Check permissions
     const examInstitutionId = exam.examAssignments.find((ea) => ea.institutionId)?.institutionId;
-    if (!canViewExam(userPermissions, examInstitutionId)) {
+    const canView = await userCanViewExam(
+      userId,
+      params.id,
+      userPermissions,
+      examInstitutionId,
+    );
+    if (!canView) {
       throw new ForbiddenError();
     }
 

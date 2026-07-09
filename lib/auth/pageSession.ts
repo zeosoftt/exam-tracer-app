@@ -10,6 +10,7 @@ import { prisma } from '@/lib/db/prisma';
 import { ensureSetupWizardColumnOnce } from '@/lib/db/ensureSetupWizardColumn';
 import { isMissingSetupWizardColumnError } from '@/lib/db/setupWizardColumnSupport';
 import { canCreateExam } from '@/lib/auth/permissions';
+import { userHasAdminAccess } from '@/lib/auth/adminAccess';
 import type { AuthenticatedSession } from '@/lib/auth/requireSession';
 import { toUserPermissions } from '@/lib/auth/requireSession';
 
@@ -32,7 +33,7 @@ export async function requireAdminPageSession(options?: {
   forbiddenPath?: string;
 }): Promise<AuthenticatedSession> {
   const session = await requirePageSession(options?.loginPath);
-  if (session.user.role !== USER_ROLES.ADMIN) {
+  if (!(await userHasAdminAccess(session))) {
     redirect(options?.forbiddenPath ?? '/dashboard');
   }
   return session;

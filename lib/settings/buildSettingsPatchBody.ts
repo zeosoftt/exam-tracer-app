@@ -6,6 +6,8 @@ export type SettingsFormFields = {
   examId: string;
   targetScore: string;
   dailyStudyHours: string;
+  emailNotifications: boolean;
+  studyReminders: boolean;
 };
 
 export function buildSettingsPatchBody(fields: SettingsFormFields): Record<string, unknown> {
@@ -13,6 +15,8 @@ export function buildSettingsPatchBody(fields: SettingsFormFields): Record<strin
     firstName: fields.firstName.trim() || undefined,
     lastName: fields.lastName.trim() || undefined,
     examId: fields.examId === '' ? '' : fields.examId || undefined,
+    emailNotifications: fields.emailNotifications,
+    studyReminders: fields.studyReminders,
   };
 
   const ts = fields.targetScore.trim();

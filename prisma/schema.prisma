@@ -28,6 +28,10 @@ model User {
   dailyStudyHours        Int?
   /// İlk giriş kurulum sihirbazı tamamlandığında (veya atlandığında) set edilir
   setupWizardCompletedAt DateTime?
+  /// JWT invalidation — şifre değişimi / hesap silme sonrası artırılır
+  tokenVersion           Int               @default(0)
+  emailNotifications     Boolean           @default(true)
+  studyReminders         Boolean           @default(true)
   createdAt              DateTime          @default(now())
   updatedAt              DateTime          @updatedAt
   deletedAt              DateTime?

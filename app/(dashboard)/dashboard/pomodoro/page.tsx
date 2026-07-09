@@ -3,12 +3,14 @@
  */
 
 import dynamic from 'next/dynamic';
+import { requirePageSession } from '@/lib/auth/pageSession';
 import { RouteShellSkeleton } from '@/components/ui/RouteShellSkeleton';
 
 const PomodoroPageClient = dynamic(() => import('./PomodoroPageClient'), {
   loading: () => <RouteShellSkeleton />,
 });
 
-export default function PomodoroPage() {
+export default async function PomodoroPage() {
+  await requirePageSession();
   return <PomodoroPageClient />;
 }
