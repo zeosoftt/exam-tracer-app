@@ -12,13 +12,18 @@ export function useEvaluationTopicEditor(fetchStats: RefetchStats) {
   const [editValues, setEditValues] = useState<TopicEditValues | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [reviewAckTopicId, setReviewAckTopicId] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<{ type: 'error'; text: string } | null>(null);
 
   const updateQuestionStats = useCallback(
     async (topicId: string) => {
       if (!editValues) return;
+      setActionMessage(null);
       try {
         if (editValues.correctAnswers + editValues.wrongAnswers > editValues.totalQuestions) {
-          alert('Doğru + Yanlış sayısı toplam soru sayısını geçemez!');
+          setActionMessage({
+            type: 'error',
+            text: 'Doğru + Yanlış sayısı toplam soru sayısını geçemez!',
+          });
           return;
         }
         const { ok, error } = await patchTopicProgress(topicId, {
@@ -32,11 +37,11 @@ export function useEvaluationTopicEditor(fetchStats: RefetchStats) {
           setEditValues(null);
         } else {
           console.error('Failed to update question stats:', error);
-          alert('Soru sayıları güncellenirken bir hata oluştu');
+          setActionMessage({ type: 'error', text: 'Soru sayıları güncellenirken bir hata oluştu' });
         }
       } catch (error) {
         console.error('Error updating question stats:', error);
-        alert('Soru sayıları güncellenirken bir hata oluştu');
+        setActionMessage({ type: 'error', text: 'Soru sayıları güncellenirken bir hata oluştu' });
       }
     },
     [editValues, fetchStats],
@@ -89,5 +94,7 @@ export function useEvaluationTopicEditor(fetchStats: RefetchStats) {
     cancelEdit,
     toggleSection,
     acknowledgeTopicReview,
+    actionMessage,
+    clearActionMessage: () => setActionMessage(null),
   };
 }

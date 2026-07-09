@@ -39,3 +39,16 @@ export const ROLE_LABELS: Record<string, string> = {
   INDIVIDUAL: 'Bireysel',
   VIEWER: 'İzleyici',
 };
+
+export interface AdminAuditLog {
+  id: string;
+  action: string;
+  resource: string | null;
+  ipAddress: string | null;
+  createdAt: string;
+  actor: {
+    id: string;
+    email: string | null;
+    name: string | null;
+  };
+}

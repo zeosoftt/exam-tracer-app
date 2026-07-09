@@ -1,7 +1,6 @@
 'use client';
 
 import { SubAppPageHeader, FlashMessage } from '@/components/ui';
-import { pageIntroClass } from '@/lib/ui/pageStyles';
 import type { SettingsPageState } from '@/components/settings/hooks/useSettingsPage';
 import { SettingsSupportBanner } from '@/components/settings/sections/SettingsSupportBanner';
 import { SettingsAccountSection } from '@/components/settings/sections/SettingsAccountSection';
@@ -25,7 +24,6 @@ export function SettingsPageView({ page }: SettingsPageViewProps) {
       <SubAppPageHeader title="Ayarlar" showThemeToggle={false} />
 
       <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-        <p className={pageIntroClass}>Hesap, görünüm, hedef ve sınav tercihleri</p>
 
         <SettingsSupportBanner />
 
@@ -50,7 +48,7 @@ export function SettingsPageView({ page }: SettingsPageViewProps) {
           />
           <SettingsAppearanceSection />
           <SettingsDeleteAccountSection />
-          <SettingsSaveBar saving={page.saving} handleSaveSettings={page.handleSaveSettings} />
+          <SettingsSaveBar saving={page.saving} isDirty={page.isDirty} handleSaveSettings={page.handleSaveSettings} />
         </div>
 
         <div className="mt-10 flex justify-center border-t border-stone-200 pt-6 dark:border-stone-800">

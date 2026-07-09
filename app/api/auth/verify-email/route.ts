@@ -35,7 +35,7 @@ async function verifyEmailHandler(req: NextRequest) {
   }
 
   if (user.emailVerified) {
-    return authMessage('Bu e-posta adresi zaten doğrulanmış.');
+    return authFailure('Doğrulama kodu geçersiz veya süresi dolmuş.');
   }
 
   const verification = await prisma.emailVerificationToken.findFirst({

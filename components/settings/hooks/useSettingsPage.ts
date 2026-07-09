@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback, startTransition } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, startTransition } from 'react';
 import { useSession } from 'next-auth/react';
 import {
   fetchSettingsPageBundle,
@@ -8,7 +8,7 @@ import {
   changeUserPassword,
 } from '@/lib/client-api/userSettings';
 import { getApiErrorMessage } from '@/lib/client-api/http';
-import { buildSettingsPatchBody } from '@/lib/settings/buildSettingsPatchBody';
+import { buildSettingsPatchBody, type SettingsFormFields } from '@/lib/settings/buildSettingsPatchBody';
 import { validatePasswordChange } from '@/lib/settings/validatePasswordChange';
 import {
   applySettingsDataToFormFields,
@@ -47,7 +47,25 @@ export function useSettingsPage() {
 
   const [planInfo, setPlanInfo] = useState<PlanInfo | null>(null);
   const [planLoading, setPlanLoading] = useState(true);
+  const [savedSnapshot, setSavedSnapshot] = useState<SettingsFormFields | null>(null);
   const initialFetchDoneRef = useRef(false);
+
+  const currentFormFields = useMemo<SettingsFormFields>(
+    () => ({
+      firstName,
+      lastName,
+      examId,
+      targetScore,
+      dailyStudyHours,
+      emailNotifications,
+      studyReminders,
+    }),
+    [firstName, lastName, examId, targetScore, dailyStudyHours, emailNotifications, studyReminders],
+  );
+
+  const isDirty =
+    savedSnapshot !== null &&
+    JSON.stringify(currentFormFields) !== JSON.stringify(savedSnapshot);
 
   const fetchSettingsPageData = useCallback(async () => {
     if (initialFetchDoneRef.current) return;
@@ -67,6 +85,7 @@ export function useSettingsPage() {
           setExamId(fields.examId);
           setEmailNotifications(fields.emailNotifications);
           setStudyReminders(fields.studyReminders);
+          setSavedSnapshot(fields);
         });
       }
 
@@ -88,6 +107,15 @@ export function useSettingsPage() {
   useEffect(() => {
     void fetchSettingsPageData();
   }, [fetchSettingsPageData]);
+
+  useEffect(() => {
+    if (!isDirty) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [isDirty]);
 
   const handleSaveSettings = useCallback(async () => {
     setMessage(null);
@@ -111,6 +139,7 @@ export function useSettingsPage() {
           startTransition(() => setSettings(next));
           updateSession?.({ user: { name: next.user?.name } });
         }
+        setSavedSnapshot(currentFormFields);
         setMessage({ type: 'success', text: 'Ayarlar kaydedildi.' });
       } else {
         setMessage({
@@ -123,7 +152,7 @@ export function useSettingsPage() {
     } finally {
       setSaving(false);
     }
-  }, [firstName, lastName, examId, targetScore, dailyStudyHours, emailNotifications, studyReminders, updateSession]);
+  }, [firstName, lastName, examId, targetScore, dailyStudyHours, emailNotifications, studyReminders, updateSession, currentFormFields]);
 
   const handleChangePassword = useCallback(
     async (e: React.FormEvent) => {
@@ -198,6 +227,7 @@ export function useSettingsPage() {
     passwordMessage,
     planInfo,
     planLoading,
+    isDirty,
     handleSaveSettings,
     handleChangePassword,
   };

@@ -23,6 +23,7 @@ import {
   MailX,
 } from 'lucide-react';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
+import { AuditLogsSection } from '@/components/super-admin/AuditLogsSection';
 
 export function SuperAdminPanel() {
   const {
@@ -413,6 +414,8 @@ export function SuperAdminPanel() {
             onSave={patchSiteSettings}
           />
         </section>
+
+        <AuditLogsSection />
 
         {/* Yönetim alanları */}
         <section className="mt-10 space-y-6">

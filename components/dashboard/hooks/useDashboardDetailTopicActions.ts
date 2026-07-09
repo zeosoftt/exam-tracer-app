@@ -14,21 +14,23 @@ export function useDashboardDetailTopicActions(fetchDetailData: RefetchDetail) {
     correctAnswers: number;
     wrongAnswers: number;
   } | null>(null);
+  const [actionMessage, setActionMessage] = useState<{ type: 'error'; text: string } | null>(null);
 
   const updateTopicStatus = useCallback(
     async (topicId: string, newStatus: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED') => {
       setUpdatingTopicId(topicId);
+      setActionMessage(null);
       try {
         const { ok, error } = await patchTopicProgress(topicId, { status: newStatus });
         if (ok) {
           await fetchDetailData({ force: true });
         } else {
           console.error('Failed to update topic status:', error);
-          alert('Durum güncellenirken bir hata oluştu');
+          setActionMessage({ type: 'error', text: 'Durum güncellenirken bir hata oluştu' });
         }
       } catch (error) {
         console.error('Error updating topic status:', error);
-        alert('Durum güncellenirken bir hata oluştu');
+        setActionMessage({ type: 'error', text: 'Durum güncellenirken bir hata oluştu' });
       } finally {
         setUpdatingTopicId(null);
       }
@@ -40,9 +42,13 @@ export function useDashboardDetailTopicActions(fetchDetailData: RefetchDetail) {
     async (topicId: string) => {
       if (!editValues) return;
       setUpdatingTopicId(topicId);
+      setActionMessage(null);
       try {
         if (editValues.correctAnswers + editValues.wrongAnswers > editValues.totalQuestions) {
-          alert('Doğru + Yanlış sayısı toplam soru sayısını geçemez!');
+          setActionMessage({
+            type: 'error',
+            text: 'Doğru + Yanlış sayısı toplam soru sayısını geçemez!',
+          });
           setUpdatingTopicId(null);
           return;
         }
@@ -57,11 +63,11 @@ export function useDashboardDetailTopicActions(fetchDetailData: RefetchDetail) {
           setEditValues(null);
         } else {
           console.error('Failed to update question stats:', error);
-          alert('Soru sayıları güncellenirken bir hata oluştu');
+          setActionMessage({ type: 'error', text: 'Soru sayıları güncellenirken bir hata oluştu' });
         }
       } catch (error) {
         console.error('Error updating question stats:', error);
-        alert('Soru sayıları güncellenirken bir hata oluştu');
+        setActionMessage({ type: 'error', text: 'Soru sayıları güncellenirken bir hata oluştu' });
       } finally {
         setUpdatingTopicId(null);
       }
@@ -92,5 +98,7 @@ export function useDashboardDetailTopicActions(fetchDetailData: RefetchDetail) {
     updateQuestionStats,
     startEdit,
     cancelEdit,
+    actionMessage,
+    clearActionMessage: () => setActionMessage(null),
   };
 }
