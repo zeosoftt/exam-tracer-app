@@ -38,4 +38,4 @@ async function createExamContentHandler(req: NextRequest): Promise<NextResponse>
   }
 }
 
-export const POST = withAdminHandler(createExamContentHandler);
+export const POST = withAdminHandler(createExamContentHandler, 'super_admin.exam.create');

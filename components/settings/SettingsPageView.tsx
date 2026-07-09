@@ -11,6 +11,7 @@ import { SettingsExamSection } from '@/components/settings/sections/SettingsExam
 import { SettingsNotificationsSection } from '@/components/settings/sections/SettingsNotificationsSection';
 import { SettingsAppearanceSection } from '@/components/settings/sections/SettingsAppearanceSection';
 import { SettingsDeleteAccountSection } from '@/components/settings/sections/SettingsDeleteAccountSection';
+import { SettingsEmailChangeSection } from '@/components/settings/sections/SettingsEmailChangeSection';
 import { SettingsSaveBar } from '@/components/settings/sections/SettingsSaveBar';
 import { AppVersionLabel } from '@/components/layout/AppVersionLabel';
 
@@ -32,6 +33,7 @@ export function SettingsPageView({ page }: SettingsPageViewProps) {
 
         <div className="space-y-6">
           <SettingsAccountSection {...page} />
+          <SettingsEmailChangeSection />
           <SettingsPlanSection planInfo={page.planInfo} planLoading={page.planLoading} />
           <SettingsGoalsSection
             targetScore={page.targetScore}

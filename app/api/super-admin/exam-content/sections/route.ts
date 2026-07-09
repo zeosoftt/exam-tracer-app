@@ -45,4 +45,4 @@ async function createSectionHandler(req: NextRequest): Promise<NextResponse> {
   }
 }
 
-export const POST = withAdminHandler(createSectionHandler);
+export const POST = withAdminHandler(createSectionHandler, 'super_admin.section.create');

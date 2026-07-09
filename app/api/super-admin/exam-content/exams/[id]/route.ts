@@ -70,5 +70,5 @@ async function deleteExamHandler(_req: NextRequest, { params }: RouteParams): Pr
   }
 }
 
-export const PATCH = withAdminHandler(patchExamHandler);
-export const DELETE = withAdminHandler(deleteExamHandler);
+export const PATCH = withAdminHandler(patchExamHandler, 'super_admin.exam.update');
+export const DELETE = withAdminHandler(deleteExamHandler, 'super_admin.exam.delete');

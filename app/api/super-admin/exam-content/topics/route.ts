@@ -44,4 +44,4 @@ async function createTopicHandler(req: NextRequest): Promise<NextResponse> {
   }
 }
 
-export const POST = withAdminHandler(createTopicHandler);
+export const POST = withAdminHandler(createTopicHandler, 'super_admin.topic.create');

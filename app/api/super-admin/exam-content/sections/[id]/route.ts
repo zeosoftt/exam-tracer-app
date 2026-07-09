@@ -48,5 +48,5 @@ async function deleteSectionHandler(_req: NextRequest, { params }: RouteParams):
   }
 }
 
-export const PATCH = withAdminHandler(patchSectionHandler);
-export const DELETE = withAdminHandler(deleteSectionHandler);
+export const PATCH = withAdminHandler(patchSectionHandler, 'super_admin.section.update');
+export const DELETE = withAdminHandler(deleteSectionHandler, 'super_admin.section.delete');

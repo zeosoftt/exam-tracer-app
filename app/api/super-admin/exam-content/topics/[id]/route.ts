@@ -75,5 +75,5 @@ async function deleteTopicHandler(_req: NextRequest, { params }: RouteParams): P
   }
 }
 
-export const PATCH = withAdminHandler(patchTopicHandler);
-export const DELETE = withAdminHandler(deleteTopicHandler);
+export const PATCH = withAdminHandler(patchTopicHandler, 'super_admin.topic.update');
+export const DELETE = withAdminHandler(deleteTopicHandler, 'super_admin.topic.delete');

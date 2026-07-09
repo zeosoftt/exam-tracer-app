@@ -504,6 +504,130 @@ export async function checkPlanLimit(
   };
 }
 
+type PlanLimitResource = 'USERS' | 'EXAMS' | 'STUDENTS' | 'STORAGE';
+
+function resolvePlanLimit(
+  resourceType: PlanLimitResource,
+  plan: { maxUsers: number; maxExams: number; maxStudents: number; maxStorage: number | null } | null,
+  organization: { maxUsers: number; maxExams: number; maxStudents: number },
+): number {
+  if (!plan) {
+    switch (resourceType) {
+      case 'USERS':
+        return organization.maxUsers;
+      case 'EXAMS':
+        return organization.maxExams;
+      case 'STUDENTS':
+        return organization.maxStudents;
+      default:
+        return Infinity;
+    }
+  }
+  switch (resourceType) {
+    case 'USERS':
+      return plan.maxUsers;
+    case 'EXAMS':
+      return plan.maxExams;
+    case 'STUDENTS':
+      return plan.maxStudents;
+    case 'STORAGE':
+      return plan.maxStorage ?? Infinity;
+  }
+}
+
+/** Tek org sorgusu + paralel sayım — getOrganizationPlanInfo N+1 azaltır. */
+export async function checkPlanLimitsBatch(
+  organizationId: string,
+  resourceTypes: PlanLimitResource[] = ['USERS', 'EXAMS', 'STUDENTS'],
+): Promise<Record<PlanLimitResource, PlanLimitCheckResult>> {
+  const organization = await prisma.organization.findUnique({
+    where: { id: organizationId },
+    include: {
+      subscriptions: {
+        where: {
+          status: 'ACTIVE',
+          deletedAt: null,
+          currentPeriodEnd: { gte: new Date() },
+        },
+        include: { plan: true },
+        orderBy: { currentPeriodEnd: 'desc' },
+        take: 1,
+      },
+    },
+  });
+
+  const empty = (reason: string): PlanLimitCheckResult => ({
+    allowed: false,
+    current: 0,
+    limit: 0,
+    reason,
+    planLimitExceeded: true,
+  });
+
+  if (!organization) {
+    return Object.fromEntries(
+      resourceTypes.map((t) => [t, empty('Organization not found')]),
+    ) as Record<PlanLimitResource, PlanLimitCheckResult>;
+  }
+
+  let plan: { maxUsers: number; maxExams: number; maxStudents: number; maxStorage: number | null } | null =
+    organization.subscriptions[0]?.plan ?? null;
+  if (!plan && organization.currentPlanId) {
+    plan = await prisma.plan.findUnique({ where: { id: organization.currentPlanId } });
+  }
+
+  const studentRolePromise =
+    resourceTypes.includes('STUDENTS')
+      ? prisma.role.findUnique({ where: { code: 'SYSTEM_ROLE_STUDENT' } })
+      : Promise.resolve(null);
+
+  const [studentRole, usersCount, examsCount] = await Promise.all([
+    studentRolePromise,
+    resourceTypes.includes('USERS')
+      ? prisma.membership.count({
+          where: { organizationId, isActive: true, deletedAt: null },
+        })
+      : Promise.resolve(0),
+    resourceTypes.includes('EXAMS')
+      ? prisma.exam.count({ where: { organizationId, deletedAt: null } })
+      : Promise.resolve(0),
+  ]);
+
+  let studentsCount = 0;
+  if (resourceTypes.includes('STUDENTS') && studentRole) {
+    studentsCount = await prisma.membership.count({
+      where: {
+        organizationId,
+        roleId: studentRole.id,
+        isActive: true,
+        deletedAt: null,
+      },
+    });
+  }
+
+  const counts: Record<PlanLimitResource, number> = {
+    USERS: usersCount,
+    EXAMS: examsCount,
+    STUDENTS: studentsCount,
+    STORAGE: 0,
+  };
+
+  const results = {} as Record<PlanLimitResource, PlanLimitCheckResult>;
+  for (const resourceType of resourceTypes) {
+    const limit = resolvePlanLimit(resourceType, plan, organization);
+    const current = counts[resourceType];
+    const allowed = limit === null || limit === Infinity || current < limit;
+    results[resourceType] = {
+      allowed,
+      current,
+      limit,
+      reason: allowed ? undefined : `Plan limit exceeded: ${current}/${limit} ${resourceType}`,
+      planLimitExceeded: !allowed,
+    };
+  }
+  return results;
+}
+
 /**
  * Combined authorization check: Permission + Plan Limit
  * 

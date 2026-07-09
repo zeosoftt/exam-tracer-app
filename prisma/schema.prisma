@@ -36,6 +36,7 @@ model User {
   updatedAt              DateTime          @updatedAt
   deletedAt              DateTime?
   emailVerificationTokens EmailVerificationToken[]
+  emailChangeTokens      EmailChangeToken[]
   examAssignments        ExamAssignment[]
   examAttempts           ExamAttempt[]
   memberships            Membership[]
@@ -84,6 +85,37 @@ model EmailVerificationToken {
   @@index([token])
   @@index([expiresAt])
   @@map("email_verification_tokens")
+}
+
+model EmailChangeToken {
+  id        String   @id @default(cuid())
+  userId    String
+  newEmail  String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+  @@map("email_change_tokens")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String
+  action    String
+  resource  String?
+  metadata  Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([actorId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
 }
 
 model Institution {

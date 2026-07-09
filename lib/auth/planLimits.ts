@@ -6,7 +6,7 @@
  */
 
 import { prisma } from '@/lib/db/prisma';
-import { checkPlanLimit, canUseFeature } from './authorization';
+import { checkPlanLimit, checkPlanLimitsBatch, canUseFeature } from './authorization';
 
 // ============================================================================
 // TYPES
@@ -151,39 +151,18 @@ export async function getOrganizationPlanInfo(
     subscriptionStatus = 'TRIAL';
   }
 
-  // Get limits
-  const limits: PlanLimitInfo[] = await Promise.all([
-    (async () => {
-      const check = await checkPlanLimit(organizationId, 'USERS');
-      return {
-        resourceType: 'USERS' as const,
-        current: check.current,
-        limit: check.limit,
-        allowed: check.allowed,
-        percentage: check.limit > 0 ? Math.round((check.current / check.limit) * 100) : 0,
-      };
-    })(),
-    (async () => {
-      const check = await checkPlanLimit(organizationId, 'EXAMS');
-      return {
-        resourceType: 'EXAMS' as const,
-        current: check.current,
-        limit: check.limit,
-        allowed: check.allowed,
-        percentage: check.limit > 0 ? Math.round((check.current / check.limit) * 100) : 0,
-      };
-    })(),
-    (async () => {
-      const check = await checkPlanLimit(organizationId, 'STUDENTS');
-      return {
-        resourceType: 'STUDENTS' as const,
-        current: check.current,
-        limit: check.limit,
-        allowed: check.allowed,
-        percentage: check.limit > 0 ? Math.round((check.current / check.limit) * 100) : 0,
-      };
-    })(),
-  ]);
+  // Get limits (single org fetch + parallel counts)
+  const batch = await checkPlanLimitsBatch(organizationId, ['USERS', 'EXAMS', 'STUDENTS']);
+  const limits: PlanLimitInfo[] = (['USERS', 'EXAMS', 'STUDENTS'] as const).map((resourceType) => {
+    const check = batch[resourceType];
+    return {
+      resourceType,
+      current: check.current,
+      limit: check.limit,
+      allowed: check.allowed,
+      percentage: check.limit > 0 ? Math.round((check.current / check.limit) * 100) : 0,
+    };
+  });
 
   // Get features
   const features = plan.planFeatures

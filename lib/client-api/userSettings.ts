@@ -57,3 +57,18 @@ export async function deleteUserAccount(body: {
   const { ok, result } = await mutateApi('/api/user/delete-account', 'POST', body);
   return { ok, result };
 }
+
+export async function requestEmailChange(body: {
+  newEmail: string;
+  password: string;
+}): Promise<{ ok: boolean; result: unknown }> {
+  const { ok, result } = await mutateApi('/api/user/change-email/request', 'POST', body);
+  return { ok, result };
+}
+
+export async function confirmEmailChange(body: {
+  code: string;
+}): Promise<{ ok: boolean; result: unknown }> {
+  const { ok, result } = await mutateApi('/api/user/change-email/confirm', 'POST', body);
+  return { ok, result };
+}

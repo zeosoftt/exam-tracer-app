@@ -74,4 +74,4 @@ async function patchSiteSettingsHandler(req: NextRequest): Promise<NextResponse>
 }
 
 export const GET = withAdminHandler(getSiteSettingsHandler);
-export const PATCH = withAdminHandler(patchSiteSettingsHandler);
+export const PATCH = withAdminHandler(patchSiteSettingsHandler, 'super_admin.site_settings.update');

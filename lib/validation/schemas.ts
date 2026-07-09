@@ -111,6 +111,15 @@ export const resendVerificationSchema = z.object({
   email: emailSchema,
 });
 
+export const changeEmailRequestSchema = z.object({
+  newEmail: emailSchema,
+  password: z.string().min(1, 'Şifre gerekli'),
+});
+
+export const changeEmailConfirmSchema = z.object({
+  code: z.string().min(6).max(12),
+});
+
 export const forgotPasswordSchema = z.object({
   email: emailSchema,
 });
