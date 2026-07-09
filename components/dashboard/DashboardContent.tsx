@@ -13,7 +13,13 @@ import { DashboardStatsGrid } from '@/components/dashboard/home/DashboardStatsGr
 import { DashboardSpacedRepetitionSection } from '@/components/dashboard/home/DashboardSpacedRepetitionSection';
 import { ParentChildrenPanel } from '@/components/dashboard/parent/ParentChildrenPanel';
 
-export function DashboardContent({ user }: { user: DashboardUser }) {
+export function DashboardContent({
+  user,
+  showParentChildrenPanel = false,
+}: {
+  user: DashboardUser;
+  showParentChildrenPanel?: boolean;
+}) {
   const page = useDashboardPage(user);
 
   return (
@@ -30,7 +36,7 @@ export function DashboardContent({ user }: { user: DashboardUser }) {
           srsOverdue={page.srsOverdue}
         />
 
-        <ParentChildrenPanel />
+        {showParentChildrenPanel ? <ParentChildrenPanel /> : null}
 
         <DashboardStatsGrid
           isLoading={page.isLoading}

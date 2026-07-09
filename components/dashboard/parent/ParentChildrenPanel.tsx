@@ -54,10 +54,6 @@ export function ParentChildrenPanel() {
     void load();
   }, [load]);
 
-  if (!loading && students.length === 0 && !error) {
-    return null;
-  }
-
   return (
     <PageSectionCard
       title="Bağlı öğrenciler"

@@ -21,7 +21,14 @@ export async function listLinkedStudentsForParent(
   await ensureProductionTablesOnce(prisma);
 
   const links = await prisma.parentStudentLink.findMany({
-    where: { parentUserId, deletedAt: null },
+    where: {
+      parentUserId,
+      deletedAt: null,
+      OR: [
+        { organizationId: null },
+        { organization: { isPersonal: false, deletedAt: null } },
+      ],
+    },
     include: {
       student: {
         select: {
@@ -80,7 +87,14 @@ export async function listLinkedStudentsForParent(
 export async function parentHasLinkedStudents(parentUserId: string): Promise<boolean> {
   await ensureProductionTablesOnce(prisma);
   const count = await prisma.parentStudentLink.count({
-    where: { parentUserId, deletedAt: null },
+    where: {
+      parentUserId,
+      deletedAt: null,
+      OR: [
+        { organizationId: null },
+        { organization: { isPersonal: false, deletedAt: null } },
+      ],
+    },
   });
   return count > 0;
 }

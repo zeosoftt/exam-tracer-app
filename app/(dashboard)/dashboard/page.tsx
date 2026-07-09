@@ -6,6 +6,7 @@
 import dynamic from 'next/dynamic';
 import { requirePageSession, redirectIfSetupWizardIncomplete } from '@/lib/auth/pageSession';
 import { RouteShellSkeleton } from '@/components/ui/RouteShellSkeleton';
+import { userCanViewParentChildrenPanel } from '@/lib/parent/canViewParentChildrenPanel';
 
 const DashboardContent = dynamic(
   () =>
@@ -17,5 +18,9 @@ export default async function DashboardPage() {
   const session = await requirePageSession();
   await redirectIfSetupWizardIncomplete(session);
 
-  return <DashboardContent user={session.user} />;
+  const showParentChildrenPanel = await userCanViewParentChildrenPanel(session.user.id);
+
+  return (
+    <DashboardContent user={session.user} showParentChildrenPanel={showParentChildrenPanel} />
+  );
 }
