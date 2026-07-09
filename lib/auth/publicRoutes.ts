@@ -32,6 +32,7 @@ export const PUBLIC_PREFIX_PATHS = [
   '/api/support',
   '/api/analytics',
   '/api/log-error',
+  '/monitoring',
   '/api/site',
   '/api/billing/shopier/webhook',
 ] as const;

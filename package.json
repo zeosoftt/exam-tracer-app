@@ -25,7 +25,8 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:e2e": "playwright test",
-    "test:e2e:install": "playwright install chromium"
+    "test:e2e:install": "playwright install chromium",
+    "sentry:verify": "node scripts/verify-sentry-env.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",

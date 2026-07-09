@@ -80,16 +80,25 @@ const nextConfig = {
 
 module.exports = sentryEnabled
   ? require('@sentry/nextjs').withSentryConfig(nextConfig, {
-      silent: true,
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,
       authToken: process.env.SENTRY_AUTH_TOKEN,
-      widenClientFileUpload: true,
-      hideSourceMaps: true,
-      disableLogger: true,
-      automaticVercelMonitors: true,
+      silent: true,
+      tunnelRoute: '/monitoring',
       sourcemaps: {
         disable: !process.env.SENTRY_AUTH_TOKEN,
+      },
+      release: {
+        name: process.env.SENTRY_RELEASE || process.env.VERCEL_GIT_COMMIT_SHA,
+      },
+      errorHandler: (err) => {
+        console.warn('[Sentry] Build plugin:', err.message);
+      },
+      webpack: {
+        automaticVercelMonitors: true,
+        treeshake: {
+          removeDebugLogging: true,
+        },
       },
     })
   : nextConfig;

@@ -11,6 +11,7 @@ import { DashboardHeader } from '@/components/dashboard/home/DashboardHeader';
 import { DashboardHeroSection } from '@/components/dashboard/home/DashboardHeroSection';
 import { DashboardStatsGrid } from '@/components/dashboard/home/DashboardStatsGrid';
 import { DashboardSpacedRepetitionSection } from '@/components/dashboard/home/DashboardSpacedRepetitionSection';
+import { ParentChildrenPanel } from '@/components/dashboard/parent/ParentChildrenPanel';
 
 export function DashboardContent({ user }: { user: DashboardUser }) {
   const page = useDashboardPage(user);
@@ -28,6 +29,8 @@ export function DashboardContent({ user }: { user: DashboardUser }) {
           stats={page.stats}
           srsOverdue={page.srsOverdue}
         />
+
+        <ParentChildrenPanel />
 
         <DashboardStatsGrid
           isLoading={page.isLoading}

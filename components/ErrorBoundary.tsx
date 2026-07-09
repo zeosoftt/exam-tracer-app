@@ -7,6 +7,7 @@
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { postClientError } from '@/lib/client-api/logErrorClient';
+import { captureException } from '@/lib/sentry/capture';
 
 interface Props {
   children: ReactNode;
@@ -28,8 +29,8 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log error to API endpoint (server-side logging)
-    // Only log in production or if API is available
+    captureException(error, { componentStack: errorInfo.componentStack ?? undefined });
+
     if (typeof window !== 'undefined') {
       // Send error to logging API
       void postClientError({
