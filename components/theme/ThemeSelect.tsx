@@ -22,14 +22,31 @@ export function ThemeSelect({ className }: { className?: string }) {
   if (!mounted) {
     return (
       <div
-        className={cn('h-24 animate-pulse rounded-2xl bg-stone-100 dark:bg-stone-800', className)}
+        className={cn(
+          'grid gap-2.5 sm:gap-3 md:grid-cols-2 lg:grid-cols-3',
+          className,
+        )}
         aria-hidden
-      />
+      >
+        {[0, 1, 2].map((key) => (
+          <div
+            key={key}
+            className="min-h-[4.5rem] animate-pulse rounded-2xl bg-stone-100 dark:bg-stone-800 sm:min-h-[5.5rem]"
+          />
+        ))}
+      </div>
     );
   }
 
   return (
-    <div className={cn('grid gap-3 sm:grid-cols-3', className)} role="radiogroup" aria-label="Tema seçimi">
+    <div
+      className={cn(
+        'grid w-full min-w-0 grid-cols-1 gap-2.5 sm:gap-3 md:grid-cols-2 lg:grid-cols-3',
+        className,
+      )}
+      role="radiogroup"
+      aria-label="Tema seçimi"
+    >
       {options.map(({ value, label, Icon, description }) => {
         const selected = theme === value;
         return (
@@ -38,18 +55,20 @@ export function ThemeSelect({ className }: { className?: string }) {
             type="button"
             role="radio"
             aria-checked={selected}
+            aria-label={`${label}: ${description}`}
             onClick={() => setTheme(value)}
             className={cn(
-              'flex flex-col items-start gap-2 rounded-2xl border p-4 text-left transition-colors',
+              'flex w-full min-w-0 flex-col items-start gap-1.5 rounded-2xl border p-3 text-left transition-colors sm:gap-2 sm:p-4',
+              'min-h-[4.25rem] touch-manipulation sm:min-h-[5.5rem]',
               selected
                 ? 'border-primary-500 bg-primary-50 ring-2 ring-primary-500/20 dark:border-primary-500 dark:bg-primary-950/40 dark:ring-primary-400/30'
                 : 'border-stone-200 bg-white hover:border-stone-300 dark:border-stone-700 dark:bg-stone-900/50 dark:hover:border-stone-600',
             )}
           >
-            <span className="flex w-full items-center gap-2">
+            <span className="flex w-full min-w-0 items-center gap-2">
               <Icon
                 className={cn(
-                  'h-5 w-5',
+                  'h-5 w-5 shrink-0',
                   selected ? 'text-primary-700 dark:text-primary-400' : 'text-stone-500 dark:text-stone-400',
                 )}
                 aria-hidden
@@ -65,7 +84,9 @@ export function ThemeSelect({ className }: { className?: string }) {
                 {label}
               </span>
             </span>
-            <span className="text-xs leading-snug text-stone-500 dark:text-stone-400">{description}</span>
+            <span className="w-full min-w-0 text-xs leading-snug text-stone-500 dark:text-stone-400">
+              {description}
+            </span>
           </button>
         );
       })}

@@ -27,11 +27,11 @@ export function SubAppPageHeader({
     right !== undefined ? (
       right
     ) : showThemeToggle ? (
-      <div className="flex w-20 justify-end">
+      <div className="flex min-w-0 justify-end">
         <ThemeToggleCompact />
       </div>
     ) : (
-      <div className="w-20" aria-hidden />
+      <div className="w-16 shrink-0 sm:w-20" aria-hidden />
     );
 
   return (
