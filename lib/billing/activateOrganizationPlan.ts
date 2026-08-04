@@ -29,10 +29,6 @@ export async function activateOrganizationPlan(params: ActivatePlanParams): Prom
   periodEnd.setDate(periodEnd.getDate() + periodDays);
 
   await prisma.$transaction(async (tx) => {
-    await tx.user.update({
-      where: { id: params.userId },
-      data: { currentPlanId: plan.id },
-    });
     await tx.organization.update({
       where: { id: params.organizationId },
       data: { currentPlanId: plan.id },

@@ -30,11 +30,19 @@ export function DashboardDetailContent({ user }: { user: DashboardUser }) {
           </div>
         ) : null}
 
-        {!page.isLoading && page.detailData?.sections && page.detailData.sections.length > 0 && (
+        {!page.isLoading && page.fetchError ? (
+          <FlashMessage type="error" variant="bordered">
+            {page.fetchError} Sayfayı yenileyin; sorun devam ederse destek ile iletişime geçin.
+          </FlashMessage>
+        ) : null}
+
+        {!page.isLoading && !page.fetchError && page.detailData?.sections && page.detailData.sections.length > 0 && (
           <DashboardDetailSectionsView {...page} />
         )}
 
-        {!page.isLoading && (!page.detailData?.exam || page.detailData.sections.length === 0) && (
+        {!page.isLoading &&
+          !page.fetchError &&
+          (!page.detailData?.exam || page.detailData.sections.length === 0) && (
           <DashboardDetailEmptyState />
         )}
       </main>

@@ -66,7 +66,6 @@ export async function createFreemiumPersonalOrganization(
     where: { id: userId },
     data: {
       personalOrganizationId: org.id,
-      currentPlanId: freePlan.id,
     },
   });
 

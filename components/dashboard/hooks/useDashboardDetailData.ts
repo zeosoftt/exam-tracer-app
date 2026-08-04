@@ -7,6 +7,7 @@ import { selectSection, selectSubject } from '../domain/detailSelectors';
 
 export function useDashboardDetailData() {
   const [detailData, setDetailData] = useState<DetailData | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -21,23 +22,31 @@ export function useDashboardDetailData() {
 
     detailFetchInFlightRef.current = true;
     try {
-      const data = await fetchDashboardDetailData(options);
-      if (data) {
-        startTransition(() => {
-          setDetailData(data);
-        });
-        lastDetailFetchAtRef.current = Date.now();
+      const result = await fetchDashboardDetailData(options);
+      if (result.ok) {
+        const data = result.data;
+        setFetchError(null);
+        if (data) {
+          startTransition(() => {
+            setDetailData(data);
+          });
+          lastDetailFetchAtRef.current = Date.now();
 
-        if (data.sections?.length > 0 && !initialSelectionAppliedRef.current) {
-          initialSelectionAppliedRef.current = true;
-          const firstSection = data.sections[0];
-          setSelectedSectionId(firstSection.id);
-          if (firstSection.subjects?.length > 0) {
-            setSelectedSubjectId(firstSection.subjects[0].id);
+          if (data.sections?.length > 0 && !initialSelectionAppliedRef.current) {
+            initialSelectionAppliedRef.current = true;
+            const firstSection = data.sections[0];
+            setSelectedSectionId(firstSection.id);
+            if (firstSection.subjects?.length > 0) {
+              setSelectedSubjectId(firstSection.subjects[0].id);
+            }
           }
         }
+      } else {
+        setFetchError(result.message ?? 'Veriler yüklenemedi.');
+        console.error('Failed to fetch dashboard detail:', result.status, result.message);
       }
     } catch (error) {
+      setFetchError('Veriler yüklenemedi.');
       console.error('Failed to fetch data:', error);
     } finally {
       detailFetchInFlightRef.current = false;
@@ -69,6 +78,7 @@ export function useDashboardDetailData() {
 
   return {
     detailData,
+    fetchError,
     isLoading,
     fetchDetailData,
     selectedSectionId,

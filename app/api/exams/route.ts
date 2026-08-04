@@ -37,7 +37,7 @@ const getExamsHandler = requirePermission('EXAM_VIEW')(async (req, { userId, ses
   if (!canCreateExam(userPermissions)) {
     where.examAssignments = {
       some: {
-        OR: [{ userId }, { institutionId: session.user.institutionId }],
+        userId,
         deletedAt: null,
       },
     };

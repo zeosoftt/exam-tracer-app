@@ -15,7 +15,7 @@ async function getStatsHandler(): Promise<NextResponse> {
     examsCount,
     pomodoroSessionsCount,
     examAssignmentsCount,
-    usersByPlan,
+    orgsByPlan,
     shopierCheckoutClicks,
   ] = await Promise.all([
     prisma.user.count({ where: { deletedAt: null } }),
@@ -23,15 +23,15 @@ async function getStatsHandler(): Promise<NextResponse> {
     prisma.exam.count({ where: { deletedAt: null } }),
     prisma.pomodoroSession.count({ where: { deletedAt: null } }),
     prisma.examAssignment.count({ where: { deletedAt: null } }),
-    prisma.user.groupBy({
+    prisma.organization.groupBy({
       by: ['currentPlanId'],
-      where: { deletedAt: null },
+      where: { deletedAt: null, isPersonal: true },
       _count: { _all: true },
     }),
     getShopierCheckoutClickCount(),
   ]);
 
-  const planIds = usersByPlan
+  const planIds = orgsByPlan
     .map((g) => g.currentPlanId)
     .filter((id): id is string => typeof id === 'string' && id.length > 0);
 
@@ -44,7 +44,7 @@ async function getStatsHandler(): Promise<NextResponse> {
 
   const planById = new Map(plans.map((p) => [p.id, p]));
 
-  const planStats = usersByPlan.map((g) => {
+  const planStats = orgsByPlan.map((g) => {
     if (!g.currentPlanId) {
       return {
         planId: null as string | null,

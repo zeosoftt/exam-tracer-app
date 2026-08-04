@@ -43,34 +43,6 @@ async function main() {
     }
   }
 
-  // Mevcut kullanıcıların currentPlanId'sini kişisel org planından doldur
-  const usersWithoutPlan = await prisma.user.findMany({
-    where: {
-      personalOrganizationId: { not: null },
-      currentPlanId: null,
-      deletedAt: null,
-    },
-    select: { id: true, personalOrganizationId: true },
-  });
-  if (usersWithoutPlan.length > 0) {
-    const orgIds = [...new Set(usersWithoutPlan.map((u) => u.personalOrganizationId).filter(Boolean))] as string[];
-    const orgs = await prisma.organization.findMany({
-      where: { id: { in: orgIds } },
-      select: { id: true, currentPlanId: true },
-    });
-    const orgPlan = new Map(orgs.map((o) => [o.id, o.currentPlanId]));
-    for (const u of usersWithoutPlan) {
-      const planId = u.personalOrganizationId && orgPlan.get(u.personalOrganizationId);
-      if (planId) {
-        await prisma.user.update({
-          where: { id: u.id },
-          data: { currentPlanId: planId },
-        });
-      }
-    }
-    console.log(`currentPlanId güncellendi: ${usersWithoutPlan.length} kullanıcı.`);
-  }
-
   console.log(`\nBitti. Başarılı: ${ok}, Hata: ${fail}`);
 }
 

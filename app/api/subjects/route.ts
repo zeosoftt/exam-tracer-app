@@ -41,16 +41,7 @@ async function getSubjectsHandler(req: NextRequest): Promise<NextResponse> {
     }
 
     const userPermissions = toUserPermissions(session);
-    const examInstitutionId = await prisma.examAssignment.findFirst({
-      where: { examId, deletedAt: null, institutionId: { not: null } },
-      select: { institutionId: true },
-    });
-    const canView = await userCanViewExam(
-      userId,
-      examId,
-      userPermissions,
-      examInstitutionId?.institutionId ?? null,
-    );
+    const canView = await userCanViewExam(userId, examId, userPermissions, null);
     if (!canView) {
       throw new ForbiddenError();
     }

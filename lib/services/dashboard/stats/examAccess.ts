@@ -3,12 +3,12 @@
 export function buildExamWhereForUser(
   userRole: string | undefined,
   userId: string,
-  institutionId: string | null | undefined,
+  _institutionId: string | null | undefined,
 ): {
   deletedAt: null;
   examAssignments?: {
     some: {
-      OR: Array<{ userId?: string; institutionId?: string | null }>;
+      userId: string;
       deletedAt: null;
     };
   };
@@ -17,7 +17,7 @@ export function buildExamWhereForUser(
     deletedAt: null;
     examAssignments?: {
       some: {
-        OR: Array<{ userId?: string; institutionId?: string | null }>;
+        userId: string;
         deletedAt: null;
       };
     };
@@ -26,7 +26,7 @@ export function buildExamWhereForUser(
   if (userRole !== 'ADMIN') {
     where.examAssignments = {
       some: {
-        OR: [{ userId }, { institutionId }],
+        userId,
         deletedAt: null,
       },
     };

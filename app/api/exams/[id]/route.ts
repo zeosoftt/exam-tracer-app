@@ -58,14 +58,7 @@ async function getExamHandler(
       throw new NotFoundError('Exam not found');
     }
 
-    // Check permissions
-    const examInstitutionId = exam.examAssignments.find((ea) => ea.institutionId)?.institutionId;
-    const canView = await userCanViewExam(
-      userId,
-      params.id,
-      userPermissions,
-      examInstitutionId,
-    );
+    const canView = await userCanViewExam(userId, params.id, userPermissions, null);
     if (!canView) {
       throw new ForbiddenError();
     }
@@ -108,8 +101,7 @@ async function updateExamHandler(
       throw new NotFoundError('Exam not found');
     }
 
-    const examInstitutionId = exam.examAssignments.find((ea) => ea.institutionId)?.institutionId;
-    if (!canUpdateExam(userPermissions, examInstitutionId)) {
+    if (!canUpdateExam(userPermissions, null)) {
       throw new ForbiddenError();
     }
 
@@ -178,8 +170,7 @@ async function deleteExamHandler(
       throw new NotFoundError('Exam not found');
     }
 
-    const examInstitutionId = exam.examAssignments.find((ea) => ea.institutionId)?.institutionId;
-    if (!canUpdateExam(userPermissions, examInstitutionId)) {
+    if (!canUpdateExam(userPermissions, null)) {
       throw new ForbiddenError();
     }
 

@@ -36,7 +36,7 @@ export async function listExams(params: {
       include: {
         examAssignments: {
           where: { deletedAt: null },
-          select: { institutionId: true, userId: true },
+          select: { userId: true },
         },
       },
     }),

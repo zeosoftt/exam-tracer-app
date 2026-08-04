@@ -32,10 +32,19 @@ export type FetchDetailOptions = { force?: boolean };
 
 export async function fetchDashboardDetailData(
   options?: FetchDetailOptions,
-): Promise<DetailData | null> {
+): Promise<
+  { ok: true; data: DetailData } | { ok: false; status: number; message?: string }
+> {
   const url = options?.force ? '/api/dashboard/detail?fresh=1' : '/api/dashboard/detail';
   const result = await fetchApiData<DetailData>(url);
-  return result.ok ? result.data : null;
+  if (result.ok && result.data) {
+    return { ok: true, data: result.data };
+  }
+  return {
+    ok: false,
+    status: result.ok ? 200 : result.status,
+    message: result.ok ? undefined : result.message,
+  };
 }
 
 /** Plan badge CSS eşlemesi — billing client ile paylaşılabilir */

@@ -16,7 +16,6 @@ model User {
   role                   UserRole?         @default(INDIVIDUAL)
   institutionId          String?
   personalOrganizationId String?           @unique
-  currentPlanId          String?           // Kişisel org planı (hangi planda olduğu)
   isActive               Boolean           @default(true)
   emailVerified          Boolean           @default(false)
   lastLoginAt            DateTime?
@@ -42,20 +41,17 @@ model User {
   memberships            Membership[]
   passwordResetTokens    PasswordResetToken[]
   pomodoroSessions       PomodoroSession[]
-  sessions               Session[]
   userProgress           UserProgress[]
   parentLinksAsParent    ParentStudentLink[] @relation("ParentStudentLinks")
   parentLinksAsStudent   ParentStudentLink[] @relation("StudentChildLinks")
   institution            Institution?      @relation(fields: [institutionId], references: [id])
   personalOrganization   Organization?     @relation("UserPersonalOrganization", fields: [personalOrganizationId], references: [id])
-  currentPlan            Plan?             @relation(fields: [currentPlanId], references: [id])
 
   @@index([email])
   @@index([institutionId])
   @@index([role])
   @@index([isActive])
   @@index([personalOrganizationId])
-  @@index([currentPlanId])
   @@map("users")
 }
 
@@ -146,7 +142,6 @@ model Institution {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   deletedAt       DateTime?
-  examAssignments ExamAssignment[]
   users           User[]
 
   @@index([code])
@@ -237,26 +232,19 @@ model Topic {
 }
 
 model ExamAssignment {
-  id             String        @id @default(cuid())
-  examId         String
-  institutionId  String?
-  organizationId String?
-  userId         String?
-  assignedAt     DateTime      @default(now())
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  deletedAt      DateTime?
-  exam           Exam          @relation(fields: [examId], references: [id], onDelete: Cascade)
-  institution    Institution?  @relation(fields: [institutionId], references: [id], onDelete: Cascade)
-  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  user           User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String    @id @default(cuid())
+  examId     String
+  userId     String?
+  assignedAt DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+  exam       Exam      @relation(fields: [examId], references: [id], onDelete: Cascade)
+  user       User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([examId])
-  @@index([institutionId])
-  @@index([organizationId])
   @@index([userId])
   @@index([userId, deletedAt])
-  @@index([organizationId, deletedAt])
   @@map("exam_assignments")
 }
 
@@ -289,21 +277,6 @@ model UserProgress {
   @@index([topicId, deletedAt])
   @@index([userId, nextReviewAt])
   @@map("user_progress")
-}
-
-model Session {
-  id        String   @id @default(cuid())
-  userId    String
-  token     String   @unique
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([token])
-  @@index([expiresAt])
-  @@map("sessions")
 }
 
 model PomodoroSession {
@@ -375,7 +348,6 @@ model Organization {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   deletedAt       DateTime?
-  examAssignments ExamAssignment[]
   exams           Exam[]
   memberships     Membership[]
   roles           Role[]
@@ -499,7 +471,6 @@ model Plan {
   deletedAt     DateTime?
   planFeatures  PlanFeature[]
   subscriptions Subscription[]
-  users         User[]
   organizationsCurrentPlan Organization[] @relation("OrganizationCurrentPlan")
 
   @@index([code])

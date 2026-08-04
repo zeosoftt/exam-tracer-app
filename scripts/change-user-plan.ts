@@ -1,6 +1,5 @@
 /**
- * DB'de bir kullanıcının planını değiştirir.
- * Hem User.currentPlanId hem kişisel Organization.currentPlanId güncellenir.
+ * DB'de bir kullanıcının planını değiştirir (Organization.currentPlanId).
  *
  * Kullanım:
  *   npx tsx scripts/change-user-plan.ts <email veya userId> <planKodu>
@@ -49,32 +48,19 @@ async function main() {
       email: true,
       firstName: true,
       lastName: true,
-      currentPlanId: true,
       personalOrganizationId: true,
     },
   });
 
-  if (!user) {
+  if (!user?.personalOrganizationId) {
     console.error('Kullanıcı bulunamadı:', userArg);
     process.exit(1);
   }
 
-  const orgId = user.personalOrganizationId;
-  if (!orgId) {
-    console.error('Bu kullanıcının kişisel organizasyonu yok. Önce Freemium backfill çalıştırın.');
-    process.exit(1);
-  }
-
-  await prisma.$transaction([
-    prisma.user.update({
-      where: { id: user.id },
-      data: { currentPlanId: plan.id },
-    }),
-    prisma.organization.update({
-      where: { id: orgId },
-      data: { currentPlanId: plan.id },
-    }),
-  ]);
+  await prisma.organization.update({
+    where: { id: user.personalOrganizationId },
+    data: { currentPlanId: plan.id },
+  });
 
   console.log('Plan güncellendi.');
   console.log('  Kullanıcı:', user.email, `(${user.firstName} ${user.lastName})`);
