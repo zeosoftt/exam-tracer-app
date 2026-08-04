@@ -1,4 +1,4 @@
-import type { LinkedStudentSummary } from '@/lib/parent/listLinkedStudents';
+import type { LinkedStudentSummary } from '@/lib/parent/linkedStudentTypes';
 import { fetchApiData } from '@/lib/client-api/http';
 
 export async function fetchParentChildren(): Promise<LinkedStudentSummary[]> {

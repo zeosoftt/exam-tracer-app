@@ -4,16 +4,9 @@
 
 import { prisma } from '@/lib/db/prisma';
 import { ensureProductionTablesOnce } from '@/lib/db/ensureProductionTables';
+import type { LinkedStudentSummary } from '@/lib/parent/linkedStudentTypes';
 
-export type LinkedStudentSummary = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  organizationId: string | null;
-  completedTopics: number;
-  totalTopics: number;
-};
+export type { LinkedStudentSummary } from '@/lib/parent/linkedStudentTypes';
 
 export async function listLinkedStudentsForParent(
   parentUserId: string,

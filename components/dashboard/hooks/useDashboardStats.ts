@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, startTransition } from 'react';
 import type { DashboardStats } from '../domain/dashboardTypes';
 import { fetchDashboardStatsPayload, type FetchStatsOptions } from '@/lib/client-api/dashboardClient';
+import { patchTopicProgress } from '@/lib/client-api/progressClient';
 import { scheduleIdleTask } from '@/lib/runtime/scheduleIdleTask';
 
 export function useDashboardStats() {
@@ -10,6 +11,7 @@ export function useDashboardStats() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [statsUpdatedAt, setStatsUpdatedAt] = useState<Date | null>(null);
+  const [reviewAckTopicId, setReviewAckTopicId] = useState<string | null>(null);
   const lastLiteStatsFetchAtRef = useRef(0);
   const lastFullStatsFetchAtRef = useRef(0);
   const statsFetchInFlightRef = useRef(false);
@@ -64,6 +66,19 @@ export function useDashboardStats() {
     }
   }, []);
 
+  const acknowledgeTopicReview = useCallback(
+    async (topicId: string) => {
+      setReviewAckTopicId(topicId);
+      try {
+        const { ok } = await patchTopicProgress(topicId, { reviewCompleted: true });
+        if (ok) await fetchStats({ force: true, lite: false });
+      } finally {
+        setReviewAckTopicId(null);
+      }
+    },
+    [fetchStats],
+  );
+
   useEffect(() => {
     void fetchStats({ lite: true });
     scheduleIdleTask(
@@ -108,5 +123,7 @@ export function useDashboardStats() {
     loadError,
     statsUpdatedAt,
     fetchStats,
+    reviewAckTopicId,
+    acknowledgeTopicReview,
   };
 }

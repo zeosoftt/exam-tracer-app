@@ -10,6 +10,8 @@
  * - Authorization = hasPermission AND planAllowsFeature
  */
 
+import 'server-only';
+
 import { prisma } from '@/lib/db/prisma';
 
 // ============================================================================

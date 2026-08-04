@@ -7,6 +7,8 @@
  * Böylece "too many connections" ve yavaş istekler azalır.
  */
 
+import 'server-only';
+
 import { PrismaClient } from '@prisma/client';
 
 const globalForPrisma = globalThis as unknown as {

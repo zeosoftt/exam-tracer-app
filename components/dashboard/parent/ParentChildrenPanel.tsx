@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Users, Loader2 } from 'lucide-react';
 import { PageSectionCard } from '@/components/ui';
 import { fetchParentChildren } from '@/lib/client-api/parentClient';
-import type { LinkedStudentSummary } from '@/lib/parent/listLinkedStudents';
+import type { LinkedStudentSummary } from '@/lib/parent/linkedStudentTypes';
 import { scheduleIdleTask } from '@/lib/runtime/scheduleIdleTask';
 
 function StudentRow({ student }: { student: LinkedStudentSummary }) {

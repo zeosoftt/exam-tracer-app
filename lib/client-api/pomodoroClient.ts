@@ -1,5 +1,6 @@
 /**
  * Pomodoro session API (history + stats, start, complete).
+ * Yalnızca HTTP client — server modülü (authorization, prisma, pomodoroAccess) import ETME.
  */
 
 import { fetchApiData, fetchJson, jsonInit } from '@/lib/client-api/http';

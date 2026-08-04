@@ -5,6 +5,8 @@
  * Vercel and most platforms already capture console output as structured logs.
  */
 
+import 'server-only';
+
 import winston from 'winston';
 import { captureException } from '@/lib/sentry/capture';
 
