@@ -12,6 +12,11 @@ function parseSampleRate(value: string | undefined, fallback: number): number {
 }
 
 export function isSentryEnabled(): boolean {
+  const isDev = process.env.NODE_ENV === 'development';
+  if (isDev && process.env.SENTRY_ENABLE_DEV !== 'true') {
+    return false;
+  }
+
   if (typeof window !== 'undefined') {
     return Boolean(process.env.NEXT_PUBLIC_SENTRY_DSN?.trim());
   }
@@ -44,6 +49,9 @@ const IGNORED_ERRORS = [
   'Email and password are required',
   'Account is inactive',
   'CredentialsSignin',
+  // Next.js dev HMR / stale .next cache (webpack-runtime module load)
+  "Cannot read properties of undefined (reading 'call')",
+  'Cannot find module',
 ];
 
 export function getSentryInitOptions(): Options {
@@ -65,13 +73,24 @@ export function getSentryInitOptions(): Options {
         delete event.request.headers.cookie;
       }
       const message = event.exception?.values?.[0]?.value ?? event.message ?? '';
-      if (
-        typeof message === 'string' &&
-        (message.includes('Invalid email or password') ||
+      if (typeof message === 'string') {
+        if (
+          message.includes('Invalid email or password') ||
           message.includes('CredentialsSignin') ||
-          message === AUTH_ERROR_CODES.EMAIL_NOT_VERIFIED)
-      ) {
-        return null;
+          message === AUTH_ERROR_CODES.EMAIL_NOT_VERIFIED
+        ) {
+          return null;
+        }
+        if (
+          message.includes("reading 'call'") ||
+          (message.includes('Cannot find module') && message.includes('.next'))
+        ) {
+          return null;
+        }
+        const url = event.request?.url ?? '';
+        if (url.includes('localhost') || url.includes('127.0.0.1')) {
+          return null;
+        }
       }
       return event;
     },
