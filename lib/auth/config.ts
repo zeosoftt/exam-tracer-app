@@ -9,7 +9,6 @@ import { prisma } from '@/lib/db/prisma';
 import { comparePassword } from '@/lib/auth/password';
 import { logAuth, logError } from '@/lib/logger';
 import {
-  ERROR_MESSAGES,
   AUTH_ERROR_CODES,
   NEXTAUTH_COOKIE_MAX_AGE_SECONDS,
   NEXTAUTH_SESSION_SHORT_SECONDS,
@@ -39,46 +38,39 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('Email and password are required');
+          return null;
         }
 
+        const email = credentials.email.toLowerCase().trim();
         const remember =
           credentials.remember === 'true' ||
           credentials.remember === '1' ||
           credentials.remember === 'on';
 
         try {
-          // Find user by email (excluding soft-deleted users)
-          // Use findUnique since email is unique in schema
-          // Don't use select to avoid issues if migration hasn't been run yet
           const user = await prisma.user.findUnique({
-            where: {
-              email: credentials.email.toLowerCase(),
-            },
+            where: { email },
           });
 
-          // Check if user exists and is not soft-deleted
           if (!user || user.deletedAt !== null) {
-            logAuth('Login failed: User not found or deleted', undefined, { email: credentials.email });
-            throw new Error(ERROR_MESSAGES.INVALID_CREDENTIALS);
+            logAuth('Login failed: User not found or deleted', undefined, { email });
+            return null;
           }
-
 
           if (!user.isActive) {
-            logAuth('Login failed: User inactive', user.id, { email: credentials.email });
-            throw new Error('Account is inactive');
+            logAuth('Login failed: User inactive', user.id, { email });
+            return null;
           }
 
-          // Önce şifre (e-posta doğrulanmamış hesapların varlığını sızdırmamak için)
           const isPasswordValid = await comparePassword(credentials.password, user.passwordHash);
 
           if (!isPasswordValid) {
-            logAuth('Login failed: Invalid password', user.id, { email: credentials.email });
-            throw new Error(ERROR_MESSAGES.INVALID_CREDENTIALS);
+            logAuth('Login failed: Invalid password', user.id, { email });
+            return null;
           }
 
           if (!user.emailVerified) {
-            logAuth('Login failed: Email not verified', user.id, { email: credentials.email });
+            logAuth('Login failed: Email not verified', user.id, { email });
             throw new Error(AUTH_ERROR_CODES.EMAIL_NOT_VERIFIED);
           }
 
@@ -88,7 +80,7 @@ export const authOptions: NextAuthOptions = {
             data: { lastLoginAt: new Date() },
           });
 
-          logAuth('Login successful', user.id, { email: credentials.email, role: user.role });
+          logAuth('Login successful', user.id, { email, role: user.role });
 
           // Get user's active organization (personal or most recent membership)
           // Migration may not be done yet, so handle gracefully

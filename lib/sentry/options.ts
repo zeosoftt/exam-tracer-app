@@ -3,6 +3,7 @@
  */
 
 import type { Options } from '@sentry/core';
+import { AUTH_ERROR_CODES } from '@/config/constants';
 
 function parseSampleRate(value: string | undefined, fallback: number): number {
   if (!value) return fallback;
@@ -39,6 +40,10 @@ const IGNORED_ERRORS = [
   'Non-Error promise rejection captured',
   'Loading chunk',
   'ChunkLoadError',
+  'Invalid email or password',
+  'Email and password are required',
+  'Account is inactive',
+  'CredentialsSignin',
 ];
 
 export function getSentryInitOptions(): Options {
@@ -58,6 +63,15 @@ export function getSentryInitOptions(): Options {
       if (event.request?.headers) {
         delete event.request.headers.authorization;
         delete event.request.headers.cookie;
+      }
+      const message = event.exception?.values?.[0]?.value ?? event.message ?? '';
+      if (
+        typeof message === 'string' &&
+        (message.includes('Invalid email or password') ||
+          message.includes('CredentialsSignin') ||
+          message === AUTH_ERROR_CODES.EMAIL_NOT_VERIFIED)
+      ) {
+        return null;
       }
       return event;
     },
