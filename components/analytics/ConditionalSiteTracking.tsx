@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import type { PublicTrackingConfig } from '@/lib/siteSettings';
-import { SiteTrackingScripts } from '@/components/analytics/SiteTracking';
+import { DeferredSiteTracking } from '@/components/analytics/DeferredSiteTracking';
 
 function isDashboardRoute(pathname: string | null): boolean {
   return pathname?.startsWith('/dashboard') ?? false;
@@ -16,5 +16,5 @@ export function ConditionalSiteTracking({ tracking }: { tracking: PublicTracking
     return null;
   }
 
-  return <SiteTrackingScripts tracking={tracking} />;
+  return <DeferredSiteTracking tracking={tracking} />;
 }

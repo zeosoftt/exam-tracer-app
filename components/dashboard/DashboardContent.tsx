@@ -5,13 +5,33 @@
 
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useDashboardPage } from '@/components/dashboard/hooks/useDashboardPage';
 import type { DashboardUser } from '@/components/dashboard/home/dashboardHomeTypes';
 import { DashboardHeader } from '@/components/dashboard/home/DashboardHeader';
 import { DashboardHeroSection } from '@/components/dashboard/home/DashboardHeroSection';
-import { DashboardStatsGrid } from '@/components/dashboard/home/DashboardStatsGrid';
-import { DashboardSpacedRepetitionSection } from '@/components/dashboard/home/DashboardSpacedRepetitionSection';
-import { ParentChildrenPanel } from '@/components/dashboard/parent/ParentChildrenPanel';
+
+const DashboardStatsGrid = dynamic(
+  () =>
+    import('@/components/dashboard/home/DashboardStatsGrid').then((m) => m.DashboardStatsGrid),
+  { loading: () => null },
+);
+
+const DashboardSpacedRepetitionSection = dynamic(
+  () =>
+    import('@/components/dashboard/home/DashboardSpacedRepetitionSection').then(
+      (m) => m.DashboardSpacedRepetitionSection,
+    ),
+  { loading: () => null },
+);
+
+const ParentChildrenPanel = dynamic(
+  () =>
+    import('@/components/dashboard/parent/ParentChildrenPanel').then(
+      (m) => m.ParentChildrenPanel,
+    ),
+  { loading: () => null },
+);
 
 export function DashboardContent({
   user,

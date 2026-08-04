@@ -2,14 +2,14 @@
 
 import { useDashboardStats } from '@/components/dashboard/hooks/useDashboardStats';
 import { usePlanBadge } from '@/components/dashboard/hooks/usePlanBadge';
-import { useEvaluationTopicEditor } from '@/components/dashboard/hooks/useEvaluationTopicEditor';
+import { useSpacedRepetitionAck } from '@/components/dashboard/hooks/useSpacedRepetitionAck';
 import { useDashboardViewModel } from '@/components/dashboard/hooks/useDashboardViewModel';
 import type { DashboardUser } from '@/components/dashboard/home/dashboardHomeTypes';
 
 export function useDashboardPage(user: DashboardUser) {
   const { stats, isLoading, loadError, statsUpdatedAt, fetchStats } = useDashboardStats();
   const planBadge = usePlanBadge();
-  const { reviewAckTopicId, acknowledgeTopicReview } = useEvaluationTopicEditor(fetchStats);
+  const { reviewAckTopicId, acknowledgeTopicReview } = useSpacedRepetitionAck(fetchStats);
   const vm = useDashboardViewModel(stats, user.name);
 
   const srsOverdue = stats?.spacedRepetition?.summary.overdue ?? 0;

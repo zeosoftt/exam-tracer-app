@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, startTransition } from 'react';
 import type { DashboardStats } from '../domain/dashboardTypes';
 import { fetchDashboardStatsPayload, type FetchStatsOptions } from '@/lib/client-api/dashboardClient';
+import { scheduleIdleTask } from '@/lib/runtime/scheduleIdleTask';
 
 export function useDashboardStats() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -64,27 +65,40 @@ export function useDashboardStats() {
   }, []);
 
   useEffect(() => {
-    const load = async () => {
-      await fetchStats({ lite: true });
-      void fetchStats({ force: true, lite: false });
-    };
-    void load();
+    void fetchStats({ lite: true });
+    scheduleIdleTask(
+      () => {
+        void fetchStats({ force: true, lite: false });
+      },
+      { timeout: 2500 },
+    );
   }, [fetchStats]);
 
   useEffect(() => {
-    const handleFocus = () => {
-      fetchStats({ lite: true });
-    };
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        fetchStats({ lite: true });
-      }
-    };
-    window.addEventListener('focus', handleFocus);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    const cleanups: Array<() => void> = [];
+
+    scheduleIdleTask(
+      () => {
+        const handleFocus = () => {
+          fetchStats({ lite: true });
+        };
+        const handleVisibilityChange = () => {
+          if (!document.hidden) {
+            fetchStats({ lite: true });
+          }
+        };
+        window.addEventListener('focus', handleFocus);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        cleanups.push(() => window.removeEventListener('focus', handleFocus));
+        cleanups.push(() =>
+          document.removeEventListener('visibilitychange', handleVisibilityChange),
+        );
+      },
+      { timeout: 1500 },
+    );
+
     return () => {
-      window.removeEventListener('focus', handleFocus);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      for (const cleanup of cleanups) cleanup();
     };
   }, [fetchStats]);
 

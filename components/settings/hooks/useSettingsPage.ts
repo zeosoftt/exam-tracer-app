@@ -108,15 +108,6 @@ export function useSettingsPage() {
     void fetchSettingsPageData();
   }, [fetchSettingsPageData]);
 
-  useEffect(() => {
-    if (!isDirty) return;
-    const onBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-    };
-    window.addEventListener('beforeunload', onBeforeUnload);
-    return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, [isDirty]);
-
   const handleSaveSettings = useCallback(async () => {
     setMessage(null);
     setSaving(true);

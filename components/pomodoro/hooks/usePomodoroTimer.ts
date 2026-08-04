@@ -76,7 +76,18 @@ export function usePomodoroTimer({
       });
     }, 1000);
 
+    const onPageHide = (event: PageTransitionEvent) => {
+      if (event.persisted) return;
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+
+    window.addEventListener('pagehide', onPageHide);
+
     return () => {
+      window.removeEventListener('pagehide', onPageHide);
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;

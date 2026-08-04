@@ -8,6 +8,7 @@ import {
   type ElementType,
   type ReactNode,
 } from 'react';
+import { observeReveal, prefersReducedMotion } from '@/lib/dom/sharedIntersectionObserver';
 import { cn } from '@/lib/utils/cn';
 
 type LandingRevealProps = {
@@ -17,11 +18,6 @@ type LandingRevealProps = {
   delay?: number;
   as?: ElementType;
 };
-
-function prefersReducedMotion(): boolean {
-  if (typeof window === 'undefined') return false;
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
 
 export function LandingReveal({
   children,
@@ -41,18 +37,7 @@ export function LandingReveal({
     const el = ref.current;
     if (!el) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) {
-          setVisible(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: '0px 0px -6% 0px', threshold: 0.08 },
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
+    return observeReveal(el, () => setVisible(true));
   }, []);
 
   const style = {

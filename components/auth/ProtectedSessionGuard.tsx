@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { getSession, useSession } from 'next-auth/react';
 import { buildLoginUrl } from '@/lib/auth/authPaths';
+import { scheduleIdleTask } from '@/lib/runtime/scheduleIdleTask';
 
 /**
  * Çıkış sonrası bfcache ile korumalı sayfanın açılmasını engeller.
@@ -23,32 +24,43 @@ export function ProtectedSessionGuard() {
   }, [status, router, callbackPath]);
 
   useEffect(() => {
-    const ensureAuthenticated = async () => {
-      const session = await getSession();
-      if (!session?.user?.id) {
-        router.replace(buildLoginUrl({ callbackUrl: callbackPath }));
-        return false;
-      }
-      return true;
-    };
+    const cleanups: Array<() => void> = [];
 
-    const onPageShow = (event: PageTransitionEvent) => {
-      if (!event.persisted) return;
-      void ensureAuthenticated().then((ok) => {
-        if (ok) router.refresh();
-      });
-    };
+    scheduleIdleTask(
+      () => {
+        const ensureAuthenticated = async () => {
+          const session = await getSession();
+          if (!session?.user?.id) {
+            router.replace(buildLoginUrl({ callbackUrl: callbackPath }));
+            return false;
+          }
+          return true;
+        };
 
-    const onVisibilityChange = () => {
-      if (document.visibilityState !== 'visible') return;
-      void ensureAuthenticated();
-    };
+        const onPageShow = (event: PageTransitionEvent) => {
+          if (!event.persisted) return;
+          void ensureAuthenticated().then((ok) => {
+            if (ok) router.refresh();
+          });
+        };
 
-    window.addEventListener('pageshow', onPageShow);
-    document.addEventListener('visibilitychange', onVisibilityChange);
+        const onVisibilityChange = () => {
+          if (document.visibilityState !== 'visible') return;
+          void ensureAuthenticated();
+        };
+
+        window.addEventListener('pageshow', onPageShow);
+        document.addEventListener('visibilitychange', onVisibilityChange);
+        cleanups.push(() => window.removeEventListener('pageshow', onPageShow));
+        cleanups.push(() =>
+          document.removeEventListener('visibilitychange', onVisibilityChange),
+        );
+      },
+      { timeout: 2000 },
+    );
+
     return () => {
-      window.removeEventListener('pageshow', onPageShow);
-      document.removeEventListener('visibilitychange', onVisibilityChange);
+      for (const cleanup of cleanups) cleanup();
     };
   }, [router, callbackPath]);
 

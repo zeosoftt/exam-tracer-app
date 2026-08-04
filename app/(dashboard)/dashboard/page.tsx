@@ -16,9 +16,10 @@ const DashboardContent = dynamic(
 
 export default async function DashboardPage() {
   const session = await requirePageSession();
-  await redirectIfSetupWizardIncomplete(session);
-
-  const showParentChildrenPanel = await userCanViewParentChildrenPanel(session.user.id);
+  const [, showParentChildrenPanel] = await Promise.all([
+    redirectIfSetupWizardIncomplete(session),
+    userCanViewParentChildrenPanel(session.user.id),
+  ]);
 
   return (
     <DashboardContent user={session.user} showParentChildrenPanel={showParentChildrenPanel} />

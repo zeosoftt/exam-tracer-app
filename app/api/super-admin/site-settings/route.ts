@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withAdminHandler } from '@/lib/api/withAdminHandler';
 import {
   getAdminSiteSettings,
+  revalidateSiteSettingsCache,
   setSetting,
   SITE_KEYS,
 } from '@/lib/siteSettings';
@@ -69,6 +70,7 @@ async function patchSiteSettingsHandler(req: NextRequest): Promise<NextResponse>
     await setSetting(SITE_KEYS.ADSENSE_CLIENT_ID, patch.adsense_client_id.trim());
   }
 
+  revalidateSiteSettingsCache();
   const settings = await getAdminSiteSettings();
   return NextResponse.json({ success: true, data: settings });
 }

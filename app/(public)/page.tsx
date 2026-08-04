@@ -10,22 +10,47 @@ import { buildHomeJsonLd, buildHomeMetadata } from '@/lib/seo';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { getSettingBoolean, SITE_KEYS } from '@/lib/siteSettings';
 import { MarketingHeader } from '@/components/layout/MarketingHeader';
-import { LandingPainPoints } from '@/components/landing/LandingPainPoints';
 import { LandingOutcomeStrip } from '@/components/landing/LandingOutcomeStrip';
-import { LandingMidCta } from '@/components/landing/LandingMidCta';
 import { LandingHeroVibe } from '@/components/landing/LandingHeroVibe';
+import { LandingPainPoints } from '@/components/landing/LandingPainPoints';
 import { LandingFreeVsPro } from '@/components/landing/LandingFreeVsPro';
-import { LandingProductFeatures } from '@/components/landing/LandingProductFeatures';
-import { LandingTrustSection } from '@/components/landing/LandingTrustSection';
-import { LandingExamsStrip } from '@/components/landing/LandingExamsStrip';
-import { LandingAudience } from '@/components/landing/LandingAudience';
-import { LandingHowItWorks } from '@/components/landing/LandingHowItWorks';
-import { LandingPricing } from '@/components/landing/LandingPricing';
-import { LandingBenefits } from '@/components/landing/LandingBenefits';
-import { LandingTestimonials } from '@/components/landing/LandingTestimonials';
-import { LandingPartners } from '@/components/landing/LandingPartners';
-import { LandingFinalCta } from '@/components/landing/LandingFinalCta';
-import { MarketingFooter } from '@/components/layout/MarketingFooter';
+
+const LandingTrustSection = dynamic(() =>
+  import('@/components/landing/LandingTrustSection').then((m) => m.LandingTrustSection),
+);
+const LandingExamsStrip = dynamic(() =>
+  import('@/components/landing/LandingExamsStrip').then((m) => m.LandingExamsStrip),
+);
+const LandingAudience = dynamic(() =>
+  import('@/components/landing/LandingAudience').then((m) => m.LandingAudience),
+);
+const LandingProductFeatures = dynamic(() =>
+  import('@/components/landing/LandingProductFeatures').then((m) => m.LandingProductFeatures),
+);
+const LandingHowItWorks = dynamic(() =>
+  import('@/components/landing/LandingHowItWorks').then((m) => m.LandingHowItWorks),
+);
+const LandingMidCta = dynamic(() =>
+  import('@/components/landing/LandingMidCta').then((m) => m.LandingMidCta),
+);
+const LandingPricing = dynamic(() =>
+  import('@/components/landing/LandingPricing').then((m) => m.LandingPricing),
+);
+const LandingBenefits = dynamic(() =>
+  import('@/components/landing/LandingBenefits').then((m) => m.LandingBenefits),
+);
+const LandingTestimonials = dynamic(() =>
+  import('@/components/landing/LandingTestimonials').then((m) => m.LandingTestimonials),
+);
+const LandingPartners = dynamic(() =>
+  import('@/components/landing/LandingPartners').then((m) => m.LandingPartners),
+);
+const LandingFinalCta = dynamic(() =>
+  import('@/components/landing/LandingFinalCta').then((m) => m.LandingFinalCta),
+);
+const MarketingFooter = dynamic(() =>
+  import('@/components/layout/MarketingFooter').then((m) => m.MarketingFooter),
+);
 
 const MobileLandingCta = dynamic(
   () => import('@/components/layout/MobileLandingCta').then((m) => ({ default: m.MobileLandingCta })),

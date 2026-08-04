@@ -4,15 +4,12 @@
  */
 
 import { prisma } from '@/lib/db/prisma';
-import { ensureProductionTablesOnce } from '@/lib/db/ensureProductionTables';
 import { parentHasLinkedStudents } from '@/lib/parent/listLinkedStudents';
 
 const PARENT_ROLE_CODE = 'SYSTEM_ROLE_PARENT';
 
 /** Kurumsal (kişisel olmayan) org'da aktif veli üyeliği var mı? */
 export async function userHasInstitutionalParentRole(userId: string): Promise<boolean> {
-  await ensureProductionTablesOnce(prisma);
-
   const membership = await prisma.membership.findFirst({
     where: {
       userId,

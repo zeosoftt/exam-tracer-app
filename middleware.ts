@@ -56,10 +56,18 @@ export default withAuth(
 
     const response = NextResponse.next();
 
-    if (path.startsWith('/dashboard')) {
-      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-      response.headers.set('Pragma', 'no-cache');
-      response.headers.set('Expires', '0');
+    const accept = req.headers.get('accept') ?? '';
+    const isHtmlDocument =
+      req.method === 'GET' &&
+      accept.includes('text/html') &&
+      !path.startsWith('/api/');
+
+    // bfcache: no-store / Pragma / Expires geri-ileri önbelleği engeller.
+    // Oturum tazeliği ProtectedSessionGuard (pageshow) ile korunur.
+    if (isHtmlDocument) {
+      response.headers.set('Cache-Control', 'private, max-age=0, must-revalidate');
+      response.headers.delete('Pragma');
+      response.headers.delete('Expires');
     }
 
     const origin = req.headers.get('origin');
