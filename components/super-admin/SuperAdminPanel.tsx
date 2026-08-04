@@ -1,6 +1,7 @@
 'use client';
 
 import { useSuperAdminPanel } from '@/components/super-admin/hooks/useSuperAdminPanel';
+import { formatAdminDateTime } from '@/components/super-admin/formatAdminDateTime';
 import { TrackingSettingsSection } from '@/components/super-admin/TrackingSettingsSection';
 import {
   ROLE_LABELS,
@@ -42,7 +43,6 @@ export function SuperAdminPanel() {
     siteSettingsLoadError,
     siteSettingsPatchError,
     patchSiteSettings,
-    formatAdminDateTime,
   } = useSuperAdminPanel();
 
   return (

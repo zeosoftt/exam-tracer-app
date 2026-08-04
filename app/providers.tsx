@@ -20,20 +20,19 @@ function routeNeedsSession(pathname: string | null): boolean {
   );
 }
 
-export function Providers({ children }: { children: ReactNode }) {
+function OptionalSentryUserSync() {
   const pathname = usePathname();
-  const withSession = routeNeedsSession(pathname);
+  if (!routeNeedsSession(pathname)) return null;
+  return <SentryUserSync />;
+}
 
+export function Providers({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider>
-      {withSession ? (
-        <SessionProvider refetchOnWindowFocus={false}>
-          <SentryUserSync />
-          {children}
-        </SessionProvider>
-      ) : (
-        children
-      )}
+      <SessionProvider refetchOnWindowFocus={false}>
+        <OptionalSentryUserSync />
+        {children}
+      </SessionProvider>
     </ThemeProvider>
   );
 }

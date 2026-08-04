@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Loader2, ScrollText } from 'lucide-react';
 import type { AdminAuditLog } from '@/components/super-admin/domain/superAdminTypes';
 import { fetchSuperAdminAuditLogs } from '@/lib/client-api/superAdminClient';
-import { formatAdminDateTime } from '@/components/super-admin/hooks/useSuperAdminPanel';
+import { formatAdminDateTime } from '@/components/super-admin/formatAdminDateTime';
 
 export function AuditLogsSection() {
   const [logs, setLogs] = useState<AdminAuditLog[]>([]);
