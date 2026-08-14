@@ -7,6 +7,8 @@ import {
 } from '@/lib/marketing/marketingMetricsStore';
 import { getShopierCheckoutClickCount } from '@/lib/siteSettings';
 import { MARKETING_TOUCHPOINT_LABELS, type MarketingTouchpoint } from '@/lib/marketing/touchpoints';
+import { getSessionEngagementStats } from '@/lib/marketing/getSessionEngagementStats';
+import type { SessionEngagementStats } from '@/lib/marketing/sessionEngagementTypes';
 
 export type MarketingFunnelStats = {
   eventCounts: Record<string, number>;
@@ -23,6 +25,7 @@ export type MarketingFunnelStats = {
   conversionRatePct: number;
   checkoutToPurchaseRatePct: number | null;
   acquisitionSources: Array<{ source: string; count: number }>;
+  engagement: SessionEngagementStats;
 };
 
 function daysAgo(days: number): Date {
@@ -45,6 +48,7 @@ export async function getMarketingFunnelStats(): Promise<MarketingFunnelStats> {
     verifiedUsers,
     planGroups,
     acquisitionGroups,
+    engagement,
   ] = await Promise.all([
     getMarketingEventCounts(),
     getPurchaseCount(),
@@ -63,6 +67,7 @@ export async function getMarketingFunnelStats(): Promise<MarketingFunnelStats> {
       where: { deletedAt: null, acquisitionSource: { not: null } },
       _count: { _all: true },
     }),
+    getSessionEngagementStats(),
   ]);
 
   const planIds = planGroups.map((g) => g.currentPlanId).filter(Boolean) as string[];
@@ -119,5 +124,6 @@ export async function getMarketingFunnelStats(): Promise<MarketingFunnelStats> {
         count: g._count._all,
       }))
       .sort((a, b) => b.count - a.count),
+    engagement,
   };
 }

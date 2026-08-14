@@ -1,7 +1,8 @@
 'use client';
 
 import type { MarketingFunnelStats } from '@/lib/marketing/getMarketingFunnelStats';
-import { TrendingUp, MousePointerClick, ShoppingBag, Users, Target, BarChart2 } from 'lucide-react';
+import { formatDurationSeconds } from '@/lib/marketing/sessionEngagementTypes';
+import { TrendingUp, MousePointerClick, ShoppingBag, Users, Target, BarChart2, Clock } from 'lucide-react';
 
 type Props = {
   marketing: MarketingFunnelStats | undefined;
@@ -21,6 +22,8 @@ export function MarketingMetricsSection({ marketing, loading }: Props) {
   }
 
   if (!marketing) return null;
+
+  const { engagement } = marketing;
 
   const funnel = [
     { label: 'Landing görüntüleme', value: marketing.eventCounts.landing_view ?? 0 },
@@ -70,6 +73,41 @@ export function MarketingMetricsSection({ marketing, loading }: Props) {
           </div>
           <p className="text-2xl font-bold">{marketing.estimatedRevenueTry.toLocaleString('tr-TR')} ₺</p>
           <p className="text-xs text-stone-500">{marketing.purchasesTotal} satın alma</p>
+        </div>
+      </div>
+
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900/90">
+          <div className="mb-1 flex items-center gap-2 text-sm text-stone-500">
+            <Clock className="h-4 w-4" /> Ort. oturum (7 gün)
+          </div>
+          <p className="text-2xl font-bold">{formatDurationSeconds(engagement.avgDurationSeconds7d)}</p>
+          <p className="text-xs text-stone-500">
+            Medyan: {formatDurationSeconds(engagement.medianDurationSeconds7d)}
+          </p>
+        </div>
+        <div className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900/90">
+          <div className="mb-1 flex items-center gap-2 text-sm text-stone-500">
+            <Users className="h-4 w-4" /> Oturum sayısı (7 gün)
+          </div>
+          <p className="text-2xl font-bold">{engagement.sessionsLast7Days}</p>
+          <p className="text-xs text-stone-500">30 gün: {engagement.sessionsLast30Days}</p>
+        </div>
+        <div className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900/90">
+          <div className="mb-1 flex items-center gap-2 text-sm text-stone-500">
+            <Clock className="h-4 w-4" /> Toplam süre (7 gün)
+          </div>
+          <p className="text-2xl font-bold">{engagement.totalDurationMinutes7d.toLocaleString('tr-TR')} dk</p>
+          <p className="text-xs text-stone-500">
+            Ort. 30 gün: {formatDurationSeconds(engagement.avgDurationSeconds30d)}
+          </p>
+        </div>
+        <div className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900/90">
+          <div className="mb-1 flex items-center gap-2 text-sm text-stone-500">
+            <Users className="h-4 w-4" /> Giriş yapmış kullanıcı (7 gün)
+          </div>
+          <p className="text-2xl font-bold">{engagement.uniqueUsersLast7Days}</p>
+          <p className="text-xs text-stone-500">Sekme oturumu bazlı ölçüm</p>
         </div>
       </div>
 

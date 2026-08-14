@@ -42,6 +42,7 @@ model User {
   passwordResetTokens    PasswordResetToken[]
   pomodoroSessions       PomodoroSession[]
   userProgress           UserProgress[]
+  appSessions            AppSession[]
   parentLinksAsParent    ParentStudentLink[] @relation("ParentStudentLinks")
   parentLinksAsStudent   ParentStudentLink[] @relation("StudentChildLinks")
   institution            Institution?      @relation(fields: [institutionId], references: [id])
@@ -554,6 +555,24 @@ model SiteSetting {
 
   @@index([key])
   @@map("site_settings")
+}
+
+/// Tarayıcı oturumu — uygulamada kalma süresi (first-party analytics)
+model AppSession {
+  id              String   @id @default(cuid())
+  clientSessionId String   @unique @db.VarChar(64)
+  userId          String?
+  durationSeconds Int
+  startedAt       DateTime
+  endedAt         DateTime
+  lastPath        String?  @db.VarChar(256)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([endedAt])
+  @@map("app_sessions")
 }
 
 enum UserRole {
