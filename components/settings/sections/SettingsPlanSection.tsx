@@ -1,18 +1,14 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { CreditCard, Loader2 } from 'lucide-react';
 import { PageSectionCard } from '@/components/ui';
 import type { SettingsPageState } from '@/components/settings/hooks/useSettingsPage';
+import { MARKETING_TOUCHPOINTS } from '@/lib/marketing/touchpoints';
+import { FreeUserUpgradeInline } from '@/components/dashboard/FreeUserUpgradeBanner';
 
-const ShopierCheckoutLink = dynamic(
-  () => import('@/components/checkout/ShopierCheckoutLink').then((m) => m.ShopierCheckoutLink),
-  { ssr: false, loading: () => null },
-);
+type SettingsPlanSectionProps = Pick<SettingsPageState, 'planInfo' | 'planLoading' | 'email'>;
 
-type SettingsPlanSectionProps = Pick<SettingsPageState, 'planInfo' | 'planLoading'>;
-
-export function SettingsPlanSection({ planInfo, planLoading }: SettingsPlanSectionProps) {
+export function SettingsPlanSection({ planInfo, planLoading, email }: SettingsPlanSectionProps) {
   return (
     <PageSectionCard
       title="Plan ve Faturalandırma"
@@ -43,9 +39,7 @@ export function SettingsPlanSection({ planInfo, planLoading }: SettingsPlanSecti
               : 'Raporlar, dışa aktarma ve gelişmiş analitik dahil.'}
           </p>
           {planInfo.planCode === 'FREE' ? (
-            <ShopierCheckoutLink className="inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-primary-700 to-primary-600 py-3 text-sm font-bold text-white shadow-md transition-opacity hover:opacity-95 sm:w-auto sm:px-6">
-              Pro planı Shopier&apos;da satın al
-            </ShopierCheckoutLink>
+            <FreeUserUpgradeInline userEmail={email} touchpoint={MARKETING_TOUCHPOINTS.SETTINGS_PLAN} />
           ) : null}
           {planInfo.limits.length > 0 ? (
             <ul className="space-y-1 text-sm text-stone-600 dark:text-stone-400">

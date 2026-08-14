@@ -2,6 +2,10 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { Lock, Target } from 'lucide-react';
 import { DenemePremiumShopierCta } from '@/components/deneme/DenemePremiumShopierCta';
+import { ShopierCheckoutHint } from '@/components/checkout/ShopierCheckoutHint';
+import { getProPlanPriceLabel } from '@/lib/marketing/pricingDisplay';
+import { MARKETING_TOUCHPOINTS } from '@/lib/marketing/touchpoints';
+import { PremiumWallTracker } from '@/components/marketing/PremiumWallTracker';
 import type { DenemePageInitialData } from '@/lib/deneme/loadDenemePageData';
 import { DenemeAttemptsListSection } from '@/components/deneme/DenemeAttemptsListSection';
 
@@ -45,13 +49,15 @@ export function DenemePageStaticContent({ data, topContent }: DenemePageStaticCo
 
         {showPremiumBanner ? (
           <div className="mb-6 min-h-[9.5rem] rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50/50 to-orange-50/50 p-6 shadow-lg dark:border-amber-900/40 dark:from-amber-950/40 dark:to-orange-950/30">
+            <PremiumWallTracker touchpoint={MARKETING_TOUCHPOINTS.DENEME_LIST_WALL} />
             <div className="mb-3 flex items-center gap-2">
               <Lock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
               <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">Deneme detayı Premium&apos;da</h2>
             </div>
             <p className="mb-4 text-sm text-stone-600 dark:text-stone-400">
-              Deneme listesi ve yeni kayıt ücretsizdir. Ders bazlı sonuçlar ve konu analizi için Premium plan gerekir.
+              Deneme listesi ve yeni kayıt ücretsizdir. Ders bazlı sonuçlar ve konu analizi için Pro plan ({getProPlanPriceLabel({ withPeriod: true })}) gerekir.
             </p>
+            <ShopierCheckoutHint className="mb-4" compact />
             <DenemePremiumShopierCta className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-amber-600" />
           </div>
         ) : null}

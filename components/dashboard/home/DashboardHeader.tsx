@@ -4,6 +4,8 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Settings, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { MARKETING_TOUCHPOINTS } from '@/lib/marketing/touchpoints';
+import { getProPlanPriceLabel } from '@/lib/marketing/pricingDisplay';
 import { AppBrandLink, AppHeaderActions, AppPageHeader } from '@/components/ui';
 import type { PlanBadge } from '@/components/dashboard/domain/dashboardTypes';
 import type { DashboardUser } from '@/components/dashboard/home/dashboardHomeTypes';
@@ -67,12 +69,13 @@ export function DashboardHeader({ user, planBadge }: DashboardHeaderProps) {
               planBadge ? (
                 planBadge.code === 'FREE' ? (
                   <ShopierCheckoutLink
+                    touchpoint={MARKETING_TOUCHPOINTS.DASHBOARD_HEADER}
                     className={cn(
-                      'hidden items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold transition-opacity hover:opacity-90 sm:inline-flex',
+                      'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold transition-opacity hover:opacity-90',
                       planBadge.bgClass,
                       planBadge.textClass,
                     )}
-                    title="Pro planı Shopier üzerinden satın al"
+                    title={`Pro plan — ${getProPlanPriceLabel({ withPeriod: true })}`}
                   >
                     <span className={cn('h-1.5 w-1.5 rounded-full', planBadge.dotClass)} />
                     {planBadge.label}

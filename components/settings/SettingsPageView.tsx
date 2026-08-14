@@ -32,7 +32,7 @@ export function SettingsPageView({ page }: SettingsPageViewProps) {
         <div className="space-y-6">
           <SettingsAccountSection {...page} />
           <SettingsEmailChangeSection />
-          <SettingsPlanSection planInfo={page.planInfo} planLoading={page.planLoading} />
+          <SettingsPlanSection planInfo={page.planInfo} planLoading={page.planLoading} email={page.email} />
           <SettingsGoalsSection
             targetScore={page.targetScore}
             setTargetScore={page.setTargetScore}

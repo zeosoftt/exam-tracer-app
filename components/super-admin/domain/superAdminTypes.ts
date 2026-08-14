@@ -15,6 +15,7 @@ export interface AdminStats {
     planType: string;
     userCount: number;
   }>;
+  marketing?: import('@/lib/marketing/getMarketingFunnelStats').MarketingFunnelStats;
 }
 
 export type PlanStat = NonNullable<AdminStats['planStats']>[number];

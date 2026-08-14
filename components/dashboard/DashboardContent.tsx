@@ -10,6 +10,7 @@ import { useDashboardPage } from '@/components/dashboard/hooks/useDashboardPage'
 import type { DashboardUser } from '@/components/dashboard/home/dashboardHomeTypes';
 import { DashboardHeader } from '@/components/dashboard/home/DashboardHeader';
 import { DashboardHeroSection } from '@/components/dashboard/home/DashboardHeroSection';
+import { FreeUserUpgradeBanner } from '@/components/dashboard/FreeUserUpgradeBanner';
 
 const DashboardStatsGrid = dynamic(
   () =>
@@ -47,6 +48,13 @@ export function DashboardContent({
       <DashboardHeader user={page.user} planBadge={page.planBadge} />
 
       <main className="mx-auto max-w-5xl px-4 py-8 pb-24 sm:px-6 sm:py-10 sm:pb-12 lg:px-8">
+        {page.planBadge?.code === 'FREE' ? (
+          <FreeUserUpgradeBanner
+            userEmail={page.user.email}
+            denemeCount={page.stats?.deneme?.totalAttempts ?? 0}
+          />
+        ) : null}
+
         <DashboardHeroSection
           todayLabel={page.vm.todayLabel}
           firstName={page.vm.firstName}

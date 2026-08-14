@@ -14,6 +14,7 @@ import { registerSchema } from '@/lib/validation/schemas';
 import type { z } from 'zod';
 import { BookOpen, ArrowLeft, Loader2, User, Mail, Lock, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { postAuthRegister } from '@/lib/client-api/authForms';
+import { trackMarketingEvent } from '@/lib/marketing/trackMarketingEvent';
 
 function RegisterForm() {
   const router = useRouter();
@@ -97,6 +98,10 @@ function RegisterForm() {
           setError(errorMessage || 'Kayıt işlemi başarısız oldu');
           return;
         }
+
+        trackMarketingEvent('sign_up', {
+          exam_code: onboardingData?.examCode,
+        });
 
         // Clear onboarding data
         sessionStorage.removeItem('onboarding');

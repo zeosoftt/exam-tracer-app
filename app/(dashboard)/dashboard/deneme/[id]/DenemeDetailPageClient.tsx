@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import {
@@ -10,8 +9,6 @@ import {
   Calendar,
   Clock,
   Loader2,
-  Lock,
-  Sparkles,
   Target,
 } from 'lucide-react';
 import { SubAppPageHeader, FlashMessage } from '@/components/ui';
@@ -25,10 +22,9 @@ import {
   type DenemeTopicAnalysis,
 } from '@/lib/client-api/denemeClient';
 
-const ShopierCheckoutLink = dynamic(
-  () => import('@/components/checkout/ShopierCheckoutLink').then((m) => m.ShopierCheckoutLink),
-  { ssr: false, loading: () => null },
-);
+import { ProUpgradeCard } from '@/components/checkout/ProUpgradeCard';
+import { MARKETING_TOUCHPOINTS } from '@/lib/marketing/touchpoints';
+import { PremiumWallTracker } from '@/components/marketing/PremiumWallTracker';
 
 export default function DenemeDetailPageClient() {
   const params = useParams<{ id: string }>();
@@ -105,28 +101,18 @@ export default function DenemeDetailPageClient() {
 
         {!loading && premiumRequired ? (
           <div className="space-y-6">
-            <section className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50/50 to-orange-50/50 p-8 text-center shadow-lg dark:border-amber-900/40 dark:from-amber-950/40 dark:to-orange-950/30">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 dark:bg-amber-950/60">
-                <Lock className="h-7 w-7 text-amber-600 dark:text-amber-400" aria-hidden />
-              </div>
-              <h1 className="font-display text-xl font-bold text-stone-900 dark:text-stone-100">
-                Deneme detayı Premium&apos;da
-              </h1>
-              <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-stone-600 dark:text-stone-400">
-                Ders bazlı sonuçlar, konu analizi ve bilgi–deneme karşılaştırması Premium plan özelliğidir.
-                Deneme listesinden net trendinizi ücretsiz takip edebilirsiniz.
-              </p>
-              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-                <ShopierCheckoutLink className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-amber-600">
-                  <Sparkles className="h-4 w-4" />
-                  Pro&apos;yu Shopier&apos;da satın al
-                </ShopierCheckoutLink>
-                <Link href="/dashboard/deneme" className="btn btn-secondary inline-flex gap-2">
-                  <ArrowLeft className="h-4 w-4" />
-                  Deneme listesine dön
-                </Link>
-              </div>
-            </section>
+            <PremiumWallTracker touchpoint={MARKETING_TOUCHPOINTS.DENEME_DETAIL_WALL} />
+            <ProUpgradeCard
+              touchpoint={MARKETING_TOUCHPOINTS.DENEME_DETAIL_WALL}
+              title="Deneme detayı Pro'da açılır"
+              description="Ders bazlı sonuçlar, konu analizi ve bilgi–deneme karşılaştırması. Net trendinizi ücretsiz takip ederken detay analizi Pro ile gelir."
+            />
+            <div className="text-center">
+              <Link href="/dashboard/deneme" className="btn btn-secondary inline-flex gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Deneme listesine dön
+              </Link>
+            </div>
           </div>
         ) : null}
 

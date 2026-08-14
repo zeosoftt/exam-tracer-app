@@ -1,7 +1,9 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { Sparkles } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { getProPlanPriceLabel } from '@/lib/marketing/pricingDisplay';
+import { MARKETING_TOUCHPOINTS } from '@/lib/marketing/touchpoints';
 
 const ShopierCheckoutLink = dynamic(
   () => import('@/components/checkout/ShopierCheckoutLink').then((m) => m.ShopierCheckoutLink),
@@ -10,13 +12,17 @@ const ShopierCheckoutLink = dynamic(
 
 type Props = {
   className?: string;
+  touchpoint?: string;
 };
 
-export function DenemePremiumShopierCta({ className }: Props) {
+export function DenemePremiumShopierCta({
+  className,
+  touchpoint = MARKETING_TOUCHPOINTS.DENEME_LIST_WALL,
+}: Props) {
   return (
-    <ShopierCheckoutLink className={className}>
+    <ShopierCheckoutLink touchpoint={touchpoint} className={className}>
       <Sparkles className="h-4 w-4" />
-      Pro&apos;yu Shopier&apos;da satın al
+      Pro&apos;yu Shopier&apos;da satın al — {getProPlanPriceLabel({ withPeriod: true })}
     </ShopierCheckoutLink>
   );
 }

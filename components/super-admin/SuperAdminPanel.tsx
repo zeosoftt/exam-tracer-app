@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
 import { AuditLogsSection } from '@/components/super-admin/AuditLogsSection';
+import { MarketingMetricsSection } from '@/components/super-admin/MarketingMetricsSection';
 
 export function SuperAdminPanel() {
   const {
@@ -144,6 +145,8 @@ export function SuperAdminPanel() {
               </p>
             </div>
           </div>
+
+          <MarketingMetricsSection marketing={stats.marketing} />
 
           </>
         ) : null}

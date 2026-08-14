@@ -7,6 +7,7 @@ import { NextResponse } from 'next/server';
 import { withAdminHandler } from '@/lib/api/withAdminHandler';
 import { prisma } from '@/lib/db/prisma';
 import { getShopierCheckoutClickCount } from '@/lib/siteSettings';
+import { getMarketingFunnelStats } from '@/lib/marketing/getMarketingFunnelStats';
 
 async function getStatsHandler(): Promise<NextResponse> {
   const [
@@ -17,6 +18,7 @@ async function getStatsHandler(): Promise<NextResponse> {
     examAssignmentsCount,
     orgsByPlan,
     shopierCheckoutClicks,
+    marketing,
   ] = await Promise.all([
     prisma.user.count({ where: { deletedAt: null } }),
     prisma.user.count({ where: { deletedAt: null, isActive: true } }),
@@ -29,6 +31,7 @@ async function getStatsHandler(): Promise<NextResponse> {
       _count: { _all: true },
     }),
     getShopierCheckoutClickCount(),
+    getMarketingFunnelStats(),
   ]);
 
   const planIds = orgsByPlan
@@ -74,6 +77,7 @@ async function getStatsHandler(): Promise<NextResponse> {
       examAssignmentsCount,
       shopierCheckoutClicks,
       planStats,
+      marketing,
     },
   });
 }

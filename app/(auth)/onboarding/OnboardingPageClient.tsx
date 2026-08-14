@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { User, Building2, ArrowRight, ArrowLeft, CheckCircle, Target, Clock, Megaphone } from 'lucide-react';
 import Link from 'next/link';
 import { ACQUISITION_SOURCES, getAcquisitionSourceLabel } from '@/lib/marketing/acquisitionSources';
+import { trackMarketingEvent } from '@/lib/marketing/trackMarketingEvent';
 import { fetchAvailableExamsWithStatus } from '@/lib/client-api/examsAvailable';
 
 type UserType = 'individual' | 'institution' | null;
@@ -58,16 +59,29 @@ export default function OnboardingPage() {
   }, []);
 
   useEffect(() => {
+    if (step >= 2) {
+      trackMarketingEvent('onboarding_step', { step, touchpoint: 'onboarding_wizard' });
+    }
+  }, [step]);
+
+  useEffect(() => {
     void fetchExams();
   }, [fetchExams]);
 
+  useEffect(() => {
+    if (selectedExam && !availableExams.some((e) => e?.id === selectedExam.id)) {
+      setSelectedExam(null);
+    }
+  }, [availableExams, selectedExam]);
+
   const scoreRange = useMemo(() => {
-    if (!selectedExam) return { min: 0, max: 100, step: 1 };
+    if (!selectedExam) return { min: 0, max: 100, step: 1, scoreLabel: 'Hedef Puan' };
     const exam = availableExams.find((e) => e?.id === selectedExam?.id);
     return {
       min: exam?.minScore ?? 0,
       max: exam?.maxScore ?? 100,
       step: exam?.step ?? 1,
+      scoreLabel: 'Hedef Puan',
     };
   }, [selectedExam, availableExams]);
 
@@ -527,6 +541,10 @@ export default function OnboardingPage() {
         acquisitionSourceDetail: hearAboutSource === 'OTHER' ? detailTrim || undefined : undefined,
       };
       sessionStorage.setItem('onboarding', JSON.stringify(onboardingData));
+      trackMarketingEvent('onboarding_complete', {
+        exam_code: selectedExam?.code,
+        user_type: userType ?? undefined,
+      });
 
       router.push(`/auth/register?userType=${userType}&examId=${selectedExam?.id}&examCode=${selectedExam?.code}&targetScore=${targetScore}&dailyStudyHours=${dailyStudyHours}`);
     };

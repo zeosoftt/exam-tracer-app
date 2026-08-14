@@ -67,6 +67,11 @@ const LandingStickyCta = dynamic(
   { ssr: false, loading: () => null },
 );
 
+const LandingPageAnalytics = dynamic(
+  () => import('@/components/marketing/LandingPageAnalytics').then((m) => m.LandingPageAnalytics),
+  { ssr: false, loading: () => null },
+);
+
 const getShowPartnersCached = () =>
   unstable_cache(
     async () => getSettingBoolean(SITE_KEYS.LANDING_SHOW_PARTNERS),
@@ -82,6 +87,7 @@ export default async function LandingPage() {
   return (
     <div className="min-h-screen overflow-x-hidden bg-stone-50 pb-24 text-stone-900 dark:bg-stone-950 dark:text-stone-100 sm:pb-0">
       <JsonLd data={buildHomeJsonLd()} />
+      <LandingPageAnalytics />
       <MarketingHeader />
       <LandingScrollProgress />
 

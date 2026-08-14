@@ -15,13 +15,33 @@ export type ActivatePlanParams = {
   periodDays?: number;
 };
 
-export async function activateOrganizationPlan(params: ActivatePlanParams): Promise<void> {
+export async function activateOrganizationPlan(params: ActivatePlanParams): Promise<{ idempotent: boolean }> {
   const plan = await prisma.plan.findFirst({
     where: { code: params.planCode.toUpperCase(), isActive: true },
     select: { id: true, price: true, currency: true },
   });
   if (!plan) {
     throw new Error(`Plan not found: ${params.planCode}`);
+  }
+
+  if (params.externalOrderId) {
+    const existing = await prisma.subscription.findFirst({
+      where: {
+        deletedAt: null,
+        metadata: {
+          path: ['externalOrderId'],
+          equals: params.externalOrderId,
+        },
+      },
+      select: { id: true, organizationId: true },
+    });
+    if (existing) {
+      await prisma.organization.update({
+        where: { id: existing.organizationId },
+        data: { currentPlanId: plan.id, subscriptionId: existing.id },
+      });
+      return { idempotent: true };
+    }
   }
 
   const periodDays = params.periodDays ?? 30;
@@ -54,6 +74,8 @@ export async function activateOrganizationPlan(params: ActivatePlanParams): Prom
       data: { subscriptionId: subscription.id },
     });
   });
+
+  return { idempotent: false };
 }
 
 /** E-posta ile kullanıcı bulup planı PRO (veya verilen kod) yapar. */
@@ -61,7 +83,7 @@ export async function activatePlanByEmail(
   email: string,
   planCode: string,
   externalOrderId?: string,
-): Promise<{ userId: string; organizationId: string }> {
+): Promise<{ userId: string; organizationId: string; idempotent: boolean }> {
   const user = await prisma.user.findFirst({
     where: { email: email.toLowerCase().trim(), deletedAt: null, isActive: true },
     select: { id: true, personalOrganizationId: true },
@@ -70,7 +92,7 @@ export async function activatePlanByEmail(
     throw new Error('User or personal organization not found');
   }
 
-  await activateOrganizationPlan({
+  const activation = await activateOrganizationPlan({
     userId: user.id,
     organizationId: user.personalOrganizationId,
     planCode,
@@ -78,5 +100,9 @@ export async function activatePlanByEmail(
     subscriptionStatus: 'ACTIVE',
   });
 
-  return { userId: user.id, organizationId: user.personalOrganizationId };
+  return {
+    userId: user.id,
+    organizationId: user.personalOrganizationId,
+    idempotent: activation.idempotent,
+  };
 }

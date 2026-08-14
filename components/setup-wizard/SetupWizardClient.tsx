@@ -26,6 +26,9 @@ import {
 import { SETUP_WIZARD_SAMPLE_DENEME, setupWizardSampleDenemeNet } from '@/lib/setup-wizard/sampleDeneme';
 import { postSetupWizard, type SetupWizardAssignment } from '@/lib/client-api/setupWizardClient';
 import { mapExamApiDataToWizardInput } from '@/components/setup-wizard/examTreeMap';
+import { ProUpgradeCard } from '@/components/checkout/ProUpgradeCard';
+import { trackMarketingEvent } from '@/lib/marketing/trackMarketingEvent';
+import { MARKETING_TOUCHPOINTS } from '@/lib/marketing/touchpoints';
 
 const STEP_COUNT = 4;
 
@@ -40,10 +43,14 @@ function formatDurationMinutes(minutes: number): string {
 export default function SetupWizardClient({
   userFirstName,
   lockedExam,
+  planCode = 'FREE',
+  userEmail,
 }: {
   userFirstName: string;
   /** Kayıtta seçilen veya atanmış sınav; yoksa sihirbaz açılmamalı (boş durum) */
   lockedExam: SetupWizardAssignment | null;
+  planCode?: string;
+  userEmail?: string | null;
 }) {
   const router = useRouter();
   const ringGradientId = useId().replace(/:/g, '');
@@ -59,6 +66,10 @@ export default function SetupWizardClient({
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [topicPlan, setTopicPlan] = useState<SetupWizardTopicPlan | null>(null);
   const [totalExamTopics, setTotalExamTopics] = useState<number | null>(null);
+
+  useEffect(() => {
+    trackMarketingEvent('setup_wizard_step', { step, touchpoint: 'setup_wizard' });
+  }, [step]);
 
   useEffect(() => {
     if (step !== 2 || !examId) return;
@@ -154,9 +165,14 @@ export default function SetupWizardClient({
       setError(r.error ?? 'Kayıt oluşturulamadı.');
       return;
     }
+    trackMarketingEvent('setup_wizard_complete', {
+      exam_code: lockedExam?.code,
+      progress_preset: preset,
+      sample_deneme: addDeneme,
+    });
     router.push('/dashboard');
     router.refresh();
-  }, [router, examId, preset, addDeneme]);
+  }, [router, examId, preset, addDeneme, lockedExam?.code]);
 
   const progress = (step / STEP_COUNT) * 100;
 
@@ -709,6 +725,15 @@ export default function SetupWizardClient({
                       </span>
                     </li>
                   </ul>
+                  {planCode === 'FREE' ? (
+                    <ProUpgradeCard
+                      className="mt-6"
+                      userEmail={userEmail}
+                      touchpoint={MARKETING_TOUCHPOINTS.SETUP_WIZARD}
+                      title="Deneme analizlerini açmak ister misin?"
+                      description="Kurulumu tamamladıktan sonra Pro ile deneme detayı ve konu analizlerine erişebilirsin."
+                    />
+                  ) : null}
                   <p className="mt-6 text-xs leading-relaxed text-stone-500 dark:text-stone-400">
                     Onayladığında seçimlerin hesabına yazılır; kurulum bir daha gösterilmez. İstediğin zaman panelden düzenleyebilirsin.
                   </p>

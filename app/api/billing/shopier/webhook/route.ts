@@ -11,6 +11,7 @@ import { RATE_LIMIT, HTTP_STATUS } from '@/config/constants';
 import { asyncHandler } from '@/lib/errors/errorHandler';
 import { validate } from '@/lib/validation/validate';
 import { activatePlanByEmail } from '@/lib/billing/activateOrganizationPlan';
+import { incrementPurchaseCount } from '@/lib/marketing/marketingMetricsStore';
 import { verifyShopierWebhookSignature } from '@/lib/billing/verifyShopierWebhook';
 import { logApi, logError } from '@/lib/logger';
 import { UnauthorizedError, BadRequestError } from '@/lib/errors/AppError';
@@ -54,6 +55,9 @@ async function shopierWebhookHandler(req: NextRequest): Promise<NextResponse> {
 
   const planCode = payload.planCode ?? 'PRO';
   const result = await activatePlanByEmail(payload.email, planCode, payload.orderId);
+  if (!result.idempotent) {
+    await incrementPurchaseCount();
+  }
 
   logApi('POST', '/api/billing/shopier/webhook', HTTP_STATUS.OK, undefined, {
     userId: result.userId,
@@ -62,8 +66,12 @@ async function shopierWebhookHandler(req: NextRequest): Promise<NextResponse> {
 
   return NextResponse.json({
     success: true,
-    message: 'Plan activated',
-    data: { userId: result.userId, planCode: planCode.toUpperCase() },
+    message: result.idempotent ? 'Plan already activated' : 'Plan activated',
+    data: {
+      userId: result.userId,
+      planCode: planCode.toUpperCase(),
+      idempotent: result.idempotent,
+    },
   });
 }
 

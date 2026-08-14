@@ -15,11 +15,23 @@ export default async function SetupWizardPage() {
 
   await ensureSetupWizardColumnOnce(prisma);
 
-  let user: { setupWizardCompletedAt: Date | null; firstName: string } | null;
+  let user: {
+    setupWizardCompletedAt: Date | null;
+    firstName: string;
+    email: string;
+    personalOrganization: { currentPlan: { code: string } | null } | null;
+  } | null;
   try {
     user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { setupWizardCompletedAt: true, firstName: true },
+      select: {
+        setupWizardCompletedAt: true,
+        firstName: true,
+        email: true,
+        personalOrganization: {
+          select: { currentPlan: { select: { code: true } } },
+        },
+      },
     });
   } catch (e) {
     if (isMissingSetupWizardColumnError(e)) {
@@ -63,10 +75,14 @@ export default async function SetupWizardPage() {
 
   const lockedExam = assignmentList[0] ?? availableExams[0] ?? null;
 
+  const planCode = user?.personalOrganization?.currentPlan?.code ?? 'FREE';
+
   return (
     <SetupWizardClient
       userFirstName={user?.firstName?.trim() || 'Merhaba'}
       lockedExam={lockedExam}
+      planCode={planCode}
+      userEmail={user?.email ?? null}
     />
   );
 }
