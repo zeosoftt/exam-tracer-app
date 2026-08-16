@@ -194,9 +194,9 @@ const PLANS = [
   {
     code: 'PRO',
     name: 'Premium',
-    description: 'Temel takip + raporlar, CSV/PDF dışa aktarma ve gelişmiş analitik.',
+    description: 'Temel takip + raporlar, CSV/PDF dışa aktarma ve gelişmiş analitik (6 aylık).',
     type: 'PRO' as const,
-    price: 29.99,
+    price: 99,
     maxUsers: 1,
     maxExams: 50,
     maxStudents: 100,

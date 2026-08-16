@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Settings, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { MARKETING_TOUCHPOINTS } from '@/lib/marketing/touchpoints';
-import { getProPlanPriceLabel } from '@/lib/marketing/pricingDisplay';
+import { useProPlanPricing } from '@/lib/marketing/useProPlanPricing';
 import { AppBrandLink, AppHeaderActions, AppPageHeader } from '@/components/ui';
 import type { PlanBadge } from '@/components/dashboard/domain/dashboardTypes';
 import type { DashboardUser } from '@/components/dashboard/home/dashboardHomeTypes';
@@ -21,6 +21,7 @@ type DashboardHeaderProps = {
 };
 
 export function DashboardHeader({ user, planBadge }: DashboardHeaderProps) {
+  const { priceLabelWithPeriod } = useProPlanPricing();
   const adminMobileBanner =
     user.role === 'ADMIN' ? (
       <div className="border-b border-primary-200 bg-primary-50 dark:border-primary-900 dark:bg-primary-950/40 sm:hidden">
@@ -75,7 +76,7 @@ export function DashboardHeader({ user, planBadge }: DashboardHeaderProps) {
                       planBadge.bgClass,
                       planBadge.textClass,
                     )}
-                    title={`Pro plan — ${getProPlanPriceLabel({ withPeriod: true })}`}
+                    title={`Pro plan — ${priceLabelWithPeriod}`}
                   >
                     <span className={cn('h-1.5 w-1.5 rounded-full', planBadge.dotClass)} />
                     {planBadge.label}

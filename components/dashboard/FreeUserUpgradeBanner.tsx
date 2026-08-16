@@ -7,7 +7,7 @@ import { ProUpgradeCard } from '@/components/checkout/ProUpgradeCard';
 import { ShopierCheckoutHint } from '@/components/checkout/ShopierCheckoutHint';
 import { MARKETING_TOUCHPOINTS } from '@/lib/marketing/touchpoints';
 import { trackPremiumWallViewOnce } from '@/lib/marketing/trackMarketingEvent';
-import { getProPlanPriceLabel } from '@/lib/marketing/pricingDisplay';
+import { ProPlanPriceText } from '@/components/marketing/ProPlanPriceText';
 
 const ShopierCheckoutLink = dynamic(
   () => import('@/components/checkout/ShopierCheckoutLink').then((m) => m.ShopierCheckoutLink),
@@ -60,7 +60,7 @@ export function FreeUserUpgradeBanner({ userEmail, denemeCount = 0 }: Props) {
           </div>
           <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-wider text-primary-700 dark:text-primary-300">
-              Pro — {getProPlanPriceLabel({ withPeriod: true })}
+              Pro — <ProPlanPriceText withPeriod />
             </p>
             <h2 className="mt-1 font-display text-lg font-bold text-stone-900 dark:text-stone-100">{headline}</h2>
             <ul className="mt-3 grid gap-2 text-sm text-stone-600 dark:text-stone-400 sm:grid-cols-3">

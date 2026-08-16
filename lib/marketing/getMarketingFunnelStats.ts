@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db/prisma';
-import { PRO_PLAN_PRICE_TRY } from '@/config/constants';
+import { getPublicPricingConfig } from '@/lib/siteSettings';
 import {
   extractCheckoutByTouchpoint,
   getMarketingEventCounts,
@@ -98,12 +98,13 @@ export async function getMarketingFunnelStats(): Promise<MarketingFunnelStats> {
       : null;
 
   const checkoutRaw = extractCheckoutByTouchpoint(eventCounts);
+  const pricing = await getPublicPricingConfig();
 
   return {
     eventCounts,
     shopierCheckoutClicks,
     purchasesTotal,
-    estimatedRevenueTry: Math.round(purchasesTotal * PRO_PLAN_PRICE_TRY * 100) / 100,
+    estimatedRevenueTry: Math.round(purchasesTotal * pricing.priceTry * 100) / 100,
     checkoutByTouchpoint: checkoutRaw.map(({ touchpoint, count }) => ({
       touchpoint,
       label:

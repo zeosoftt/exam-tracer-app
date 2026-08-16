@@ -70,6 +70,18 @@ async function patchSiteSettingsHandler(req: NextRequest): Promise<NextResponse>
     await setSetting(SITE_KEYS.ADSENSE_CLIENT_ID, patch.adsense_client_id.trim());
   }
 
+  if (patch.pro_plan_price_try !== undefined) {
+    await setSetting(SITE_KEYS.PRO_PLAN_PRICE_TRY, String(patch.pro_plan_price_try));
+  }
+
+  if (patch.pro_plan_billing_period !== undefined) {
+    await setSetting(SITE_KEYS.PRO_PLAN_BILLING_PERIOD, patch.pro_plan_billing_period.trim());
+  }
+
+  if (patch.shopier_checkout_url !== undefined) {
+    await setSetting(SITE_KEYS.SHOPIER_CHECKOUT_URL, patch.shopier_checkout_url.trim());
+  }
+
   revalidateSiteSettingsCache();
   const settings = await getAdminSiteSettings();
   return NextResponse.json({ success: true, data: settings });

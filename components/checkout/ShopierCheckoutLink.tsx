@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import { SHOPIER_CHECKOUT_URL } from '@/config/constants';
 import { trackMarketingEvent } from '@/lib/marketing/trackMarketingEvent';
+import { useProPlanPricing } from '@/lib/marketing/useProPlanPricing';
 import type { MarketingTouchpoint } from '@/lib/marketing/touchpoints';
 
 type Props = {
@@ -14,9 +15,11 @@ type Props = {
 };
 
 export function ShopierCheckoutLink({ className, children, target = '_blank', title, touchpoint }: Props) {
+  const { shopierCheckoutUrl } = useProPlanPricing();
+
   return (
     <a
-      href={SHOPIER_CHECKOUT_URL}
+      href={shopierCheckoutUrl || SHOPIER_CHECKOUT_URL}
       className={className}
       title={title}
       target={target === '_blank' ? '_blank' : undefined}

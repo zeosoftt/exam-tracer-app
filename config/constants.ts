@@ -190,5 +190,8 @@ export const AUTH_ERROR_CODES = {
 /** Ücretli plan (Pro) satın alma — Shopier ürün sayfası */
 export const SHOPIER_CHECKOUT_URL = 'https://www.shopier.com/zeosoft/47039117' as const;
 
-/** Pro plan liste fiyatı (TRY) — seed ile uyumlu; Shopier fiyatı farklıysa güncelleyin */
-export const PRO_PLAN_PRICE_TRY = 29.99;
+/** Pro plan liste fiyatı (TRY) — 6 aylık; seed ile uyumlu; Shopier fiyatı farklıysa güncelleyin */
+export const PRO_PLAN_PRICE_TRY = 99;
+
+/** Pro plan faturalama dönemi (pazarlama metinleri) */
+export const PRO_PLAN_BILLING_PERIOD = '6 ay' as const;

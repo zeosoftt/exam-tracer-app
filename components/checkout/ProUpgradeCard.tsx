@@ -2,7 +2,8 @@
 
 import dynamic from 'next/dynamic';
 import { Sparkles } from 'lucide-react';
-import { PRO_PLAN_MARKETING_FEATURES, getProPlanPriceLabel } from '@/lib/marketing/pricingDisplay';
+import { PRO_PLAN_MARKETING_FEATURES } from '@/lib/marketing/pricingDisplay';
+import { ProPlanPriceText } from '@/components/marketing/ProPlanPriceText';
 import { MARKETING_TOUCHPOINTS } from '@/lib/marketing/touchpoints';
 import { ShopierCheckoutHint } from '@/components/checkout/ShopierCheckoutHint';
 import { cn } from '@/lib/utils/cn';
@@ -41,7 +42,9 @@ export function ProUpgradeCard({
         <div className="min-w-0 flex-1">
           <p className="font-bold text-stone-900 dark:text-stone-100">{title}</p>
           <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">{description}</p>
-          <p className="mt-2 text-lg font-bold text-primary-800 dark:text-primary-200">{getProPlanPriceLabel({ withPeriod: true })}</p>
+          <p className="mt-2 text-lg font-bold text-primary-800 dark:text-primary-200">
+            <ProPlanPriceText withPeriod />
+          </p>
           <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
             Taahhüt yok · Ödeme sonrası birkaç dakika içinde otomatik aktifleşir
           </p>

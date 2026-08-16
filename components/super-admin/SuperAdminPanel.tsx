@@ -3,6 +3,7 @@
 import { useSuperAdminPanel } from '@/components/super-admin/hooks/useSuperAdminPanel';
 import { formatAdminDateTime } from '@/components/super-admin/formatAdminDateTime';
 import { TrackingSettingsSection } from '@/components/super-admin/TrackingSettingsSection';
+import { PricingSettingsSection } from '@/components/super-admin/PricingSettingsSection';
 import {
   ROLE_LABELS,
 } from '@/components/super-admin/domain/superAdminTypes';
@@ -22,6 +23,7 @@ import {
   Mail,
   MailCheck,
   MailX,
+  Tag,
 } from 'lucide-react';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
 import { AuditLogsSection } from '@/components/super-admin/AuditLogsSection';
@@ -417,6 +419,23 @@ export function SuperAdminPanel() {
               </p>
             </div>
           )}
+        </section>
+
+        {/* Pro fiyatlandırma */}
+        <section className="mt-10 space-y-4">
+          <div className="flex items-center gap-2">
+            <Tag className="h-5 w-5 text-primary-600" aria-hidden />
+            <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100">Pro Fiyatlandırma</h2>
+          </div>
+          <p className="text-sm text-stone-500 dark:text-stone-400">
+            Landing, dashboard ve deneme sayfalarında gösterilen Pro plan fiyatı, dönem metni ve Shopier linki.
+          </p>
+          <PricingSettingsSection
+            settings={siteSettings}
+            loading={siteSettingsLoading}
+            patching={siteSettingsPatching}
+            onSave={patchSiteSettings}
+          />
         </section>
 
         {/* İzleme: GTM, GA, AdSense */}

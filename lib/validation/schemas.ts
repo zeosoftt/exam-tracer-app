@@ -298,6 +298,9 @@ export const adminSiteSettingsPatchSchema = z.object({
   gtm_container_id: z.string().max(32).optional(),
   ga_measurement_id: z.string().max(32).optional(),
   adsense_client_id: z.string().max(64).optional(),
+  pro_plan_price_try: z.number().min(1).max(999_999).optional(),
+  pro_plan_billing_period: z.string().min(1).max(32).trim().optional(),
+  shopier_checkout_url: z.string().url().max(512).optional(),
 });
 
 /** Super-admin master exam create */

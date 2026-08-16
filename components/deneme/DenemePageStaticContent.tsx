@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Lock, Target } from 'lucide-react';
 import { DenemePremiumShopierCta } from '@/components/deneme/DenemePremiumShopierCta';
 import { ShopierCheckoutHint } from '@/components/checkout/ShopierCheckoutHint';
-import { getProPlanPriceLabel } from '@/lib/marketing/pricingDisplay';
+import { ProPlanPriceText } from '@/components/marketing/ProPlanPriceText';
 import { MARKETING_TOUCHPOINTS } from '@/lib/marketing/touchpoints';
 import { PremiumWallTracker } from '@/components/marketing/PremiumWallTracker';
 import type { DenemePageInitialData } from '@/lib/deneme/loadDenemePageData';
@@ -55,7 +55,8 @@ export function DenemePageStaticContent({ data, topContent }: DenemePageStaticCo
               <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">Deneme detayı Premium&apos;da</h2>
             </div>
             <p className="mb-4 text-sm text-stone-600 dark:text-stone-400">
-              Deneme listesi ve yeni kayıt ücretsizdir. Ders bazlı sonuçlar ve konu analizi için Pro plan ({getProPlanPriceLabel({ withPeriod: true })}) gerekir.
+              Deneme listesi ve yeni kayıt ücretsizdir. Ders bazlı sonuçlar ve konu analizi için Pro plan (
+              <ProPlanPriceText withPeriod />) gerekir.
             </p>
             <ShopierCheckoutHint className="mb-4" compact />
             <DenemePremiumShopierCta className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-amber-600" />

@@ -3,7 +3,8 @@ import dynamic from 'next/dynamic';
 import { CheckCircle } from 'lucide-react';
 import { LandingReveal } from '@/components/landing/LandingReveal';
 import { LandingSectionHeader } from '@/components/landing/LandingSectionHeader';
-import { getProPlanPriceLabel, PRO_PLAN_LANDING_FEATURES } from '@/lib/marketing/pricingDisplay';
+import { getPublicPricingConfig } from '@/lib/siteSettings';
+import { PRO_PLAN_LANDING_FEATURES } from '@/lib/marketing/pricingDisplay';
 import { ShopierCheckoutHint } from '@/components/checkout/ShopierCheckoutHint';
 import { MARKETING_TOUCHPOINTS } from '@/lib/marketing/touchpoints';
 
@@ -21,7 +22,9 @@ const FREE_FEATURES = [
 
 const PRO_FEATURES = PRO_PLAN_LANDING_FEATURES;
 
-export function LandingPricing() {
+export async function LandingPricing() {
+  const pricing = await getPublicPricingConfig();
+
   return (
     <section id="paketler" className="relative py-16 sm:py-20 lg:py-24">
       <div className="landing-vibe-mesh absolute inset-0 opacity-55 dark:opacity-35" aria-hidden />
@@ -69,7 +72,7 @@ export function LandingPricing() {
                 PROFESYONEL
               </p>
               <p className="mt-2 font-display text-3xl font-bold text-stone-900 dark:text-stone-100">
-                {getProPlanPriceLabel({ withPeriod: true })}
+                {pricing.priceLabelWithPeriod}
               </p>
               <p className="mt-1 text-xs font-medium text-primary-700 dark:text-primary-300">Taahhüt yok · Shopier ile güvenli ödeme</p>
               <p className="mt-2 text-sm text-stone-600 dark:text-stone-300">
