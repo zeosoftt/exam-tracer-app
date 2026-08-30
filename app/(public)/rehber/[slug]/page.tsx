@@ -42,6 +42,11 @@ export default async function RehberSlugPage({ params }: PageProps) {
         title={guide.headline}
         intro={guide.description}
         highlights={guide.highlights}
+        breadcrumbs={[
+          { name: 'Ana sayfa', path: '/' },
+          { name: 'Rehber', path: '/rehber' },
+          { name: guide.title, path: `/rehber/${guide.id}` },
+        ]}
         relatedLinks={[
           { href: '/ozellikler/konu-takibi', label: 'Konu takibi' },
           { href: '/ozellikler/deneme-takibi', label: 'Deneme takibi' },

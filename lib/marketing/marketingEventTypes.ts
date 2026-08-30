@@ -9,6 +9,8 @@ export const MARKETING_EVENTS = [
   'premium_wall_view',
   'begin_checkout',
   'purchase',
+  /** Shopier (veya diğer) ödeme sonrası PRO entitlement gerçekten verildiğinde */
+  'pro_activated',
 ] as const;
 
 export type MarketingEventName = (typeof MARKETING_EVENTS)[number];

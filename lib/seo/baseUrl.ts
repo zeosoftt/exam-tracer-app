@@ -1,9 +1,9 @@
 /**
  * Canonical base URL for SEO (sitemap, robots, metadata, JSON-LD).
- * Production'da her zaman thegoallab.com kullanılır (Vercel URL yerine).
- * Farklı domain için Vercel'de SITE_URL veya NEXTAUTH_URL tanımlayın.
+ * Production fallback: canlı domain (thegoallabs.com).
+ * Vercel'de SITE_URL=https://thegoallabs.com tanımlayın; yoksa bu değer kullanılır.
  */
-const CANONICAL_PRODUCTION_URL = 'https://thegoallab.com';
+const CANONICAL_PRODUCTION_URL = 'https://thegoallabs.com';
 
 export function getBaseUrl(): string {
   const siteUrl = process.env.SITE_URL?.trim();

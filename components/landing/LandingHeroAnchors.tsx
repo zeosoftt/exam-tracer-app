@@ -1,9 +1,10 @@
-import { ArrowDown, BarChart3, HelpCircle, Layers } from 'lucide-react';
+import { ArrowDown, BarChart3, BookOpen, HelpCircle, Layers } from 'lucide-react';
 
 const ANCHORS = [
   { href: '#nasil', label: 'Nasıl çalışır', icon: Layers },
   { href: '#ozellikler', label: 'Özellikler', icon: BarChart3 },
   { href: '#paketler', label: 'Paketler', icon: Layers },
+  { href: '/rehber', label: 'Rehber', icon: BookOpen },
   { href: '/sss', label: 'SSS', icon: HelpCircle },
 ] as const;
 

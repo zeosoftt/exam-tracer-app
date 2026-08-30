@@ -10,6 +10,10 @@ export type GuideSeoEntry = {
   pageTitle: string;
   pageDescription: string;
   highlights: readonly string[];
+  /** ISO 8601 — Article schema datePublished */
+  publishedAt: string;
+  /** ISO 8601 — Article schema dateModified */
+  updatedAt: string;
 };
 
 export const GUIDE_SEO_ENTRIES: GuideSeoEntry[] = [
@@ -28,6 +32,8 @@ export const GUIDE_SEO_ENTRIES: GuideSeoEntry[] = [
       'Dashboard’da tamamlanma yüzdesi ve haftalık hedef çubukları',
       'Aralıklı tekrar ile unutulan konuları planlayın',
     ],
+    publishedAt: '2025-08-01',
+    updatedAt: '2026-01-15',
   },
   {
     id: 'pegem-sonuc-linki',
@@ -44,6 +50,8 @@ export const GUIDE_SEO_ENTRIES: GuideSeoEntry[] = [
       'Liste görünümünde tüm denemelerinizi karşılaştırın',
       'Pro planda detay, analiz ve ÖSYM uyumlu puan önizlemesi',
     ],
+    publishedAt: '2025-09-10',
+    updatedAt: '2026-02-01',
   },
   {
     id: 'deneme-net-takibi',
@@ -60,6 +68,8 @@ export const GUIDE_SEO_ENTRIES: GuideSeoEntry[] = [
       'Pro ile ders/konu analizi ve ÖSYM uyumlu puan',
       'Net trendi ile haftalık gelişimi görün',
     ],
+    publishedAt: '2025-10-01',
+    updatedAt: '2026-01-20',
   },
 ] as const;
 

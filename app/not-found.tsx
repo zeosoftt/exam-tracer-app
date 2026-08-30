@@ -68,7 +68,7 @@ export default function NotFound() {
         <p className="mt-8 text-sm text-stone-500 dark:text-stone-400">
           Yardıma mı ihtiyacınız var?{' '}
           <Link href="/" className="font-medium text-primary-600 hover:underline dark:text-primary-400">
-            thegoallab.com
+            thegoallabs.com
           </Link>
         </p>
       </div>

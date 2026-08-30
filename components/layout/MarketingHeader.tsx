@@ -8,13 +8,15 @@ import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
 const NAV_LINK_CLASS =
   'block rounded-xl px-3 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 hover:text-primary-700 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-primary-300 lg:inline-block lg:rounded-none lg:px-0 lg:py-0 lg:hover:bg-transparent';
 
-/** Ana sayfa bölümleri + SEO sayfaları — header sade tutulur; Destek footer'da */
+/** Ana sayfa bölümleri + SEO sayfaları */
 const MARKETING_NAV = [
   { label: 'Nasıl çalışır', href: '/#nasil' },
   { label: 'Özellikler', href: '/ozellikler' },
   { label: 'Sınavlar', href: '/sinavlar' },
+  { label: 'Rehber', href: '/rehber' },
   { label: 'Paketler', href: '/#paketler' },
   { label: 'SSS', href: '/sss' },
+  { label: 'Destek', href: '/destek' },
 ] as const;
 
 export function MarketingHeader() {
@@ -99,9 +101,6 @@ export function MarketingHeader() {
                   </Link>
                 ),
               )}
-              <Link href="/destek" className={NAV_LINK_CLASS} onClick={closeMobile}>
-                Destek
-              </Link>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2">
               <Link

@@ -10,7 +10,7 @@ import { GUIDE_SEO_ENTRIES } from '@/lib/seo/guides';
 import { PUBLIC_FAQ_ITEMS } from '@/lib/seo/faqData';
 import { SEO_DEFAULT_DESCRIPTION, SEO_SITE_NAME } from '@/lib/seo/siteSeo';
 
-const PRODUCT_SUMMARY = `The Goal Lab (thegoallab.com) is a Turkish web application for exam preparation tracking. Users track subjects and topics, log practice exams (deneme), view progress dashboards, and (on Pro) get ÖSYM-aligned score previews for KPSS, ALES, YKS (TYT/AYT), DGS, ÖABT, and related exams. Free tier requires no credit card; registration takes about 2 minutes.`;
+const PRODUCT_SUMMARY = `The Goal Lab (thegoallabs.com) is a Turkish web application for exam preparation tracking. Users track subjects and topics, log practice exams (deneme), view progress dashboards, and (on Pro) get ÖSYM-aligned score previews for KPSS, ALES, YKS (TYT/AYT), DGS, ÖABT, and related exams. Free tier requires no credit card; registration takes about 2 minutes.`;
 
 /** Kısa yol haritası — /llms.txt */
 export function buildLlmsTxt(): string {
@@ -137,7 +137,7 @@ Use the support form at ${base}/destek for product questions, billing (Pro), or 
 ## Brand names
 
 - Product: The Goal Lab
-- Domain: thegoallab.com
-- Also referenced as: thegoallab
+- Domain: thegoallabs.com
+- Also referenced as: thegoallabs
 `;
 }

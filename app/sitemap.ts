@@ -19,9 +19,12 @@ const PUBLIC_ROUTES: Array<{
   { path: '/destek', changeFrequency: 'monthly', priority: 0.75 },
 ];
 
+/** İçerik güncelleme tarihi — sitemap lastModified için sabit referans */
+const SITEMAP_LAST_MODIFIED = new Date('2026-02-01');
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = getBaseUrl();
-  const lastModified = new Date();
+  const lastModified = SITEMAP_LAST_MODIFIED;
 
   const staticEntries = PUBLIC_ROUTES.map(({ path, changeFrequency, priority }) => ({
     url: path ? `${base}${path}` : base,

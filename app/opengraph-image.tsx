@@ -77,7 +77,7 @@ export default function OpenGraphImage() {
             fontWeight: 500,
           }}
         >
-          thegoallab.com
+          thegoallabs.com
         </p>
       </div>
     ),

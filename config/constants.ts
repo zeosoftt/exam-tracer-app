@@ -195,3 +195,9 @@ export const PRO_PLAN_PRICE_TRY = 99;
 
 /** Pro plan faturalama dönemi (pazarlama metinleri) */
 export const PRO_PLAN_BILLING_PERIOD = '6 ay' as const;
+
+/**
+ * Shopier PRO aktivasyonunda Subscription.currentPeriodEnd için gün sayısı.
+ * Copy ve PRO_PLAN_BILLING_PERIOD ile hizalı (6 ay ≈ 180 gün).
+ */
+export const PRO_PLAN_PERIOD_DAYS = 180;

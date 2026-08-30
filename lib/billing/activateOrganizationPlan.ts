@@ -4,6 +4,9 @@
 
 import { prisma } from '@/lib/db/prisma';
 import type { SubscriptionStatus } from '@prisma/client';
+import { PRO_PLAN_PERIOD_DAYS } from '@/config/constants';
+import { AppError } from '@/lib/errors/AppError';
+import { normalizeBillingEmail } from '@/lib/billing/normalizeBillingEmail';
 
 export type ActivatePlanParams = {
   userId: string;
@@ -15,13 +18,17 @@ export type ActivatePlanParams = {
   periodDays?: number;
 };
 
-export async function activateOrganizationPlan(params: ActivatePlanParams): Promise<{ idempotent: boolean }> {
+export { normalizeBillingEmail };
+
+export async function activateOrganizationPlan(
+  params: ActivatePlanParams,
+): Promise<{ idempotent: boolean }> {
   const plan = await prisma.plan.findFirst({
     where: { code: params.planCode.toUpperCase(), isActive: true },
     select: { id: true, price: true, currency: true },
   });
   if (!plan) {
-    throw new Error(`Plan not found: ${params.planCode}`);
+    throw new AppError(`Plan not found: ${params.planCode}`, 404, true, 'PLAN_NOT_FOUND');
   }
 
   if (params.externalOrderId) {
@@ -44,7 +51,7 @@ export async function activateOrganizationPlan(params: ActivatePlanParams): Prom
     }
   }
 
-  const periodDays = params.periodDays ?? 30;
+  const periodDays = params.periodDays ?? PRO_PLAN_PERIOD_DAYS;
   const periodEnd = new Date();
   periodEnd.setDate(periodEnd.getDate() + periodDays);
 
@@ -84,12 +91,21 @@ export async function activatePlanByEmail(
   planCode: string,
   externalOrderId?: string,
 ): Promise<{ userId: string; organizationId: string; idempotent: boolean }> {
+  const normalizedEmail = normalizeBillingEmail(email);
   const user = await prisma.user.findFirst({
-    where: { email: email.toLowerCase().trim(), deletedAt: null, isActive: true },
+    where: { email: normalizedEmail, deletedAt: null, isActive: true },
     select: { id: true, personalOrganizationId: true },
   });
-  if (!user?.personalOrganizationId) {
-    throw new Error('User or personal organization not found');
+  if (!user) {
+    throw new AppError('User not found for payment email', 404, true, 'USER_NOT_FOUND');
+  }
+  if (!user.personalOrganizationId) {
+    throw new AppError(
+      'Personal organization not found for user',
+      404,
+      true,
+      'ORGANIZATION_NOT_FOUND',
+    );
   }
 
   const activation = await activateOrganizationPlan({
@@ -98,6 +114,7 @@ export async function activatePlanByEmail(
     planCode,
     externalOrderId,
     subscriptionStatus: 'ACTIVE',
+    periodDays: PRO_PLAN_PERIOD_DAYS,
   });
 
   return {

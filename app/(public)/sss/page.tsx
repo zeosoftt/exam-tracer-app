@@ -52,7 +52,23 @@ export default async function SSSPage() {
                 <HelpCircle className="mt-0.5 h-5 w-5 shrink-0 text-primary-600" aria-hidden />
                 {q}
               </h2>
-              <p className="text-sm leading-relaxed text-stone-600 dark:text-stone-300 sm:text-base">{a}</p>
+              <p className="text-sm leading-relaxed text-stone-600 dark:text-stone-300 sm:text-base">
+                {q === 'Hangi sınavları destekliyorsunuz?' ? (
+                  <>
+                    KPSS, ÖABT, ALES, DGS, YKS (TYT/AYT), YDS, YÖKDİL, TUS, DUS ve kurum içi sınavlar. Hazır
+                    yapı seçebilir veya kendi ders–konu ağacınızı oluşturabilirsiniz. Detay için{' '}
+                    <Link
+                      href="/sinavlar"
+                      className="font-medium text-primary-700 hover:underline dark:text-primary-300"
+                    >
+                      desteklenen sınavlar
+                    </Link>{' '}
+                    sayfasına bakın.
+                  </>
+                ) : (
+                  a
+                )}
+              </p>
             </article>
           </LandingReveal>
         ))}

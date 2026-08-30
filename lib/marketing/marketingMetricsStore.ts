@@ -58,6 +58,15 @@ export async function incrementPurchaseCount(): Promise<void> {
   await incrementMarketingEvent('purchase', 'shopier_webhook');
 }
 
+/**
+ * İlk (non-idempotent) Shopier aktivasyonunda purchase + pro_activated sayaçları.
+ * Duplicate order bu fonksiyonu çağırmamalı.
+ */
+export async function recordShopierPurchaseActivation(): Promise<void> {
+  await incrementPurchaseCount();
+  await incrementMarketingEvent('pro_activated', 'shopier_webhook');
+}
+
 export async function getPurchaseCount(): Promise<number> {
   const raw = await getSetting(MARKETING_PURCHASES_TOTAL_KEY);
   const n = parseInt(raw || '0', 10);

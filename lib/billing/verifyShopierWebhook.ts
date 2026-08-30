@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 
-/** Shopier webhook imzasını doğrular (HMAC-SHA256). */
+/** Shopier REST webhook imzasını doğrular (HMAC-SHA256, Shopier-Signature header). */
 export function verifyShopierWebhookSignature(
   rawBody: string,
   signatureHeader: string | null,

@@ -42,6 +42,11 @@ export default async function OzellikSlugPage({ params }: PageProps) {
         title={feature.headline}
         intro={feature.description}
         highlights={feature.highlights}
+        breadcrumbs={[
+          { name: 'Ana sayfa', path: '/' },
+          { name: 'Özellikler', path: '/ozellikler' },
+          { name: feature.name, path: `/ozellikler/${feature.id}` },
+        ]}
         relatedLinks={[
           { href: '/sinavlar', label: 'Desteklenen sınavlar' },
           { href: '/sss', label: 'SSS' },

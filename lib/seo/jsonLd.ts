@@ -2,6 +2,7 @@
  * Schema.org JSON-LD üreticileri
  */
 
+import { PRO_PLAN_BILLING_PERIOD, PRO_PLAN_PRICE_TRY } from '@/config/constants';
 import { PUBLIC_FAQ_ITEMS } from '@/lib/seo/faqData';
 import { EXAM_SEO_ENTRIES, type ExamSeoEntry } from '@/lib/seo/exams';
 import { FEATURE_SEO_ENTRIES, type FeatureSeoEntry } from '@/lib/seo/features';
@@ -86,12 +87,23 @@ export function buildHomeJsonLd() {
         name: SEO_SITE_NAME,
         applicationCategory: 'EducationalApplication',
         operatingSystem: 'Web',
-        offers: {
-          '@type': 'Offer',
-          price: '0',
-          priceCurrency: 'TRY',
-          availability: 'https://schema.org/InStock',
-        },
+        offers: [
+          {
+            '@type': 'Offer',
+            name: 'Ücretsiz plan',
+            price: '0',
+            priceCurrency: 'TRY',
+            availability: 'https://schema.org/InStock',
+          },
+          {
+            '@type': 'Offer',
+            name: 'Pro plan',
+            price: String(PRO_PLAN_PRICE_TRY),
+            priceCurrency: 'TRY',
+            availability: 'https://schema.org/InStock',
+            description: `${PRO_PLAN_BILLING_PERIOD} PRO abonelik`,
+          },
+        ],
         description:
           'Sınav ve konu takibi, hedef puan, deneme kaydı ve ÖSYM uyumlu puan hesaplama. KPSS, ÖABT, ALES, DGS, YKS için bireysel ve kurumsal kullanım.',
         featureList: [
@@ -214,6 +226,7 @@ export function buildRehberJsonLd() {
 export function buildGuidePageJsonLd(guide: GuideSeoEntry) {
   const base = getBaseUrl();
   const url = `${base}/rehber/${guide.id}`;
+  const ogImage = `${base}/opengraph-image`;
   return {
     '@context': 'https://schema.org',
     '@graph': [
@@ -224,13 +237,24 @@ export function buildGuidePageJsonLd(guide: GuideSeoEntry) {
       ]),
       {
         '@type': 'Article',
+        '@id': `${url}#article`,
         url,
         headline: guide.headline,
         name: guide.pageTitle,
         description: guide.pageDescription,
+        datePublished: guide.publishedAt,
+        dateModified: guide.updatedAt,
+        image: ogImage,
+        wordCount: guide.description.split(/\s+/).length + guide.highlights.join(' ').split(/\s+/).length,
         isPartOf: { '@type': 'WebSite', name: SEO_SITE_NAME, url: base },
         inLanguage: 'tr-TR',
         author: { '@type': 'Organization', name: SEO_SITE_NAME, url: base },
+        publisher: {
+          '@type': 'Organization',
+          name: SEO_SITE_NAME,
+          url: base,
+          logo: { '@type': 'ImageObject', url: `${base}/icon.svg` },
+        },
       },
     ],
   };

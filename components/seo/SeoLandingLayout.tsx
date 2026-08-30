@@ -4,6 +4,7 @@ import { PublicBackLink } from '@/components/layout/PublicBackLink';
 import { PublicPageCta } from '@/components/layout/PublicPageCta';
 import { PublicPageShell } from '@/components/layout/PublicPageShell';
 import { LandingReveal } from '@/components/landing/LandingReveal';
+import { SeoBreadcrumbs } from '@/components/seo/SeoBreadcrumbs';
 
 type SeoLandingLayoutProps = {
   backHref: string;
@@ -12,6 +13,7 @@ type SeoLandingLayoutProps = {
   title: string;
   intro: string;
   highlights: readonly string[];
+  breadcrumbs?: Array<{ name: string; path: string }>;
   relatedLinks?: Array<{ href: string; label: string }>;
   ctaMessage?: string;
   ctaSecondaryLinks?: Array<{ href: string; label: string }>;
@@ -24,12 +26,14 @@ export function SeoLandingLayout({
   title,
   intro,
   highlights,
+  breadcrumbs,
   relatedLinks,
   ctaMessage,
   ctaSecondaryLinks,
 }: SeoLandingLayoutProps) {
   return (
     <PublicPageShell>
+      {breadcrumbs && breadcrumbs.length > 0 ? <SeoBreadcrumbs crumbs={breadcrumbs} /> : null}
       <PublicBackLink href={backHref} label={backLabel} />
 
       <LandingReveal>

@@ -42,6 +42,11 @@ export default async function SinavSlugPage({ params }: PageProps) {
         title={exam.headline}
         intro={exam.description}
         highlights={exam.highlights}
+        breadcrumbs={[
+          { name: 'Ana sayfa', path: '/' },
+          { name: 'Sınavlar', path: '/sinavlar' },
+          { name: exam.name, path: `/sinavlar/${exam.id}` },
+        ]}
         relatedLinks={[
           { href: '/ozellikler/konu-takibi', label: 'Konu takibi' },
           { href: '/ozellikler/deneme-takibi', label: 'Deneme takibi' },

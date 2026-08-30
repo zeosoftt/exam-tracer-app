@@ -17,7 +17,7 @@ export async function fetchInstitutionResult(sourceUrl: string): Promise<Institu
       method: 'GET',
       headers: {
         Accept: 'text/html,application/xhtml+xml',
-        'User-Agent': 'ExamTracker/1.0 (+https://thegoallab.com)',
+        'User-Agent': 'ExamTracker/1.0 (+https://thegoallabs.com)',
       },
       signal: controller.signal,
       cache: 'no-store',
