@@ -4,6 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { BookOpen, Menu, X } from 'lucide-react';
 import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
+import { MarketingCtaLink } from '@/components/marketing/MarketingCtaLink';
+import { MARKETING_TOUCHPOINTS } from '@/lib/marketing/touchpoints';
 
 const NAV_LINK_CLASS =
   'block rounded-xl px-3 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 hover:text-primary-700 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-primary-300 lg:inline-block lg:rounded-none lg:px-0 lg:py-0 lg:hover:bg-transparent';
@@ -64,12 +66,14 @@ export function MarketingHeader() {
             >
               Giriş Yap
             </Link>
-            <Link
+            <MarketingCtaLink
               href="/onboarding"
+              touchpoint={MARKETING_TOUCHPOINTS.LANDING_HEADER}
+              ctaLabel="Başla"
               className="hidden items-center justify-center rounded-xl bg-gradient-to-r from-primary-700 to-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-primary-600/25 transition-all hover:from-primary-800 hover:to-primary-700 md:inline-flex"
             >
               Başla
-            </Link>
+            </MarketingCtaLink>
             <button
               type="button"
               className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-stone-200/80 text-stone-700 transition-colors hover:bg-stone-100 dark:border-stone-700/80 dark:text-stone-200 dark:hover:bg-stone-800 lg:hidden"
@@ -110,13 +114,15 @@ export function MarketingHeader() {
               >
                 Giriş Yap
               </Link>
-              <Link
+              <MarketingCtaLink
                 href="/onboarding"
+                touchpoint={MARKETING_TOUCHPOINTS.LANDING_HEADER}
+                ctaLabel="Başla mobil"
                 className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-primary-700 to-primary-600 px-3 py-2.5 text-sm font-semibold text-white shadow-lg shadow-primary-600/25"
                 onClick={closeMobile}
               >
                 Başla
-              </Link>
+              </MarketingCtaLink>
             </div>
             <div className="mt-4 flex items-center justify-between rounded-xl border border-stone-200/80 px-3 py-2.5 dark:border-stone-700/80 md:hidden">
               <span className="text-sm font-medium text-stone-600 dark:text-stone-300">Tema</span>

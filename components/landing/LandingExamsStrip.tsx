@@ -14,9 +14,7 @@ const EXAM_ITEMS: ReadonlyArray<{ label: string; href: string }> = [
   { label: 'DGS', href: '/sinavlar/dgs' },
   { label: 'YDS', href: '/sinavlar/yds' },
   { label: 'YÖKDİL', href: '/sinavlar' },
-  { label: 'TUS', href: '/sinavlar' },
-  { label: 'DUS', href: '/sinavlar' },
-  { label: 'Diğer', href: '/sinavlar' },
+  { label: 'Özel sınav', href: '/sinavlar' },
 ];
 
 export function LandingExamsStrip() {

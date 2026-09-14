@@ -4,7 +4,6 @@
  */
 
 import dynamic from 'next/dynamic';
-import { requireAdminPageSession } from '@/lib/auth/pageSession';
 import { RouteShellSkeleton } from '@/components/ui/RouteShellSkeleton';
 
 const ExamContentManager = dynamic(
@@ -13,8 +12,7 @@ const ExamContentManager = dynamic(
   { loading: () => <RouteShellSkeleton /> },
 );
 
-export default async function ExamContentPage() {
-  await requireAdminPageSession();
-
+export default function ExamContentPage() {
+  // Auth: layout.tsx → requireAdminPageSession
   return <ExamContentManager />;
 }

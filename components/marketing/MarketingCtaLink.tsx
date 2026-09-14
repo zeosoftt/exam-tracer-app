@@ -10,14 +10,18 @@ type Props = ComponentProps<typeof Link> & {
   ctaLabel?: string;
 };
 
-/** Landing CTA — tıklama + yönlendirme */
+/** Landing CTA — tıklama + yönlendirme (first-party + GTM) */
 export function MarketingCtaLink({ touchpoint, ctaLabel, onClick, href, ...rest }: Props) {
   return (
     <Link
       href={href}
       {...rest}
       onClick={(e) => {
-        trackMarketingEvent('cta_click', { touchpoint, ...(ctaLabel ? { step: undefined } : {}) });
+        trackMarketingEvent('cta_click', { touchpoint });
+        if (process.env.NODE_ENV === 'development' && ctaLabel) {
+          // ctaLabel yalnızca debug; prod sayaca gitmez
+          console.debug('[cta_click]', touchpoint, ctaLabel);
+        }
         onClick?.(e);
       }}
     />

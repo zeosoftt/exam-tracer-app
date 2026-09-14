@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight, BookOpen, Sparkles, Target, TrendingUp } from 'lucide-react';
+import { MarketingCtaLink } from '@/components/marketing/MarketingCtaLink';
+import { MARKETING_TOUCHPOINTS } from '@/lib/marketing/touchpoints';
 import { LandingHeroAnchors } from '@/components/landing/LandingHeroAnchors';
 
 const EXAM_PILLS = ['KPSS', 'ÖABT', 'ALES', 'YKS', 'DGS', 'YDS', 'TYT', 'AYT'] as const;
@@ -39,13 +41,15 @@ export function LandingHeroVibe() {
             </p>
 
             <div className="landing-hero-in landing-hero-in-3 mb-6 flex w-full min-w-0 flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center sm:gap-4 lg:justify-start">
-              <Link
+              <MarketingCtaLink
                 href="/onboarding"
+                touchpoint={MARKETING_TOUCHPOINTS.LANDING_HERO}
+                ctaLabel="Ücretsiz Başla"
                 className="landing-vibe-cta group inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-primary-700 via-primary-600 to-primary-700 bg-[length:200%_100%] px-6 py-3.5 text-base font-bold text-white shadow-xl shadow-primary-500/30 transition-all hover:scale-[1.02] active:scale-[0.98] sm:w-auto sm:px-8 sm:py-4"
               >
                 Ücretsiz Başla
                 <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-0.5" />
-              </Link>
+              </MarketingCtaLink>
               <Link
                 href="/auth/login"
                 className="inline-flex w-full items-center justify-center rounded-2xl border border-stone-200/80 bg-white/60 px-6 py-3.5 text-base font-semibold text-stone-700 backdrop-blur-sm transition-all hover:border-primary-300 hover:bg-white/90 dark:border-stone-600/80 dark:bg-stone-900/60 dark:text-stone-200 dark:hover:border-primary-700 dark:hover:bg-stone-900/90 sm:w-auto sm:px-8 sm:py-4"
@@ -57,9 +61,9 @@ export function LandingHeroVibe() {
             <p className="landing-hero-in landing-hero-in-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-stone-500 dark:text-stone-400 lg:justify-start">
               <span>Kredi kartı yok</span>
               <span aria-hidden>·</span>
-              <span>2 dk kurulum</span>
-              <span aria-hidden>·</span>
               <span>Ücretsiz başla</span>
+              <span aria-hidden>·</span>
+              <span>Kart gerekmez</span>
             </p>
 
             <LandingHeroAnchors />

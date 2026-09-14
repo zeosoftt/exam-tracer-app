@@ -13,6 +13,7 @@ export const EXAM_SCORE_RANGES: Record<string, { minScore: number; maxScore: num
   YKS_YDT: { minScore: 0, maxScore: 500, step: 1 },
   E_YDS: { minScore: 0, maxScore: 100, step: 1 },
   YOKDIL: { minScore: 0, maxScore: 100, step: 1 },
+  OABT: { minScore: 0, maxScore: 100, step: 1 },
 };
 
 export function getMaxScoreForExam(examCode: string): number {

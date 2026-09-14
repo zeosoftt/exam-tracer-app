@@ -1,6 +1,7 @@
-import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { LandingReveal } from '@/components/landing/LandingReveal';
+import { MarketingCtaLink } from '@/components/marketing/MarketingCtaLink';
+import { MARKETING_TOUCHPOINTS } from '@/lib/marketing/touchpoints';
 
 type LandingInlineCtaProps = {
   title: string;
@@ -45,8 +46,10 @@ export function LandingInlineCta({
             {description}
           </p>
         </div>
-        <Link
+        <MarketingCtaLink
           href="/onboarding"
+          touchpoint={MARKETING_TOUCHPOINTS.LANDING_MID_CTA}
+          ctaLabel="Ücretsiz dene"
           className={
             isDark
               ? 'group inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-primary-800 shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98]'
@@ -55,7 +58,7 @@ export function LandingInlineCta({
         >
           Ücretsiz dene
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-        </Link>
+        </MarketingCtaLink>
       </div>
     </LandingReveal>
   );

@@ -1,19 +1,16 @@
 /**
- * Super Admin Panel
- * Sadece ADMIN rolüne sahip kullanıcılar erişebilir.
+ * Super Admin — Özet
  */
 
 import dynamic from 'next/dynamic';
-import { requireAdminPageSession } from '@/lib/auth/pageSession';
 import { RouteShellSkeleton } from '@/components/ui/RouteShellSkeleton';
 
-const SuperAdminPanel = dynamic(
-  () => import('@/components/super-admin/SuperAdminPanel').then((m) => m.SuperAdminPanel),
+const SuperAdminOverview = dynamic(
+  () =>
+    import('@/components/super-admin/SuperAdminPanel').then((m) => m.SuperAdminOverview),
   { loading: () => <RouteShellSkeleton /> },
 );
 
-export default async function SuperAdminPage() {
-  await requireAdminPageSession();
-
-  return <SuperAdminPanel />;
+export default function SuperAdminPage() {
+  return <SuperAdminOverview />;
 }

@@ -8,6 +8,7 @@
 import 'server-only';
 
 import winston from 'winston';
+import { AppError } from '@/lib/errors/AppError';
 import { captureException } from '@/lib/sentry/capture';
 
 const logLevel = process.env.LOG_LEVEL || 'info';
@@ -46,6 +47,14 @@ const logger = winston.createLogger({
   ],
 });
 
+/** 4xx operational AppError (401/403/404…) → Sentry gürültüsü yapma */
+function shouldCaptureToSentry(error: unknown): boolean {
+  if (error instanceof AppError && error.isOperational && error.statusCode < 500) {
+    return false;
+  }
+  return true;
+}
+
 // Logging helper functions
 export const logInfo = (message: string, meta?: Record<string, unknown>) => {
   if (typeof window === 'undefined') {
@@ -73,7 +82,15 @@ export const logError = (message: string, error?: Error | unknown, meta?: Record
           }
         : { error }),
     };
+
+    // Beklenen auth/validation hataları warn; gerçek hatalar error
+    if (error instanceof AppError && error.isOperational && error.statusCode < 500) {
+      logger.warn(message, errorMeta);
+      return;
+    }
+
     logger.error(message, errorMeta);
+    if (!shouldCaptureToSentry(error)) return;
     if (error instanceof Error) {
       captureException(error, { logMessage: message, ...meta });
     } else if (error !== undefined) {

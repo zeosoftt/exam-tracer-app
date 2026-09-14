@@ -9,7 +9,7 @@ export const PUBLIC_FAQ_ITEMS = [
   },
   {
     q: 'Hangi sınavları destekliyorsunuz?',
-    a: 'KPSS, ÖABT, ALES, DGS, YKS (TYT/AYT), YDS, YÖKDİL, TUS, DUS ve kurum içi sınavlar. Hazır yapı seçebilir veya kendi ders–konu ağacınızı oluşturabilirsiniz. Detay için desteklenen sınavlar sayfasına bakın.',
+    a: 'KPSS, ÖABT, ALES, DGS, YKS (TYT/AYT), YDS ve YÖKDİL için hazır yapılar sunuyoruz. Kurum içi veya özel sınavlar için kendi ders–konu ağacınızı da oluşturabilirsiniz. Detay için desteklenen sınavlar sayfasına bakın.',
   },
   {
     q: 'KPSS konu takibi nasıl yapılır?',

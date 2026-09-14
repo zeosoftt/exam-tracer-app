@@ -1,6 +1,7 @@
-import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { LandingReveal } from '@/components/landing/LandingReveal';
+import { MarketingCtaLink } from '@/components/marketing/MarketingCtaLink';
+import { MARKETING_TOUCHPOINTS } from '@/lib/marketing/touchpoints';
 
 export function LandingFinalCta() {
   return (
@@ -21,13 +22,15 @@ export function LandingFinalCta() {
           <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-primary-50 sm:text-xl">
             Ücretsiz hesap oluşturun ve sınav takibinize bugün başlayın. Kredi kartı gerektirmez.
           </p>
-          <Link
+          <MarketingCtaLink
             href="/onboarding"
+            touchpoint={MARKETING_TOUCHPOINTS.LANDING_FINAL_CTA}
+            ctaLabel="Ücretsiz Hesap Oluştur"
             className="group mt-10 inline-flex items-center justify-center rounded-2xl bg-white px-6 py-3.5 text-base font-bold text-primary-800 shadow-xl transition-all hover:scale-[1.02] hover:bg-stone-50 hover:shadow-2xl active:scale-[0.98] sm:px-8 sm:py-4 sm:text-lg"
           >
             Ücretsiz Hesap Oluştur
             <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-0.5" />
-          </Link>
+          </MarketingCtaLink>
         </LandingReveal>
       </div>
     </section>

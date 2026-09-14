@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { ArrowRight, X } from 'lucide-react';
+import { MarketingCtaLink } from '@/components/marketing/MarketingCtaLink';
+import { MARKETING_TOUCHPOINTS } from '@/lib/marketing/touchpoints';
 
 const DISMISS_KEY = 'landing-sticky-cta-dismissed';
 
@@ -54,15 +55,17 @@ export function LandingStickyCta() {
     >
       <div className="flex items-center gap-3 rounded-2xl border border-stone-200/80 bg-white/95 py-2.5 pl-4 pr-2 shadow-xl shadow-stone-900/10 backdrop-blur-md dark:border-stone-700 dark:bg-stone-900/95">
         <p className="min-w-0 flex-1 text-sm font-medium text-stone-800 dark:text-stone-100">
-          <span className="text-primary-700 dark:text-primary-300">2 dakikada</span> ilk sınavınızı ekleyin
+          Ücretsiz hesapla <span className="text-primary-700 dark:text-primary-300">takibe başlayın</span>
         </p>
-        <Link
+        <MarketingCtaLink
           href="/onboarding"
+          touchpoint={MARKETING_TOUCHPOINTS.LANDING_STICKY_CTA}
+          ctaLabel="Başla"
           className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-gradient-to-r from-primary-700 to-primary-600 px-4 py-2 text-sm font-bold text-white shadow-md transition-transform hover:scale-[1.02] active:scale-[0.98]"
         >
           Başla
           <ArrowRight className="h-4 w-4" />
-        </Link>
+        </MarketingCtaLink>
         <button
           type="button"
           onClick={dismiss}

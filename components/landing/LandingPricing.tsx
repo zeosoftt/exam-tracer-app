@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { CheckCircle } from 'lucide-react';
 import { LandingReveal } from '@/components/landing/LandingReveal';
@@ -7,6 +6,7 @@ import { getPublicPricingConfig } from '@/lib/siteSettings';
 import { PRO_PLAN_LANDING_FEATURES } from '@/lib/marketing/pricingDisplay';
 import { ShopierCheckoutHint } from '@/components/checkout/ShopierCheckoutHint';
 import { MARKETING_TOUCHPOINTS } from '@/lib/marketing/touchpoints';
+import { MarketingCtaLink } from '@/components/marketing/MarketingCtaLink';
 
 const ShopierCheckoutLink = dynamic(
   () => import('@/components/checkout/ShopierCheckoutLink').then((m) => m.ShopierCheckoutLink),
@@ -53,12 +53,14 @@ export async function LandingPricing() {
                   </li>
                 ))}
               </ul>
-              <Link
+              <MarketingCtaLink
                 href="/onboarding"
+                touchpoint={MARKETING_TOUCHPOINTS.LANDING_PRICING}
+                ctaLabel="Ücretsiz kayıt ol"
                 className="mt-8 inline-flex w-full items-center justify-center rounded-2xl border border-stone-300/80 bg-white/70 py-3.5 text-center text-sm font-bold text-stone-800 backdrop-blur-sm transition-colors hover:border-primary-400 hover:bg-primary-50/80 dark:border-stone-600 dark:bg-stone-900/70 dark:text-stone-100 dark:hover:border-primary-600"
               >
                 Ücretsiz kayıt ol
-              </Link>
+              </MarketingCtaLink>
             </div>
           </LandingReveal>
 

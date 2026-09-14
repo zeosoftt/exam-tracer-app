@@ -1,7 +1,7 @@
 /**
  * Prisma Seed Script
- * Master data: Sınavlar, Bölümler, Dersler ve Konular
- * Hiyerarşi: Exam → Section → Subject → Topic
+ * Master data: SÄ±navlar, BÃ¶lÃ¼mler, Dersler ve Konular
+ * HiyerarÅŸi: Exam â†’ Section â†’ Subject â†’ Topic
  */
 
 import { PrismaClient } from '@prisma/client';
@@ -9,21 +9,21 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting seed...');
+  console.log('ğŸŒ± Starting seed...');
 
-  // KPSS Sınavı
+  // KPSS SÄ±navÄ±
   const kpss = await prisma.exam.upsert({
     where: { code: 'KPSS' },
     update: {},
     create: {
       code: 'KPSS',
-      name: 'KPSS (Kamu Personeli Seçme Sınavı)',
-      description: 'Genel Yetenek, Genel Kültür, Eğitim Bilimleri',
+      name: 'KPSS (Kamu Personeli SeÃ§me SÄ±navÄ±)',
+      description: 'Genel Yetenek, Genel KÃ¼ltÃ¼r, EÄŸitim Bilimleri',
       status: 'ACTIVE',
     },
   });
 
-  // KPSS Bölümleri
+  // KPSS BÃ¶lÃ¼mleri
   const kpssGenelYetenek = await prisma.section.upsert({
     where: { examId_code: { examId: kpss.id, code: 'GENEL_YETENEK' } },
     update: {},
@@ -41,19 +41,19 @@ async function main() {
     create: {
       examId: kpss.id,
       code: 'GENEL_KULTUR',
-      name: 'Genel Kültür',
+      name: 'Genel KÃ¼ltÃ¼r',
       order: 2,
     },
   });
 
-  // KPSS Genel Yetenek Bölümü - Dersleri
+  // KPSS Genel Yetenek BÃ¶lÃ¼mÃ¼ - Dersleri
   const kpssGYTurkce = await prisma.subject.upsert({
     where: { sectionId_code: { sectionId: kpssGenelYetenek.id, code: 'TURKCE' } },
     update: {},
     create: {
       sectionId: kpssGenelYetenek.id,
       code: 'TURKCE',
-      name: 'Türkçe',
+      name: 'TÃ¼rkÃ§e',
       order: 1,
     },
   });
@@ -80,14 +80,14 @@ async function main() {
     },
   });
 
-  // KPSS Genel Yetenek - Türkçe Dersi Konuları
+  // KPSS Genel Yetenek - TÃ¼rkÃ§e Dersi KonularÄ±
   await prisma.topic.upsert({
     where: { subjectId_code: { subjectId: kpssGYTurkce.id, code: 'SOZCUKTE_ANLAM' } },
     update: {},
     create: {
       subjectId: kpssGYTurkce.id,
       code: 'SOZCUKTE_ANLAM',
-      name: 'Sözcükte Anlam',
+      name: 'SÃ¶zcÃ¼kte Anlam',
       order: 1,
     },
   });
@@ -98,7 +98,7 @@ async function main() {
     create: {
       subjectId: kpssGYTurkce.id,
       code: 'CUMLEDE_ANLAM',
-      name: 'Cümlede Anlam',
+      name: 'CÃ¼mlede Anlam',
       order: 2,
     },
   });
@@ -109,7 +109,7 @@ async function main() {
     create: {
       subjectId: kpssGYTurkce.id,
       code: 'SOZCUK_TURLERI',
-      name: 'Sözcük Türleri',
+      name: 'SÃ¶zcÃ¼k TÃ¼rleri',
       order: 3,
     },
   });
@@ -120,7 +120,7 @@ async function main() {
     create: {
       subjectId: kpssGYTurkce.id,
       code: 'SOZCUKTE_YAPI',
-      name: 'Sözcükte Yapı',
+      name: 'SÃ¶zcÃ¼kte YapÄ±',
       order: 4,
     },
   });
@@ -131,7 +131,7 @@ async function main() {
     create: {
       subjectId: kpssGYTurkce.id,
       code: 'CUMLENIN_OGELERI',
-      name: 'Cümlenin Ögeleri',
+      name: 'CÃ¼mlenin Ã–geleri',
       order: 5,
     },
   });
@@ -142,7 +142,7 @@ async function main() {
     create: {
       subjectId: kpssGYTurkce.id,
       code: 'CUMLE_TURLERI',
-      name: 'Cümle Türleri',
+      name: 'CÃ¼mle TÃ¼rleri',
       order: 6,
     },
   });
@@ -153,7 +153,7 @@ async function main() {
     create: {
       subjectId: kpssGYTurkce.id,
       code: 'SES_OLAYLARI',
-      name: 'Dil Bilgisi Ses Olayları',
+      name: 'Dil Bilgisi Ses OlaylarÄ±',
       order: 7,
     },
   });
@@ -164,7 +164,7 @@ async function main() {
     create: {
       subjectId: kpssGYTurkce.id,
       code: 'YAZIM_KURALLARI',
-      name: 'Yazım Kuralları',
+      name: 'YazÄ±m KurallarÄ±',
       order: 8,
     },
   });
@@ -175,7 +175,7 @@ async function main() {
     create: {
       subjectId: kpssGYTurkce.id,
       code: 'NOKTALAMA_ISARETLERI',
-      name: 'Noktalama İşaretleri',
+      name: 'Noktalama Ä°ÅŸaretleri',
       order: 9,
     },
   });
@@ -186,7 +186,7 @@ async function main() {
     create: {
       subjectId: kpssGYTurkce.id,
       code: 'ANLATIM_BOZUKLUKLARI',
-      name: 'Anlatım Bozuklukları',
+      name: 'AnlatÄ±m BozukluklarÄ±',
       order: 10,
     },
   });
@@ -208,7 +208,7 @@ async function main() {
     create: {
       subjectId: kpssGYTurkce.id,
       code: 'PARAGRAFTA_ANLATIM_BICIMLERI',
-      name: 'Paragrafta Anlatım Biçim',
+      name: 'Paragrafta AnlatÄ±m BiÃ§im',
       order: 12,
     },
   });
@@ -219,13 +219,13 @@ async function main() {
     create: {
       subjectId: kpssGYTurkce.id,
       code: 'SOZEL_MANTIK',
-      name: 'Sözel Mantık',
+      name: 'SÃ¶zel MantÄ±k',
       order: 13,
     },
   });
   
 
-  // KPSS Genel Yetenek - Matematik Dersi Konuları
+  // KPSS Genel Yetenek - Matematik Dersi KonularÄ±
   await prisma.topic.upsert({
     where: { subjectId_code: { subjectId: kpssGYMatematik.id, code: 'TEMEL_KAVRAMLAR' } },
     update: {},
@@ -243,7 +243,7 @@ async function main() {
     create: {
       subjectId: kpssGYMatematik.id,
       code: 'RASYONEL_VE_ONDALIKLI_SAYILAR',
-      name: 'Rasyonel Sayılar- Ondalıklı Sayılar',
+      name: 'Rasyonel SayÄ±lar- OndalÄ±klÄ± SayÄ±lar',
       order: 2,
     },
   });
@@ -254,7 +254,7 @@ async function main() {
     create: {
       subjectId: kpssGYMatematik.id,
       code: 'BASIT_ESITSIZLIKLER',
-      name: 'Basit Eşitsizlikler',
+      name: 'Basit EÅŸitsizlikler',
       order: 3,
     },
   });
@@ -265,7 +265,7 @@ async function main() {
     create: {
       subjectId: kpssGYMatematik.id,
       code: 'MUTLAK_DEGER',
-      name: 'Mutlak Değer',
+      name: 'Mutlak DeÄŸer',
       order: 4,
     },
   });
@@ -276,7 +276,7 @@ async function main() {
     create: {
       subjectId: kpssGYMatematik.id,
       code: 'USLU_SAYILAR',
-      name: 'Üslü Sayılar',
+      name: 'ÃœslÃ¼ SayÄ±lar',
       order: 5,
     },
   });
@@ -287,7 +287,7 @@ async function main() {
     create: {
       subjectId: kpssGYMatematik.id,
       code: 'KOKLU_SAYILAR',
-      name: 'Köklü Sayılar',
+      name: 'KÃ¶klÃ¼ SayÄ±lar',
       order: 6,
     },
   });
@@ -298,7 +298,7 @@ async function main() {
     create: {
       subjectId: kpssGYMatematik.id,
       code: 'CARPANLARA_AYIRMA',
-      name: 'Çarpanlara Ayırma',
+      name: 'Ã‡arpanlara AyÄ±rma',
       order: 7,
     },
   });
@@ -309,7 +309,7 @@ async function main() {
     create: {
       subjectId: kpssGYMatematik.id,
       code: 'ORAN_ORANTI',
-      name: 'Oran- Orantı',
+      name: 'Oran- OrantÄ±',
       order: 8,
     },
   });
@@ -320,7 +320,7 @@ async function main() {
     create: {
       subjectId: kpssGYMatematik.id,
       code: 'DENKLEM_COZME',
-      name: 'Denklem Çözme',
+      name: 'Denklem Ã‡Ã¶zme',
       order: 9,
     },
   });
@@ -342,7 +342,7 @@ async function main() {
     create: {
       subjectId: kpssGYMatematik.id,
       code: 'KUMELER',
-      name: 'Kümeler',
+      name: 'KÃ¼meler',
       order: 11,
     },
   });
@@ -364,7 +364,7 @@ async function main() {
     create: {
       subjectId: kpssGYMatematik.id,
       code: 'ISLEM',
-      name: 'İşlem',
+      name: 'Ä°ÅŸlem',
       order: 13,
     },
   });
@@ -375,7 +375,7 @@ async function main() {
     create: {
       subjectId: kpssGYMatematik.id,
       code: 'PERMUTASYON_KOMBINASYON',
-      name: 'Permütasyon / Konbinasyon',
+      name: 'PermÃ¼tasyon / Konbinasyon',
       order: 14,
     },
   });
@@ -386,7 +386,7 @@ async function main() {
     create: {
       subjectId: kpssGYMatematik.id,
       code: 'OLASILIK',
-      name: 'Olasılık',
+      name: 'OlasÄ±lÄ±k',
       order: 15,
     },
   });
@@ -397,20 +397,20 @@ async function main() {
     create: {
       subjectId: kpssGYMatematik.id,
       code: 'SAYISAL_MANTIK',
-      name: 'Sayısal Mantık',
+      name: 'SayÄ±sal MantÄ±k',
       order: 16,
     },
   });
   
 
-  // KPSS Genel Yetenek - Geometri Dersi Konuları
+  // KPSS Genel Yetenek - Geometri Dersi KonularÄ±
   await prisma.topic.upsert({
     where: { subjectId_code: { subjectId: kpssGYGeometri.id, code: 'GEOMETRIK_KAVRAMLAR_VE_ACILAR' } },
     update: {},
     create: {
       subjectId: kpssGYGeometri.id,
       code: 'GEOMETRIK_KAVRAMLAR_VE_ACILAR',
-      name: 'Geometrik Kavramlar ve Açılar',
+      name: 'Geometrik Kavramlar ve AÃ§Ä±lar',
       order: 1,
     },
   });
@@ -421,7 +421,7 @@ async function main() {
     create: {
       subjectId: kpssGYGeometri.id,
       code: 'COKGENLER_VE_DORTGENLER',
-      name: 'Çokgenler ve Dörtgenler',
+      name: 'Ã‡okgenler ve DÃ¶rtgenler',
       order: 2,
     },
   });
@@ -432,7 +432,7 @@ async function main() {
     create: {
       subjectId: kpssGYGeometri.id,
       code: 'CEMBER_VE_DAIRE',
-      name: 'Çember ve Daire',
+      name: 'Ã‡ember ve Daire',
       order: 3,
     },
   });
@@ -454,13 +454,13 @@ async function main() {
     create: {
       subjectId: kpssGYGeometri.id,
       code: 'KATI_CISIMLER',
-      name: 'Katı Cisimler',
+      name: 'KatÄ± Cisimler',
       order: 5,
     },
   });
   
 
-  // KPSS Genel Kültür Bölümü - Dersleri
+  // KPSS Genel KÃ¼ltÃ¼r BÃ¶lÃ¼mÃ¼ - Dersleri
   const kpssGKTarih = await prisma.subject.upsert({
     where: { sectionId_code: { sectionId: kpssGenelKultur.id, code: 'TARIH' } },
     update: {},
@@ -478,7 +478,7 @@ async function main() {
     create: {
       sectionId: kpssGenelKultur.id,
       code: 'COGRAFYASI',
-      name: 'Coğrafya',
+      name: 'CoÄŸrafya',
       order: 2,
     },
   });
@@ -489,19 +489,19 @@ async function main() {
     create: {
       sectionId: kpssGenelKultur.id,
       code: 'VATANDASLIK',
-      name: 'Vatandaşlık',
+      name: 'VatandaÅŸlÄ±k',
       order: 3,
     },
   });
 
-  // KPSS Genel Kültür - Tarih Dersi Konuları
+  // KPSS Genel KÃ¼ltÃ¼r - Tarih Dersi KonularÄ±
   await prisma.topic.upsert({
     where: { subjectId_code: { subjectId: kpssGKTarih.id, code: 'ISLAMIYET_ONCESI_TURK_TARIHI' } },
     update: {},
     create: {
       subjectId: kpssGKTarih.id,
       code: 'ISLAMIYET_ONCESI_TURK_TARIHI',
-      name: 'İslamiyet Öncesi Türk Tarihi-İlk ve Orta Çağda Türk Dünyası',
+      name: 'Ä°slamiyet Ã–ncesi TÃ¼rk Tarihi-Ä°lk ve Orta Ã‡aÄŸda TÃ¼rk DÃ¼nyasÄ±',
       order: 1,
     },
   });
@@ -512,7 +512,7 @@ async function main() {
     create: {
       subjectId: kpssGKTarih.id,
       code: 'ISLAMIYET_ONCESI_KULTUR_UYGARLIK',
-      name: 'İslamiyet Öncesi Türk Devletlerinde Kültür ve Uygarlık',
+      name: 'Ä°slamiyet Ã–ncesi TÃ¼rk Devletlerinde KÃ¼ltÃ¼r ve UygarlÄ±k',
       order: 2,
     },
   });
@@ -523,7 +523,7 @@ async function main() {
     create: {
       subjectId: kpssGKTarih.id,
       code: 'ILK_TURK_ISLAM_DEVLETLERI',
-      name: 'İlk Türk İslam Devletleri -Türklerin İslamiyeti Kabulü',
+      name: 'Ä°lk TÃ¼rk Ä°slam Devletleri -TÃ¼rklerin Ä°slamiyeti KabulÃ¼',
       order: 3,
     },
   });
@@ -534,7 +534,7 @@ async function main() {
     create: {
       subjectId: kpssGKTarih.id,
       code: 'ILK_TURK_ISLAM_KULTUR_UYGARLIK',
-      name: 'İlk Türk İslam Devletlerinde Kültür ve Uygarlık',
+      name: 'Ä°lk TÃ¼rk Ä°slam Devletlerinde KÃ¼ltÃ¼r ve UygarlÄ±k',
       order: 4,
     },
   });
@@ -545,7 +545,7 @@ async function main() {
     create: {
       subjectId: kpssGKTarih.id,
       code: 'OSMANLI_SIYASI_TARIH',
-      name: 'Osmanlı Devleti Siyaseti',
+      name: 'OsmanlÄ± Devleti Siyaseti',
       order: 5,
     },
   });
@@ -556,7 +556,7 @@ async function main() {
     create: {
       subjectId: kpssGKTarih.id,
       code: 'OSMANLI_KULTUR_UYGARLIK',
-      name: 'Osmanlı Devleti Kültür ve Uygarlık',
+      name: 'OsmanlÄ± Devleti KÃ¼ltÃ¼r ve UygarlÄ±k',
       order: 6,
     },
   });
@@ -567,7 +567,7 @@ async function main() {
     create: {
       subjectId: kpssGKTarih.id,
       code: 'YIRMINCI_YUZYIL_OSMANLI',
-      name: '20. Yüzyıl Osmanlı Devleti',
+      name: '20. YÃ¼zyÄ±l OsmanlÄ± Devleti',
       order: 7,
     },
   });
@@ -578,7 +578,7 @@ async function main() {
     create: {
       subjectId: kpssGKTarih.id,
       code: 'KURTULUS_SAVASI',
-      name: 'Kurtuluş Savaşı',
+      name: 'KurtuluÅŸ SavaÅŸÄ±',
       order: 8,
     },
   });
@@ -589,7 +589,7 @@ async function main() {
     create: {
       subjectId: kpssGKTarih.id,
       code: 'INKILAP_TARIHI',
-      name: 'İnkılap Tarihi',
+      name: 'Ä°nkÄ±lap Tarihi',
       order: 9,
     },
   });
@@ -600,7 +600,7 @@ async function main() {
     create: {
       subjectId: kpssGKTarih.id,
       code: 'ATATURK_DONEMI_POLITIKALAR',
-      name: 'Atatürk Dönemi İç ve Dış Politikalar',
+      name: 'AtatÃ¼rk DÃ¶nemi Ä°Ã§ ve DÄ±ÅŸ Politikalar',
       order: 10,
     },
   });
@@ -611,7 +611,7 @@ async function main() {
     create: {
       subjectId: kpssGKTarih.id,
       code: 'ATATURK_ILKE_INKILAPLARI',
-      name: 'Atatürk’ün İlke ve İnkılapları',
+      name: 'AtatÃ¼rkâ€™Ã¼n Ä°lke ve Ä°nkÄ±laplarÄ±',
       order: 11,
     },
   });
@@ -622,20 +622,20 @@ async function main() {
     create: {
       subjectId: kpssGKTarih.id,
       code: 'CAGDAS_TURK_DUNYA_TARIHI',
-      name: 'Çağdaş Türk ve Dünya Edebiyatı',
+      name: 'Ã‡aÄŸdaÅŸ TÃ¼rk ve DÃ¼nya EdebiyatÄ±',
       order: 12,
     },
   });
   
 
-  // KPSS Genel Kültür - Coğrafya Dersi Konuları
+  // KPSS Genel KÃ¼ltÃ¼r - CoÄŸrafya Dersi KonularÄ±
   await prisma.topic.upsert({
     where: { subjectId_code: { subjectId: kpssGKCografya.id, code: 'TURKIYENIN_COGRAFI_KONUMU' } },
     update: {},
     create: {
       subjectId: kpssGKCografya.id,
       code: 'TURKIYENIN_COGRAFI_KONUMU',
-      name: 'Türkiye’nin Coğrafi Konumu',
+      name: 'TÃ¼rkiyeâ€™nin CoÄŸrafi Konumu',
       order: 1,
     },
   });
@@ -646,7 +646,7 @@ async function main() {
     create: {
       subjectId: kpssGKCografya.id,
       code: 'TURKIYENIN_IKLIMI_VE_BITKI_ORTUSU',
-      name: 'Türkiye’nin İklimi ve Bitki Örtüsü',
+      name: 'TÃ¼rkiyeâ€™nin Ä°klimi ve Bitki Ã–rtÃ¼sÃ¼',
       order: 2,
     },
   });
@@ -657,7 +657,7 @@ async function main() {
     create: {
       subjectId: kpssGKCografya.id,
       code: 'TURKIYENIN_FIZIKI_OZELLIKLERI',
-      name: 'Türkiye’nin Fiziki Özellikleri',
+      name: 'TÃ¼rkiyeâ€™nin Fiziki Ã–zellikleri',
       order: 3,
     },
   });
@@ -668,7 +668,7 @@ async function main() {
     create: {
       subjectId: kpssGKCografya.id,
       code: 'TURKIYEDE_NUFUS_VE_YERLESME',
-      name: 'Türkiye’de Nüfus ve Yerleşme',
+      name: 'TÃ¼rkiyeâ€™de NÃ¼fus ve YerleÅŸme',
       order: 4,
     },
   });
@@ -679,7 +679,7 @@ async function main() {
     create: {
       subjectId: kpssGKCografya.id,
       code: 'TARIM',
-      name: 'Tarım',
+      name: 'TarÄ±m',
       order: 5,
     },
   });
@@ -690,7 +690,7 @@ async function main() {
     create: {
       subjectId: kpssGKCografya.id,
       code: 'HAYVANCILIK',
-      name: 'Hayvancılık',
+      name: 'HayvancÄ±lÄ±k',
       order: 6,
     },
   });
@@ -701,7 +701,7 @@ async function main() {
     create: {
       subjectId: kpssGKCografya.id,
       code: 'MADENLER_VE_ENERJI_KAYNAKLARI',
-      name: 'Madenler ve Enerji Kaynakları',
+      name: 'Madenler ve Enerji KaynaklarÄ±',
       order: 7,
     },
   });
@@ -712,7 +712,7 @@ async function main() {
     create: {
       subjectId: kpssGKCografya.id,
       code: 'SANAYI_VE_ENDUSTRI',
-      name: 'Sanayi ve Endüstri',
+      name: 'Sanayi ve EndÃ¼stri',
       order: 8,
     },
   });
@@ -723,7 +723,7 @@ async function main() {
     create: {
       subjectId: kpssGKCografya.id,
       code: 'ULASIM',
-      name: 'Ulaşım',
+      name: 'UlaÅŸÄ±m',
       order: 9,
     },
   });
@@ -756,20 +756,20 @@ async function main() {
     create: {
       subjectId: kpssGKCografya.id,
       code: 'BOLGELER_COGRAFYASI',
-      name: 'Bölgeler Coğrafyası',
+      name: 'BÃ¶lgeler CoÄŸrafyasÄ±',
       order: 12,
     },
   });
   
 
-  // KPSS Genel Kültür - Vatandaşlık Dersi Konuları
+  // KPSS Genel KÃ¼ltÃ¼r - VatandaÅŸlÄ±k Dersi KonularÄ±
   await prisma.topic.upsert({
     where: { subjectId_code: { subjectId: kpssGKVatandaslik.id, code: 'TEMEL_HUKUK_KAVRAMLARI' } },
     update: {},
     create: {
       subjectId: kpssGKVatandaslik.id,
       code: 'TEMEL_HUKUK_KAVRAMLARI',
-      name: 'Temel Hukuk Kavramları',
+      name: 'Temel Hukuk KavramlarÄ±',
       order: 1,
     },
   });
@@ -791,7 +791,7 @@ async function main() {
     create: {
       subjectId: kpssGKVatandaslik.id,
       code: 'TURK_ANAYASA_TARIHI',
-      name: 'Türk Anayasa Tarihi',
+      name: 'TÃ¼rk Anayasa Tarihi',
       order: 3,
     },
   });
@@ -802,7 +802,7 @@ async function main() {
     create: {
       subjectId: kpssGKVatandaslik.id,
       code: 'TEMEL_HAK_ODEVLER',
-      name: 'Temel Hak Ödevler',
+      name: 'Temel Hak Ã–devler',
       order: 4,
     },
   });
@@ -824,7 +824,7 @@ async function main() {
     create: {
       subjectId: kpssGKVatandaslik.id,
       code: 'YURUTME',
-      name: 'Yürütme',
+      name: 'YÃ¼rÃ¼tme',
       order: 6,
     },
   });
@@ -835,7 +835,7 @@ async function main() {
     create: {
       subjectId: kpssGKVatandaslik.id,
       code: 'YARGI',
-      name: 'Yargı',
+      name: 'YargÄ±',
       order: 7,
     },
   });
@@ -846,516 +846,16 @@ async function main() {
     create: {
       subjectId: kpssGKVatandaslik.id,
       code: 'IDARE_HUKUKU',
-      name: 'İdare Hukuku',
+      name: 'Ä°dare Hukuku',
       order: 8,
     },
   });
   
 
-  // ALES Sınavı
-  const ales = await prisma.exam.upsert({
-    where: { code: 'ALES' },
-    update: {},
-    create: {
-      code: 'ALES',
-      name: 'ALES (Akademik Personel ve Lisansüstü Eğitimi Giriş Sınavı)',
-      description: 'Yüksek lisans ve doktora başvuruları için',
-      status: 'ACTIVE',
-    },
-  });
-
-  // ALES Bölümleri
-  const alesSayisal = await prisma.section.upsert({
-    where: { examId_code: { examId: ales.id, code: 'SAYISAL' } },
-    update: {},
-    create: {
-      examId: ales.id,
-      code: 'SAYISAL',
-      name: 'Sayısal',
-      order: 1,
-    },
-  });
-
-  const alesSozel = await prisma.section.upsert({
-    where: { examId_code: { examId: ales.id, code: 'SOZEL' } },
-    update: {},
-    create: {
-      examId: ales.id,
-      code: 'SOZEL',
-      name: 'Sözel',
-      order: 2,
-    },
-  });
-
-  // ALES Sayısal Bölümü - Dersleri
-  const alesSayMatematik = await prisma.subject.upsert({
-    where: { sectionId_code: { sectionId: alesSayisal.id, code: 'MATEMATIK' } },
-    update: {},
-    create: {
-      sectionId: alesSayisal.id,
-      code: 'MATEMATIK',
-      name: 'Matematik',
-      order: 1,
-    },
-  });
-
-  const alesSayGeometri = await prisma.subject.upsert({
-    where: { sectionId_code: { sectionId: alesSayisal.id, code: 'GEOMETRI' } },
-    update: {},
-    create: {
-      sectionId: alesSayisal.id,
-      code: 'GEOMETRI',
-      name: 'Geometri',
-      order: 2,
-    },
-  });
-
-  // ALES Sayısal - Matematik Dersi Konuları
-  await prisma.topic.upsert({
-    where: { subjectId_code: { subjectId: alesSayMatematik.id, code: 'ALES_MATEMATIK' } },
-    update: {},
-    create: {
-      subjectId: alesSayMatematik.id,
-      code: 'ALES_MATEMATIK',
-      name: 'Matematik',
-      order: 1,
-    },
-  });
-
-  // ALES Sayısal - Geometri Dersi Konuları
-  await prisma.topic.upsert({
-    where: { subjectId_code: { subjectId: alesSayGeometri.id, code: 'ALES_GEOMETRI' } },
-    update: {},
-    create: {
-      subjectId: alesSayGeometri.id,
-      code: 'ALES_GEOMETRI',
-      name: 'Geometri',
-      order: 1,
-    },
-  });
-
-  // ALES Sözel Bölümü - Dersleri
-  const alesSozTurkce = await prisma.subject.upsert({
-    where: { sectionId_code: { sectionId: alesSozel.id, code: 'TURKCE' } },
-    update: {},
-    create: {
-      sectionId: alesSozel.id,
-      code: 'TURKCE',
-      name: 'Türkçe',
-      order: 1,
-    },
-  });
-
-  // ALES Sözel - Türkçe Dersi Konuları
-  await prisma.topic.upsert({
-    where: { subjectId_code: { subjectId: alesSozTurkce.id, code: 'ALES_TURKCE' } },
-    update: {},
-    create: {
-      subjectId: alesSozTurkce.id,
-      code: 'ALES_TURKCE',
-      name: 'Türkçe',
-      order: 1,
-    },
-  });
-
-  await prisma.topic.upsert({
-    where: { subjectId_code: { subjectId: alesSozTurkce.id, code: 'ALES_SOZEL_MANTIK' } },
-    update: {},
-    create: {
-      subjectId: alesSozTurkce.id,
-      code: 'ALES_SOZEL_MANTIK',
-      name: 'Sözel Mantık',
-      order: 2,
-    },
-  });
-
-  // DGS Sınavı
-  const dgs = await prisma.exam.upsert({
-    where: { code: 'DGS' },
-    update: {},
-    create: {
-      code: 'DGS',
-      name: 'DGS (Dikey Geçiş Sınavı)',
-      description: 'Önlisans mezunlarının lisans tamamlaması için',
-      status: 'ACTIVE',
-    },
-  });
-
-  // DGS Bölümleri
-  const dgsSayisal = await prisma.section.upsert({
-    where: { examId_code: { examId: dgs.id, code: 'SAYISAL_YETENEK' } },
-    update: {},
-    create: {
-      examId: dgs.id,
-      code: 'SAYISAL_YETENEK',
-      name: 'Sayısal Yetenek',
-      order: 1,
-    },
-  });
-
-  const dgsSozel = await prisma.section.upsert({
-    where: { examId_code: { examId: dgs.id, code: 'SOZEL_YETENEK' } },
-    update: {},
-    create: {
-      examId: dgs.id,
-      code: 'SOZEL_YETENEK',
-      name: 'Sözel Yetenek',
-      order: 2,
-    },
-  });
-
-  // DGS Sayısal Yetenek Bölümü - Dersleri
-  const dgsSayMatematik = await prisma.subject.upsert({
-    where: { sectionId_code: { sectionId: dgsSayisal.id, code: 'MATEMATIK' } },
-    update: {},
-    create: {
-      sectionId: dgsSayisal.id,
-      code: 'MATEMATIK',
-      name: 'Matematik',
-      order: 1,
-    },
-  });
-
-  // DGS Sayısal - Matematik Dersi Konuları
-  await prisma.topic.upsert({
-    where: { subjectId_code: { subjectId: dgsSayMatematik.id, code: 'DGS_MATEMATIK' } },
-    update: {},
-    create: {
-      subjectId: dgsSayMatematik.id,
-      code: 'DGS_MATEMATIK',
-      name: 'Matematik',
-      order: 1,
-    },
-  });
-
-  // DGS Sözel Yetenek Bölümü - Dersleri
-  const dgsSozTurkce = await prisma.subject.upsert({
-    where: { sectionId_code: { sectionId: dgsSozel.id, code: 'TURKCE' } },
-    update: {},
-    create: {
-      sectionId: dgsSozel.id,
-      code: 'TURKCE',
-      name: 'Türkçe',
-      order: 1,
-    },
-  });
-
-  // DGS Sözel - Türkçe Dersi Konuları
-  await prisma.topic.upsert({
-    where: { subjectId_code: { subjectId: dgsSozTurkce.id, code: 'DGS_TURKCE' } },
-    update: {},
-    create: {
-      subjectId: dgsSozTurkce.id,
-      code: 'DGS_TURKCE',
-      name: 'Türkçe',
-      order: 1,
-    },
-  });
-
-  // YKS-TYT Sınavı
-  const yksTyt = await prisma.exam.upsert({
-    where: { code: 'YKS_TYT' },
-    update: {},
-    create: {
-      code: 'YKS_TYT',
-      name: 'YKS-TYT (Temel Yeterlilik Testi)',
-      description: 'Üniversiteye giriş birinci aşama sınavı',
-      status: 'ACTIVE',
-    },
-  });
-
-  // YKS-TYT Bölümleri
-  const yksTytTurkce = await prisma.section.upsert({
-    where: { examId_code: { examId: yksTyt.id, code: 'TURKCE' } },
-    update: {},
-    create: {
-      examId: yksTyt.id,
-      code: 'TURKCE',
-      name: 'Türkçe',
-      order: 1,
-    },
-  });
-
-  const yksTytSosyal = await prisma.section.upsert({
-    where: { examId_code: { examId: yksTyt.id, code: 'SOSYAL_BILIMLER' } },
-    update: {},
-    create: {
-      examId: yksTyt.id,
-      code: 'SOSYAL_BILIMLER',
-      name: 'Sosyal Bilimler',
-      order: 2,
-    },
-  });
-
-  const yksTytMatematik = await prisma.section.upsert({
-    where: { examId_code: { examId: yksTyt.id, code: 'TEMEL_MATEMATIK' } },
-    update: {},
-    create: {
-      examId: yksTyt.id,
-      code: 'TEMEL_MATEMATIK',
-      name: 'Temel Matematik',
-      order: 3,
-    },
-  });
-
-  const yksTytFen = await prisma.section.upsert({
-    where: { examId_code: { examId: yksTyt.id, code: 'FEN_BILIMLERI' } },
-    update: {},
-    create: {
-      examId: yksTyt.id,
-      code: 'FEN_BILIMLERI',
-      name: 'Fen Bilimleri',
-      order: 4,
-    },
-  });
-
-  // YKS-TYT Türkçe Bölümü - Dersleri
-  const yksTytTrDers = await prisma.subject.upsert({
-    where: { sectionId_code: { sectionId: yksTytTurkce.id, code: 'TYT_TURKCE' } },
-    update: {},
-    create: {
-      sectionId: yksTytTurkce.id,
-      code: 'TYT_TURKCE',
-      name: 'Türkçe',
-      order: 1,
-    },
-  });
-
-  // YKS-TYT Türkçe Dersi Konuları
-  await prisma.topic.upsert({
-    where: { subjectId_code: { subjectId: yksTytTrDers.id, code: 'TYT_PARAGRAF' } },
-    update: {},
-    create: {
-      subjectId: yksTytTrDers.id,
-      code: 'TYT_PARAGRAF',
-      name: 'Paragraf',
-      order: 1,
-    },
-  });
-
-  // YKS-AYT Sınavı
-  const yksAyt = await prisma.exam.upsert({
-    where: { code: 'YKS_AYT' },
-    update: {},
-    create: {
-      code: 'YKS_AYT',
-      name: 'YKS-AYT (Alan Yeterlilik Testi)',
-      description: 'Üniversiteye giriş ikinci aşama sınavı',
-      status: 'ACTIVE',
-    },
-  });
-
-  // YKS-AYT Bölümleri
-  const yksAytMatematik = await prisma.section.upsert({
-    where: { examId_code: { examId: yksAyt.id, code: 'MATEMATIK' } },
-    update: {},
-    create: {
-      examId: yksAyt.id,
-      code: 'MATEMATIK',
-      name: 'Matematik',
-      order: 1,
-    },
-  });
-
-  // YKS-AYT Matematik Bölümü - Dersleri
-  const yksAytMatDers = await prisma.subject.upsert({
-    where: { sectionId_code: { sectionId: yksAytMatematik.id, code: 'AYT_MATEMATIK' } },
-    update: {},
-    create: {
-      sectionId: yksAytMatematik.id,
-      code: 'AYT_MATEMATIK',
-      name: 'Matematik',
-      order: 1,
-    },
-  });
-
-  // YKS-AYT Matematik Dersi Konuları
-  await prisma.topic.upsert({
-    where: { subjectId_code: { subjectId: yksAytMatDers.id, code: 'TUREV' } },
-    update: {},
-    create: {
-      subjectId: yksAytMatDers.id,
-      code: 'TUREV',
-      name: 'Türev',
-      order: 1,
-    },
-  });
-
-  await prisma.topic.upsert({
-    where: { subjectId_code: { subjectId: yksAytMatDers.id, code: 'INTEGRAL' } },
-    update: {},
-    create: {
-      subjectId: yksAytMatDers.id,
-      code: 'INTEGRAL',
-      name: 'İntegral',
-      order: 2,
-    },
-  });
-
-  // YKS-YDT Sınavı
-  const yksYdt = await prisma.exam.upsert({
-    where: { code: 'YKS_YDT' },
-    update: {},
-    create: {
-      code: 'YKS_YDT',
-      name: 'YKS-YDT (Yabancı Dil Testi)',
-      description: 'Yabancı dil bölümleri için üniversite sınavı',
-      status: 'ACTIVE',
-    },
-  });
-
-  // YKS-YDT Bölümleri
-  const yksYdtIngilizce = await prisma.section.upsert({
-    where: { examId_code: { examId: yksYdt.id, code: 'INGILIZCE' } },
-    update: {},
-    create: {
-      examId: yksYdt.id,
-      code: 'INGILIZCE',
-      name: 'İngilizce',
-      order: 1,
-    },
-  });
-
-  // YKS-YDT İngilizce Bölümü - Dersleri
-  const yksYdtIngDers = await prisma.subject.upsert({
-    where: { sectionId_code: { sectionId: yksYdtIngilizce.id, code: 'YDT_INGILIZCE' } },
-    update: {},
-    create: {
-      sectionId: yksYdtIngilizce.id,
-      code: 'YDT_INGILIZCE',
-      name: 'İngilizce',
-      order: 1,
-    },
-  });
-
-  // e-YDS Sınavı
-  const eYds = await prisma.exam.upsert({
-    where: { code: 'E_YDS' },
-    update: {},
-    create: {
-      code: 'E_YDS',
-      name: 'e-YDS (Elektronik Yabancı Dil Bilgisi Seviye Tespit Sınavı)',
-      description: 'Yabancı dil yeterlilik sınavı',
-      status: 'ACTIVE',
-    },
-  });
-
-  // e-YDS Bölümleri
-  const eYdsIngilizce = await prisma.section.upsert({
-    where: { examId_code: { examId: eYds.id, code: 'INGILIZCE' } },
-    update: {},
-    create: {
-      examId: eYds.id,
-      code: 'INGILIZCE',
-      name: 'İngilizce',
-      order: 1,
-    },
-  });
-
-  // e-YDS İngilizce Bölümü - Dersleri
-  const eYdsIngDers = await prisma.subject.upsert({
-    where: { sectionId_code: { sectionId: eYdsIngilizce.id, code: 'E_YDS_ENG' } },
-    update: {},
-    create: {
-      sectionId: eYdsIngilizce.id,
-      code: 'E_YDS_ENG',
-      name: 'İngilizce',
-      order: 1,
-    },
-  });
-
-  // e-YDS İngilizce Dersi Konuları
-  await prisma.topic.upsert({
-    where: { subjectId_code: { subjectId: eYdsIngDers.id, code: 'KELIME_BILGISI' } },
-    update: {},
-    create: {
-      subjectId: eYdsIngDers.id,
-      code: 'KELIME_BILGISI',
-      name: 'Kelime Bilgisi',
-      order: 1,
-    },
-  });
-
-  await prisma.topic.upsert({
-    where: { subjectId_code: { subjectId: eYdsIngDers.id, code: 'DIL_BILGISI' } },
-    update: {},
-    create: {
-      subjectId: eYdsIngDers.id,
-      code: 'DIL_BILGISI',
-      name: 'Dil Bilgisi',
-      order: 2,
-    },
-  });
-
-  // YÖKDİL Sınavı
-  const yokdil = await prisma.exam.upsert({
-    where: { code: 'YOKDIL' },
-    update: {},
-    create: {
-      code: 'YOKDIL',
-      name: 'YÖKDİL',
-      description: 'Yükseköğretim Kurumları Yabancı Dil Sınavı',
-      status: 'ACTIVE',
-    },
-  });
-
-  // YÖKDİL Bölümleri
-  const yokdilSaglik = await prisma.section.upsert({
-    where: { examId_code: { examId: yokdil.id, code: 'SAGLIK_BILIMLERI' } },
-    update: {},
-    create: {
-      examId: yokdil.id,
-      code: 'SAGLIK_BILIMLERI',
-      name: 'Sağlık Bilimleri',
-      order: 1,
-    },
-  });
-
-  const yokdilSosyal = await prisma.section.upsert({
-    where: { examId_code: { examId: yokdil.id, code: 'SOSYAL_BILIMLER' } },
-    update: {},
-    create: {
-      examId: yokdil.id,
-      code: 'SOSYAL_BILIMLER',
-      name: 'Sosyal Bilimler',
-      order: 2,
-    },
-  });
-
-  const yokdilFen = await prisma.section.upsert({
-    where: { examId_code: { examId: yokdil.id, code: 'FEN_BILIMLERI' } },
-    update: {},
-    create: {
-      examId: yokdil.id,
-      code: 'FEN_BILIMLERI',
-      name: 'Fen Bilimleri',
-      order: 3,
-    },
-  });
-
-  // YÖKDİL Sağlık Bilimleri Bölümü - Dersleri
-  const yokdilSagDers = await prisma.subject.upsert({
-    where: { sectionId_code: { sectionId: yokdilSaglik.id, code: 'YOKDIL_SB' } },
-    update: {},
-    create: {
-      sectionId: yokdilSaglik.id,
-      code: 'YOKDIL_SB',
-      name: 'Sağlık Bilimleri',
-      order: 1,
-    },
-  });
-
-  // YÖKDİL Sağlık Bilimleri Dersi Konuları
-  await prisma.topic.upsert({
-    where: { subjectId_code: { subjectId: yokdilSagDers.id, code: 'TIP_TERIMLERI' } },
-    update: {},
-    create: {
-      subjectId: yokdilSagDers.id,
-      code: 'TIP_TERIMLERI',
-      name: 'Tıbbi Terimler',
-      order: 1,
-    },
-  });
+  // ALES, DGS, YKS, YDS, YOKDIL, OABT müfredatları
+  console.log('📚 Seeding exam curricula...');
+  const { CURRICULUM_EXAMS, upsertExamTrees } = await import('./curriculum');
+  await upsertExamTrees(prisma, CURRICULUM_EXAMS);
 
   console.log('✅ Seed completed successfully!');
 }

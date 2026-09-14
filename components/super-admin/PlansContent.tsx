@@ -1,85 +1,80 @@
 'use client';
 
-import Link from 'next/link';
-import { ArrowLeft, Loader2, CreditCard } from 'lucide-react';
-import { ThemeToggleCompact } from '@/components/theme/ThemeToggleCompact';
+import { Loader2, CreditCard } from 'lucide-react';
 import { usePlansContent } from '@/components/super-admin/hooks/usePlansContent';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 export function PlansContent() {
   const { planStats, loading, error } = usePlansContent();
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">
-      <header className="border-b border-stone-200 bg-white/90 shadow-sm backdrop-blur-sm dark:border-stone-800 dark:bg-stone-950/90">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between gap-2">
-            <Link
-              href="/dashboard/super-admin"
-              className="flex items-center gap-2 text-stone-600 transition-colors hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
-            >
-              <ArrowLeft className="h-5 w-5" />
-              <span className="font-medium">Super Admin</span>
-            </Link>
-            <h1 className="text-center text-lg font-semibold text-stone-900 dark:text-stone-100 sm:flex-1">
-              Planlar & Abonelikler
-            </h1>
-            <div className="flex w-28 justify-end">
-              <ThemeToggleCompact />
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-        <p className="mb-6 text-sm text-stone-600 dark:text-stone-400">
-          Plan listesi, fiyatlar, limitler ve özellikler. Kurum bazlı plan atama / değiştirme.
+    <div className="space-y-6">
+      <div>
+        <p className="text-sm text-muted-foreground">
+          Plan listesi ve FREE / PRO / ENTERPRISE kullanıcı dağılımı.
         </p>
+      </div>
 
-        <div className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-900/90">
-          <div className="border-b border-stone-200 px-5 py-4 dark:border-stone-800">
-            <h2 className="flex items-center gap-2 text-lg font-bold text-stone-900 dark:text-stone-100">
-              <CreditCard className="h-5 w-5 text-primary-600 dark:text-primary-400" />
-              Planlara göre kullanıcı sayısı
-            </h2>
-            <p className="mt-0.5 text-sm text-stone-500 dark:text-stone-400">FREE / PRO / ENTERPRISE dağılımı</p>
-          </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <CreditCard className="h-5 w-5 text-primary" />
+            Planlara göre kullanıcı sayısı
+          </CardTitle>
+          <CardDescription>FREE / PRO / ENTERPRISE dağılımı</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
           {loading ? (
-            <div className="flex justify-center p-8">
-              <Loader2 className="h-8 w-8 animate-spin text-primary-600 dark:text-primary-400" />
+            <div className="flex justify-center p-10">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : error ? (
-            <div className="p-6 text-sm text-red-600 dark:text-red-400">{error}</div>
+            <Alert variant="destructive" className="m-6">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           ) : planStats.length === 0 ? (
-            <div className="p-8 text-center text-sm text-stone-500 dark:text-stone-400">Henüz plan verisi yok.</div>
+            <p className="px-6 py-10 text-center text-sm text-muted-foreground">
+              Henüz plan verisi yok.
+            </p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="bg-stone-50 text-xs font-semibold uppercase tracking-wider text-stone-600 dark:bg-stone-900/80 dark:text-stone-400">
-                    <th className="px-4 py-3">Plan</th>
-                    <th className="px-4 py-3">Tür</th>
-                    <th className="px-4 py-3">Kullanıcı</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {planStats.map((p) => (
-                    <tr key={p.planId ?? p.planCode} className="border-t border-stone-100 hover:bg-stone-50/50 dark:border-stone-800 dark:hover:bg-stone-800/40">
-                      <td className="px-4 py-3">
-                        <div className="flex flex-col">
-                          <span className="font-semibold text-stone-900 dark:text-stone-100">{p.planName}</span>
-                          <span className="text-xs text-stone-500 dark:text-stone-400">{p.planCode}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-stone-700 dark:text-stone-300">{p.planType}</td>
-                      <td className="px-4 py-3 font-semibold text-stone-900 dark:text-stone-100">{p.userCount}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Plan</TableHead>
+                  <TableHead>Tür</TableHead>
+                  <TableHead>Kullanıcı</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {planStats.map((p) => (
+                  <TableRow key={p.planId ?? p.planCode}>
+                    <TableCell>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-semibold">{p.planName}</span>
+                        <span className="text-xs text-muted-foreground">{p.planCode}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{p.planType}</Badge>
+                    </TableCell>
+                    <TableCell className="font-semibold tabular-nums">{p.userCount}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
-        </div>
-      </main>
+        </CardContent>
+      </Card>
     </div>
   );
 }

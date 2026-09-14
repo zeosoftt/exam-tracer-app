@@ -171,4 +171,16 @@ async function shopierWebhookHandler(req: NextRequest): Promise<NextResponse> {
   });
 }
 
+/** Tarayıcı / Shopier panel ping — sayfa değil, sağlık kontrolü. */
+async function shopierWebhookHealthGet(): Promise<NextResponse> {
+  const secretConfigured = Boolean(process.env.SHOPIER_WEBHOOK_SECRET?.trim());
+  return NextResponse.json({
+    success: true,
+    service: 'shopier-webhook',
+    method: 'POST required for order.created',
+    secretConfigured,
+  });
+}
+
+export const GET = asyncHandler(shopierWebhookHealthGet);
 export const POST = asyncHandler(shopierWebhookHandler);

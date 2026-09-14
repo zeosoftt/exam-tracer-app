@@ -55,8 +55,8 @@ export default async function SSSPage() {
               <p className="text-sm leading-relaxed text-stone-600 dark:text-stone-300 sm:text-base">
                 {q === 'Hangi sınavları destekliyorsunuz?' ? (
                   <>
-                    KPSS, ÖABT, ALES, DGS, YKS (TYT/AYT), YDS, YÖKDİL, TUS, DUS ve kurum içi sınavlar. Hazır
-                    yapı seçebilir veya kendi ders–konu ağacınızı oluşturabilirsiniz. Detay için{' '}
+                    KPSS, ÖABT, ALES, DGS, YKS (TYT/AYT), YDS ve YÖKDİL için hazır yapılar sunuyoruz. Kurum içi
+                    veya özel sınav için kendi ders–konu ağacınızı da oluşturabilirsiniz. Detay için{' '}
                     <Link
                       href="/sinavlar"
                       className="font-medium text-primary-700 hover:underline dark:text-primary-300"

@@ -7,7 +7,7 @@ import { AuthPageFooter } from '@/components/layout/AuthPageFooter';
 export async function generateMetadata(): Promise<Metadata> {
   const title = 'Ücretsiz kayıt — hesabını oluştur';
   const description =
-    'The Goal Lab ile dakikalar içinde ücretsiz hesap: KPSS, ÖABT, ALES ve tüm sınavlar için konu takibi ve deneme analizi. Kredi kartı gerekmez.';
+    'The Goal Lab ile ücretsiz hesap: KPSS, ÖABT, ALES ve YKS için konu takibi ve deneme analizi. Kredi kartı gerekmez.';
   return buildPublicPageMetadata({ title, description, path: '/onboarding' });
 }
 

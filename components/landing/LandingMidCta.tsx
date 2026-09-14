@@ -1,6 +1,7 @@
-import Link from 'next/link';
 import { ArrowRight, Clock, Shield } from 'lucide-react';
 import { LandingReveal } from '@/components/landing/LandingReveal';
+import { MarketingCtaLink } from '@/components/marketing/MarketingCtaLink';
+import { MARKETING_TOUCHPOINTS } from '@/lib/marketing/touchpoints';
 
 /** Sayfa ortasında dönüşüm bandı — scroll sonrası görünür (LandingReveal). */
 export function LandingMidCta() {
@@ -19,25 +20,27 @@ export function LandingMidCta() {
                 BUGÜN BAŞLAYANLAR YARIN ÖNDE
               </p>
               <h2 className="font-display text-2xl font-bold text-stone-900 dark:text-stone-100 sm:text-3xl">
-                İlk sınavınızı{' '}
-                <span className="landing-gradient-text">2 dakikada</span> kurun
+                Ücretsiz hesapla{' '}
+                <span className="landing-gradient-text">bugün başlayın</span>
               </h2>
               <p className="mt-3 text-base text-stone-600 dark:text-stone-300 sm:text-lg">
-                Ücretsiz hesap açın, hedef sınavınızı seçin, ilk konuyu işaretleyin. Taahhüt veya kart yok.
+                Hedef sınavınızı seçin, konuları işaretleyin. Taahhüt veya kart yok.
               </p>
               <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                <Link
+                <MarketingCtaLink
                   href="/onboarding"
+                  touchpoint={MARKETING_TOUCHPOINTS.LANDING_MID_CTA}
+                  ctaLabel="Ücretsiz hesap oluştur"
                   className="landing-vibe-cta group inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-primary-700 via-primary-600 to-primary-700 bg-[length:200%_100%] px-8 py-3.5 text-base font-bold text-white shadow-lg shadow-primary-500/25 transition-transform hover:scale-[1.02] active:scale-[0.98] sm:w-auto"
                 >
                   Ücretsiz hesap oluştur
                   <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
-                </Link>
+                </MarketingCtaLink>
               </div>
               <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-stone-500 dark:text-stone-400 sm:text-sm">
                 <span className="inline-flex items-center gap-1.5">
                   <Clock className="h-4 w-4 text-primary-600" aria-hidden />
-                  ~2 dk kurulum
+                  Kısa kayıt + kurulum
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <Shield className="h-4 w-4 text-primary-600" aria-hidden />

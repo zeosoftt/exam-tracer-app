@@ -4,6 +4,11 @@ import { useEffect, useState } from 'react';
 import { Loader2, Save } from 'lucide-react';
 import type { AdminSiteSettings } from '@/lib/siteSettings';
 import { buildProPlanPriceLabels } from '@/lib/marketing/pricingDisplay';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 type PricingDraft = Pick<
   AdminSiteSettings,
@@ -32,7 +37,7 @@ export function PricingSettingsSection({ settings, loading, patching, onSave }: 
 
   if (loading || !draft) {
     return (
-      <div className="flex items-center gap-2 text-stone-500 dark:text-stone-400">
+      <div className="flex items-center gap-2 text-muted-foreground">
         <Loader2 className="h-4 w-4 animate-spin" />
         <span className="text-sm">Yükleniyor...</span>
       </div>
@@ -49,76 +54,78 @@ export function PricingSettingsSection({ settings, loading, patching, onSave }: 
   };
 
   return (
-    <div className="max-w-2xl space-y-5 rounded-xl border border-stone-200 bg-white p-5 shadow-sm dark:border-stone-800 dark:bg-stone-900/90">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <label className="block space-y-1.5">
-          <span className="text-sm font-medium text-stone-900 dark:text-stone-100">Pro fiyat (₺)</span>
-          <input
-            type="number"
-            min={1}
-            max={999999}
-            step={1}
-            value={draft.pro_plan_price_try}
-            onChange={(e) =>
-              setDraft((d) =>
-                d ? { ...d, pro_plan_price_try: Number.parseFloat(e.target.value) || 0 } : d,
-              )
-            }
+    <Card className="max-w-2xl">
+      <CardContent className="space-y-5 pt-6">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="pro_plan_price_try">Pro fiyat (₺)</Label>
+            <Input
+              id="pro_plan_price_try"
+              type="number"
+              min={1}
+              max={999999}
+              step={1}
+              value={draft.pro_plan_price_try}
+              onChange={(e) =>
+                setDraft((d) =>
+                  d ? { ...d, pro_plan_price_try: Number.parseFloat(e.target.value) || 0 } : d,
+                )
+              }
+              disabled={patching}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="pro_plan_billing_period">Dönem</Label>
+            <Input
+              id="pro_plan_billing_period"
+              type="text"
+              maxLength={32}
+              value={draft.pro_plan_billing_period}
+              onChange={(e) =>
+                setDraft((d) => (d ? { ...d, pro_plan_billing_period: e.target.value } : d))
+              }
+              placeholder="6 ay"
+              disabled={patching}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="shopier_checkout_url">Shopier ödeme linki</Label>
+          <Input
+            id="shopier_checkout_url"
+            type="url"
+            value={draft.shopier_checkout_url}
+            onChange={(e) => setDraft((d) => (d ? { ...d, shopier_checkout_url: e.target.value } : d))}
+            placeholder="https://www.shopier.com/..."
             disabled={patching}
-            className="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2.5 text-sm text-stone-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:opacity-50 dark:border-stone-700 dark:bg-stone-950 dark:text-stone-100"
           />
-        </label>
-        <label className="block space-y-1.5">
-          <span className="text-sm font-medium text-stone-900 dark:text-stone-100">Dönem</span>
-          <input
-            type="text"
-            maxLength={32}
-            value={draft.pro_plan_billing_period}
-            onChange={(e) =>
-              setDraft((d) => (d ? { ...d, pro_plan_billing_period: e.target.value } : d))
-            }
-            placeholder="6 ay"
-            disabled={patching}
-            className="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2.5 text-sm text-stone-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:opacity-50 dark:border-stone-700 dark:bg-stone-950 dark:text-stone-100"
-          />
-        </label>
-      </div>
+          <p className="text-xs text-muted-foreground">
+            Landing, dashboard ve deneme sayfalarındaki &quot;Satın al&quot; butonları bu URL&apos;yi kullanır.
+          </p>
+        </div>
 
-      <label className="block space-y-1.5">
-        <span className="text-sm font-medium text-stone-900 dark:text-stone-100">Shopier ödeme linki</span>
-        <input
-          type="url"
-          value={draft.shopier_checkout_url}
-          onChange={(e) => setDraft((d) => (d ? { ...d, shopier_checkout_url: e.target.value } : d))}
-          placeholder="https://www.shopier.com/..."
-          disabled={patching}
-          className="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2.5 text-sm text-stone-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:opacity-50 dark:border-stone-700 dark:bg-stone-950 dark:text-stone-100"
-        />
-        <p className="text-xs text-stone-500 dark:text-stone-400">
-          Landing, dashboard ve deneme sayfalarındaki &quot;Satın al&quot; butonları bu URL&apos;yi kullanır.
-        </p>
-      </label>
-
-      <p className="rounded-xl bg-primary-50 px-3 py-2 text-sm font-medium text-primary-900 dark:bg-primary-950/40 dark:text-primary-200">
-        Önizleme: {preview.priceLabelWithPeriod}
-      </p>
-
-      <div className="flex items-center gap-3 border-t border-stone-100 pt-4 dark:border-stone-800">
-        <button
+        <Alert>
+          <AlertDescription className="font-medium text-primary">
+            Önizleme: {preview.priceLabelWithPeriod}
+          </AlertDescription>
+        </Alert>
+      </CardContent>
+      <CardFooter className="gap-3 border-t pt-4">
+        <Button
           type="button"
           onClick={() => void handleSave()}
           disabled={patching || draft.pro_plan_price_try <= 0 || !draft.pro_plan_billing_period.trim()}
-          className="inline-flex items-center gap-2 rounded-xl bg-primary-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-800 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {patching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           Kaydet
-        </button>
+        </Button>
         {saved ? (
-          <span className="text-sm text-primary-700 dark:text-primary-300">
+          <span className="text-sm text-primary">
             Kaydedildi — bir sonraki sayfa yüklemesinde geçerli olur.
           </span>
         ) : null}
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   );
 }

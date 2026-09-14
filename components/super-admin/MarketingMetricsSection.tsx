@@ -2,7 +2,17 @@
 
 import type { MarketingFunnelStats } from '@/lib/marketing/getMarketingFunnelStats';
 import { formatDurationSeconds } from '@/lib/marketing/sessionEngagementTypes';
-import { TrendingUp, MousePointerClick, ShoppingBag, Users, Target, BarChart2, Clock } from 'lucide-react';
+import {
+  TrendingUp,
+  MousePointerClick,
+  ShoppingBag,
+  Users,
+  Target,
+  BarChart2,
+  Clock,
+} from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type Props = {
   marketing: MarketingFunnelStats | undefined;
@@ -16,9 +26,7 @@ function pct(value: number | null | undefined): string {
 
 export function MarketingMetricsSection({ marketing, loading }: Props) {
   if (loading) {
-    return (
-      <div className="mb-8 h-48 animate-pulse rounded-xl bg-stone-100 dark:bg-stone-800" aria-hidden />
-    );
+    return <Skeleton className="mb-8 h-48 rounded-xl" aria-hidden />;
   }
 
   if (!marketing) return null;
@@ -36,129 +44,170 @@ export function MarketingMetricsSection({ marketing, loading }: Props) {
     { label: 'Satın alma (webhook)', value: marketing.purchasesTotal },
   ];
 
+  const summary = [
+    {
+      label: 'Kayıt (7 gün)',
+      value: marketing.signupsLast7Days,
+      sub: `30 gün: ${marketing.signupsLast30Days}`,
+      icon: Users,
+    },
+    {
+      label: 'FREE → PRO oranı',
+      value: pct(marketing.conversionRatePct),
+      sub: `Pro: ${marketing.proUsers} · Free: ${marketing.freeUsers}`,
+      icon: Target,
+    },
+    {
+      label: 'Shopier tıklama',
+      value: marketing.shopierCheckoutClicks,
+      sub: `Dönüşüm: ${pct(marketing.checkoutToPurchaseRatePct)}`,
+      icon: MousePointerClick,
+    },
+    {
+      label: 'Tahmini gelir',
+      value: `${marketing.estimatedRevenueTry.toLocaleString('tr-TR')} ₺`,
+      sub: `${marketing.purchasesTotal} satın alma`,
+      icon: ShoppingBag,
+    },
+  ];
+
+  const engagementCards = [
+    {
+      label: 'Ort. oturum (7 gün)',
+      value: formatDurationSeconds(engagement.avgDurationSeconds7d),
+      sub: `Medyan: ${formatDurationSeconds(engagement.medianDurationSeconds7d)}`,
+      icon: Clock,
+    },
+    {
+      label: 'Oturum sayısı (7 gün)',
+      value: engagement.sessionsLast7Days,
+      sub: `30 gün: ${engagement.sessionsLast30Days}`,
+      icon: Users,
+    },
+    {
+      label: 'Toplam süre (7 gün)',
+      value: `${engagement.totalDurationMinutes7d.toLocaleString('tr-TR')} dk`,
+      sub: `Ort. 30 gün: ${formatDurationSeconds(engagement.avgDurationSeconds30d)}`,
+      icon: Clock,
+    },
+    {
+      label: 'Giriş yapmış kullanıcı (7 gün)',
+      value: engagement.uniqueUsersLast7Days,
+      sub: 'Sekme oturumu bazlı ölçüm',
+      icon: Users,
+    },
+  ];
+
   return (
-    <section className="mb-10">
-      <div className="mb-4 flex items-center gap-2">
-        <BarChart2 className="h-6 w-6 text-primary-600 dark:text-primary-400" />
-        <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100">Satış & Pazarlama Hunisi</h2>
+    <section className="space-y-6">
+      <div className="flex items-center gap-2">
+        <BarChart2 className="h-6 w-6 text-primary" />
+        <h2 className="text-xl font-bold tracking-tight">Satış & Pazarlama Hunisi</h2>
       </div>
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900/90">
-          <div className="mb-1 flex items-center gap-2 text-sm text-stone-500">
-            <Users className="h-4 w-4" /> Kayıt (7 gün)
-          </div>
-          <p className="text-2xl font-bold">{marketing.signupsLast7Days}</p>
-          <p className="text-xs text-stone-500">30 gün: {marketing.signupsLast30Days}</p>
-        </div>
-        <div className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900/90">
-          <div className="mb-1 flex items-center gap-2 text-sm text-stone-500">
-            <Target className="h-4 w-4" /> FREE → PRO oranı
-          </div>
-          <p className="text-2xl font-bold">{pct(marketing.conversionRatePct)}</p>
-          <p className="text-xs text-stone-500">Pro: {marketing.proUsers} · Free: {marketing.freeUsers}</p>
-        </div>
-        <div className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900/90">
-          <div className="mb-1 flex items-center gap-2 text-sm text-stone-500">
-            <MousePointerClick className="h-4 w-4" /> Shopier tıklama
-          </div>
-          <p className="text-2xl font-bold">{marketing.shopierCheckoutClicks}</p>
-          <p className="text-xs text-stone-500">
-            Dönüşüm: {pct(marketing.checkoutToPurchaseRatePct)}
-          </p>
-        </div>
-        <div className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900/90">
-          <div className="mb-1 flex items-center gap-2 text-sm text-stone-500">
-            <ShoppingBag className="h-4 w-4" /> Tahmini gelir
-          </div>
-          <p className="text-2xl font-bold">{marketing.estimatedRevenueTry.toLocaleString('tr-TR')} ₺</p>
-          <p className="text-xs text-stone-500">{marketing.purchasesTotal} satın alma</p>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {summary.map((item) => {
+          const Icon = item.icon;
+          return (
+            <Card key={item.label}>
+              <CardHeader className="pb-2">
+                <CardDescription className="flex items-center gap-2">
+                  <Icon className="h-4 w-4" />
+                  {item.label}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold tabular-nums">{item.value}</p>
+                <p className="text-xs text-muted-foreground">{item.sub}</p>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900/90">
-          <div className="mb-1 flex items-center gap-2 text-sm text-stone-500">
-            <Clock className="h-4 w-4" /> Ort. oturum (7 gün)
-          </div>
-          <p className="text-2xl font-bold">{formatDurationSeconds(engagement.avgDurationSeconds7d)}</p>
-          <p className="text-xs text-stone-500">
-            Medyan: {formatDurationSeconds(engagement.medianDurationSeconds7d)}
-          </p>
-        </div>
-        <div className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900/90">
-          <div className="mb-1 flex items-center gap-2 text-sm text-stone-500">
-            <Users className="h-4 w-4" /> Oturum sayısı (7 gün)
-          </div>
-          <p className="text-2xl font-bold">{engagement.sessionsLast7Days}</p>
-          <p className="text-xs text-stone-500">30 gün: {engagement.sessionsLast30Days}</p>
-        </div>
-        <div className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900/90">
-          <div className="mb-1 flex items-center gap-2 text-sm text-stone-500">
-            <Clock className="h-4 w-4" /> Toplam süre (7 gün)
-          </div>
-          <p className="text-2xl font-bold">{engagement.totalDurationMinutes7d.toLocaleString('tr-TR')} dk</p>
-          <p className="text-xs text-stone-500">
-            Ort. 30 gün: {formatDurationSeconds(engagement.avgDurationSeconds30d)}
-          </p>
-        </div>
-        <div className="rounded-xl border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900/90">
-          <div className="mb-1 flex items-center gap-2 text-sm text-stone-500">
-            <Users className="h-4 w-4" /> Giriş yapmış kullanıcı (7 gün)
-          </div>
-          <p className="text-2xl font-bold">{engagement.uniqueUsersLast7Days}</p>
-          <p className="text-xs text-stone-500">Sekme oturumu bazlı ölçüm</p>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {engagementCards.map((item) => {
+          const Icon = item.icon;
+          return (
+            <Card key={item.label}>
+              <CardHeader className="pb-2">
+                <CardDescription className="flex items-center gap-2">
+                  <Icon className="h-4 w-4" />
+                  {item.label}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold tabular-nums">{item.value}</p>
+                <p className="text-xs text-muted-foreground">{item.sub}</p>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-stone-200 bg-white p-5 dark:border-stone-800 dark:bg-stone-900/90">
-          <h3 className="mb-3 flex items-center gap-2 font-semibold text-stone-900 dark:text-stone-100">
-            <TrendingUp className="h-4 w-4 text-primary-600" />
-            Huni adımları (first-party)
-          </h3>
-          <ul className="space-y-2 text-sm">
-            {funnel.map((row) => (
-              <li key={row.label} className="flex justify-between gap-4 border-b border-stone-100 pb-2 dark:border-stone-800">
-                <span className="text-stone-600 dark:text-stone-400">{row.label}</span>
-                <span className="font-semibold tabular-nums">{row.value}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <TrendingUp className="h-4 w-4 text-primary" />
+              Huni adımları (first-party)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2 text-sm">
+              {funnel.map((row) => (
+                <li
+                  key={row.label}
+                  className="flex justify-between gap-4 border-b border-border pb-2 last:border-0"
+                >
+                  <span className="text-muted-foreground">{row.label}</span>
+                  <span className="font-semibold tabular-nums">{row.value}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
 
         <div className="space-y-6">
-          <div className="rounded-xl border border-stone-200 bg-white p-5 dark:border-stone-800 dark:bg-stone-900/90">
-            <h3 className="mb-3 font-semibold text-stone-900 dark:text-stone-100">Shopier tıklama — kaynak</h3>
-            {marketing.checkoutByTouchpoint.length === 0 ? (
-              <p className="text-sm text-stone-500">Henüz touchpoint verisi yok.</p>
-            ) : (
-              <ul className="space-y-2 text-sm">
-                {marketing.checkoutByTouchpoint.map((row) => (
-                  <li key={row.touchpoint} className="flex justify-between gap-4">
-                    <span className="text-stone-600 dark:text-stone-400">{row.label}</span>
-                    <span className="font-semibold tabular-nums">{row.count}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Shopier tıklama — kaynak</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {marketing.checkoutByTouchpoint.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Henüz touchpoint verisi yok.</p>
+              ) : (
+                <ul className="space-y-2 text-sm">
+                  {marketing.checkoutByTouchpoint.map((row) => (
+                    <li key={row.touchpoint} className="flex justify-between gap-4">
+                      <span className="text-muted-foreground">{row.label}</span>
+                      <span className="font-semibold tabular-nums">{row.count}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
 
-          <div className="rounded-xl border border-stone-200 bg-white p-5 dark:border-stone-800 dark:bg-stone-900/90">
-            <h3 className="mb-3 font-semibold text-stone-900 dark:text-stone-100">Bizi nereden duydunuz?</h3>
-            {marketing.acquisitionSources.length === 0 ? (
-              <p className="text-sm text-stone-500">Veri yok.</p>
-            ) : (
-              <ul className="space-y-2 text-sm">
-                {marketing.acquisitionSources.slice(0, 8).map((row) => (
-                  <li key={row.source} className="flex justify-between gap-4">
-                    <span className="text-stone-600 dark:text-stone-400">{row.source}</span>
-                    <span className="font-semibold tabular-nums">{row.count}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Bizi nereden duydunuz?</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {marketing.acquisitionSources.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Veri yok.</p>
+              ) : (
+                <ul className="space-y-2 text-sm">
+                  {marketing.acquisitionSources.slice(0, 8).map((row) => (
+                    <li key={row.source} className="flex justify-between gap-4">
+                      <span className="text-muted-foreground">{row.source}</span>
+                      <span className="font-semibold tabular-nums">{row.count}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </section>

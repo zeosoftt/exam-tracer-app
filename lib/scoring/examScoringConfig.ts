@@ -131,6 +131,10 @@ const EXAM_PROFILES: Record<string, ExamScoringProfile> = {
   YKS_YDT: YDS_PROFILE,
   E_YDS: { ...YDS_PROFILE, ydsQuestionCount: 80 },
   YOKDIL: { ...YDS_PROFILE, ydsQuestionCount: 80 },
+  OABT: spWeightedProfile(
+    [{ key: 'OABT', sectionCodes: ['OABT', 'OGRETIM_ALANI'], defaultMean: 30, defaultStd: 10 }],
+    'OABT',
+  ),
 };
 
 export function getExamScoringProfile(examCode: string): ExamScoringProfile {

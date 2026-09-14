@@ -9,9 +9,38 @@
  *   npx tsx scripts/change-user-plan.ts clxxx123abc FREE
  *
  * Plan kodları: plans tablosundaki code (örn. FREE, PRO, ENTERPRISE)
+ *
+ * Not: lib/db/prisma.ts `server-only` içerdiği için CLI'da doğrudan PrismaClient kullanılır.
  */
 
-import { prisma } from '../lib/db/prisma';
+import { existsSync, readFileSync } from 'fs';
+import { resolve } from 'path';
+import { PrismaClient } from '@prisma/client';
+
+function loadEnvFile(fileName: string) {
+  const p = resolve(process.cwd(), fileName);
+  if (!existsSync(p)) return;
+  for (const line of readFileSync(p, 'utf8').split(/\r?\n/)) {
+    const t = line.trim();
+    if (!t || t.startsWith('#')) continue;
+    const i = t.indexOf('=');
+    if (i <= 0) continue;
+    const key = t.slice(0, i).trim();
+    let val = t.slice(i + 1).trim();
+    if (
+      (val.startsWith('"') && val.endsWith('"')) ||
+      (val.startsWith("'") && val.endsWith("'"))
+    ) {
+      val = val.slice(1, -1);
+    }
+    if (!(key in process.env)) process.env[key] = val;
+  }
+}
+
+loadEnvFile('.env.local');
+loadEnvFile('.env');
+
+const prisma = new PrismaClient();
 
 async function main() {
   const userArg = process.argv[2];
@@ -41,7 +70,7 @@ async function main() {
   const isEmail = userArg.includes('@');
   const user = await prisma.user.findFirst({
     where: isEmail
-      ? { email: userArg.trim(), deletedAt: null }
+      ? { email: userArg.trim().toLowerCase(), deletedAt: null }
       : { id: userArg.trim(), deletedAt: null },
     select: {
       id: true,
@@ -53,7 +82,11 @@ async function main() {
   });
 
   if (!user?.personalOrganizationId) {
-    console.error('Kullanıcı bulunamadı:', userArg);
+    console.error(
+      user
+        ? `Kullanıcı bulundu ama personalOrganizationId yok: ${user.email}`
+        : `Kullanıcı bulunamadı: ${userArg}`,
+    );
     process.exit(1);
   }
 

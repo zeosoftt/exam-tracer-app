@@ -9,17 +9,86 @@ import {
   fetchSuperAdminUsersPage,
   patchSuperAdminSiteSettings,
 } from '@/lib/client-api/superAdminClient';
-import { scheduleIdleTask } from '@/lib/runtime/scheduleIdleTask';
 
-export function useSuperAdminPanel() {
+export function useAdminStats() {
   const [stats, setStats] = useState<AdminStats | null>(null);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const [statsLoadError, setStatsLoadError] = useState<string | null>(null);
+
+  const loadStats = useCallback(async () => {
+    setStatsLoadError(null);
+    setIsLoadingStats(true);
+    try {
+      const data = await fetchSuperAdminStats();
+      if (data) {
+        startTransition(() => setStats(data));
+      } else {
+        setStatsLoadError('İstatistikler yüklenemedi.');
+      }
+    } catch {
+      setStatsLoadError('İstatistikler yüklenemedi.');
+    } finally {
+      setIsLoadingStats(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadStats();
+  }, [loadStats]);
+
+  return { stats, isLoadingStats, statsLoadError, reloadStats: loadStats };
+}
+
+export function useAdminUsers(pageSize = 10) {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [page, setPage] = useState(1);
-  const [pagination, setPagination] = useState({ limit: 10, total: 0, totalPages: 0 });
-  const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const [pagination, setPagination] = useState({ limit: pageSize, total: 0, totalPages: 0 });
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
-  const [statsLoadError, setStatsLoadError] = useState<string | null>(null);
   const [usersLoadError, setUsersLoadError] = useState<string | null>(null);
+
+  const loadUsers = useCallback(
+    async (pageNum: number) => {
+      setIsLoadingUsers(true);
+      setUsersLoadError(null);
+      try {
+        const result = await fetchSuperAdminUsersPage(pageNum, pageSize);
+        if (result.ok) {
+          startTransition(() => {
+            setUsers(result.users);
+            setPagination(result.pagination);
+          });
+          setUsersLoadError(null);
+        } else {
+          setUsers([]);
+          setPagination({ limit: pageSize, total: 0, totalPages: 0 });
+          setUsersLoadError(result.message);
+        }
+      } catch {
+        setUsers([]);
+        setPagination({ limit: pageSize, total: 0, totalPages: 0 });
+        setUsersLoadError('Bağlantı hatası. Ağı kontrol edip yenileyin.');
+      } finally {
+        setIsLoadingUsers(false);
+      }
+    },
+    [pageSize],
+  );
+
+  useEffect(() => {
+    void loadUsers(page);
+  }, [page, loadUsers]);
+
+  return {
+    users,
+    page,
+    setPage,
+    pagination,
+    isLoadingUsers,
+    usersLoadError,
+  };
+}
+
+export function useAdminSiteSettings() {
   const [siteSettings, setSiteSettings] = useState<AdminSiteSettings | null>(null);
   const [siteSettingsLoading, setSiteSettingsLoading] = useState(true);
   const [siteSettingsPatching, setSiteSettingsPatching] = useState(false);
@@ -28,6 +97,7 @@ export function useSuperAdminPanel() {
 
   const loadSiteSettings = useCallback(async () => {
     setSiteSettingsLoadError(null);
+    setSiteSettingsLoading(true);
     try {
       const data = await fetchSuperAdminSiteSettings();
       if (data) {
@@ -59,71 +129,11 @@ export function useSuperAdminPanel() {
     }
   }, []);
 
-  const loadStats = useCallback(async () => {
-    setStatsLoadError(null);
-    try {
-      const data = await fetchSuperAdminStats();
-      if (data) {
-        startTransition(() => setStats(data));
-      } else {
-        setStatsLoadError('İstatistikler yüklenemedi.');
-      }
-    } catch {
-      setStatsLoadError('İstatistikler yüklenemedi.');
-    } finally {
-      setIsLoadingStats(false);
-    }
-  }, []);
-
-  const loadUsers = useCallback(async (pageNum: number) => {
-    setIsLoadingUsers(true);
-    setUsersLoadError(null);
-    try {
-      const result = await fetchSuperAdminUsersPage(pageNum, 10);
-      if (result.ok) {
-        startTransition(() => {
-          setUsers(result.users);
-          setPagination(result.pagination);
-        });
-        setUsersLoadError(null);
-      } else {
-        setUsers([]);
-        setPagination({ limit: 10, total: 0, totalPages: 0 });
-        setUsersLoadError(result.message);
-      }
-    } catch {
-      setUsers([]);
-      setPagination({ limit: 10, total: 0, totalPages: 0 });
-      setUsersLoadError('Bağlantı hatası. Ağı kontrol edip yenileyin.');
-    } finally {
-      setIsLoadingUsers(false);
-    }
-  }, []);
-
   useEffect(() => {
-    void loadStats();
-    scheduleIdleTask(
-      () => {
-        void loadSiteSettings();
-      },
-      { timeout: 1200 },
-    );
-  }, [loadStats, loadSiteSettings]);
-
-  useEffect(() => {
-    void loadUsers(page);
-  }, [page, loadUsers]);
+    void loadSiteSettings();
+  }, [loadSiteSettings]);
 
   return {
-    stats,
-    users,
-    page,
-    setPage,
-    pagination,
-    isLoadingStats,
-    isLoadingUsers,
-    statsLoadError,
-    usersLoadError,
     siteSettings,
     siteSettingsLoading,
     siteSettingsPatching,
@@ -131,4 +141,12 @@ export function useSuperAdminPanel() {
     siteSettingsPatchError,
     patchSiteSettings,
   };
+}
+
+/** @deprecated Prefer focused hooks: useAdminStats / useAdminUsers / useAdminSiteSettings */
+export function useSuperAdminPanel() {
+  const stats = useAdminStats();
+  const users = useAdminUsers();
+  const settings = useAdminSiteSettings();
+  return { ...stats, ...users, ...settings };
 }

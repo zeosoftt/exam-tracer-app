@@ -1,7 +1,8 @@
-import Link from 'next/link';
 import { Check, Minus } from 'lucide-react';
 import { LandingReveal } from '@/components/landing/LandingReveal';
 import { LandingSectionHeader } from '@/components/landing/LandingSectionHeader';
+import { MarketingCtaLink } from '@/components/marketing/MarketingCtaLink';
+import { MARKETING_TOUCHPOINTS } from '@/lib/marketing/touchpoints';
 
 const ROWS = [
   { feature: 'Sınav / ders / konu takibi', free: true, pro: true },
@@ -59,12 +60,14 @@ export function LandingFreeVsPro() {
             ))}
           </div>
           <p className="mt-6 text-center">
-            <Link
+            <MarketingCtaLink
               href="/onboarding"
+              touchpoint={MARKETING_TOUCHPOINTS.LANDING_PRICING}
+              ctaLabel="Ücretsiz hesapla başla"
               className="font-semibold text-primary-700 transition-colors hover:text-primary-800 dark:text-primary-300 dark:hover:text-primary-200"
             >
               Ücretsiz hesapla başla →
-            </Link>
+            </MarketingCtaLink>
           </p>
         </LandingReveal>
       </div>

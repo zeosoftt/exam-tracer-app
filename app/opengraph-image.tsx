@@ -54,7 +54,7 @@ export default function OpenGraphImage() {
               letterSpacing: -1,
             }}
           >
-            The Goal Labs
+            The Goal Lab
           </span>
         </div>
         <p

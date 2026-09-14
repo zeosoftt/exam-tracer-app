@@ -1,8 +1,9 @@
-import Link from 'next/link';
 import { ArrowRight, ListChecks, Target, UserPlus } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { LandingReveal } from '@/components/landing/LandingReveal';
 import { LandingSectionHeader } from '@/components/landing/LandingSectionHeader';
+import { MarketingCtaLink } from '@/components/marketing/MarketingCtaLink';
+import { MARKETING_TOUCHPOINTS } from '@/lib/marketing/touchpoints';
 
 const STEPS: Array<{ step: number; title: string; desc: string; icon: LucideIcon }> = [
   { step: 1, title: 'Ücretsiz kayıt ol', desc: 'E-posta ile hesap oluşturun. Kredi kartı gerekmez.', icon: UserPlus },
@@ -41,13 +42,15 @@ export function LandingHowItWorks() {
         </div>
 
         <div className="mt-10 text-center">
-          <Link
+          <MarketingCtaLink
             href="/onboarding"
+            touchpoint={MARKETING_TOUCHPOINTS.LANDING_MID_CTA}
+            ctaLabel="Hemen başla"
             className="landing-vibe-cta inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-primary-700 via-primary-600 to-primary-700 bg-[length:200%_100%] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-primary-500/25 transition-transform hover:scale-[1.02] sm:w-auto sm:text-base"
           >
             Hemen başla
             <ArrowRight className="h-4 w-4" />
-          </Link>
+          </MarketingCtaLink>
         </div>
       </div>
     </section>
