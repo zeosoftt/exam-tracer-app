@@ -3,12 +3,12 @@
  */
 
 import dynamic from 'next/dynamic';
-import { RouteShellSkeleton } from '@/components/ui/RouteShellSkeleton';
+import { AdminPageSkeleton } from '@/components/super-admin/layout/AdminLoading';
 
 const SuperAdminOverview = dynamic(
   () =>
     import('@/components/super-admin/SuperAdminPanel').then((m) => m.SuperAdminOverview),
-  { loading: () => <RouteShellSkeleton /> },
+  { loading: () => <AdminPageSkeleton /> },
 );
 
 export default function SuperAdminPage() {

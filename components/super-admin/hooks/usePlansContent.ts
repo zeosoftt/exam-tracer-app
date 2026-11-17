@@ -11,6 +11,8 @@ export function usePlansContent() {
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
       const result = await fetchSuperAdminPlanStats();
       if (result.ok) {

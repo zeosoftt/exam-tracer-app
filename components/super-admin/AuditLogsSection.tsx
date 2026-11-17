@@ -1,13 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Loader2, ScrollText } from 'lucide-react';
 import type { AdminAuditLog } from '@/components/super-admin/domain/superAdminTypes';
 import { fetchSuperAdminAuditLogs } from '@/lib/client-api/superAdminClient';
 import { formatAdminDateTime } from '@/components/super-admin/formatAdminDateTime';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -16,11 +13,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { AdminErrorAlert } from '@/components/super-admin/layout/AdminErrorAlert';
+import { AdminPagination } from '@/components/super-admin/layout/AdminPagination';
+import { AdminTableSkeleton } from '@/components/super-admin/layout/AdminLoading';
+
+const PAGE_SIZE = 15;
 
 export function AuditLogsSection() {
   const [logs, setLogs] = useState<AdminAuditLog[]>([]);
   const [page, setPage] = useState(1);
-  const [pagination, setPagination] = useState({ limit: 15, total: 0, totalPages: 0 });
+  const [pagination, setPagination] = useState({ limit: PAGE_SIZE, total: 0, totalPages: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,7 +30,7 @@ export function AuditLogsSection() {
     setLoading(true);
     setError(null);
     try {
-      const result = await fetchSuperAdminAuditLogs(pageNum, 15);
+      const result = await fetchSuperAdminAuditLogs(pageNum, PAGE_SIZE);
       if (result.ok) {
         setLogs(result.logs);
         setPagination(result.pagination);
@@ -36,6 +38,9 @@ export function AuditLogsSection() {
         setError(result.message);
         setLogs([]);
       }
+    } catch {
+      setError('Kayıtlar yüklenemedi. Bağlantınızı kontrol edip tekrar deneyin.');
+      setLogs([]);
     } finally {
       setLoading(false);
     }
@@ -46,42 +51,25 @@ export function AuditLogsSection() {
   }, [page, loadLogs]);
 
   return (
-    <section className="space-y-4">
-      <div className="flex items-center gap-2">
-        <ScrollText className="h-5 w-5 text-primary" aria-hidden />
-        <h2 className="text-xl font-bold tracking-tight">Audit Log</h2>
-      </div>
-      <p className="text-sm text-muted-foreground">
-        Super-admin mutasyonları (site ayarları, sınav içeriği vb.) kayıt altına alınır.
-      </p>
+    <div className="space-y-4">
+      {error ? (
+        <AdminErrorAlert message={error} onRetry={() => void loadLogs(page)} retrying={loading} />
+      ) : null}
 
       <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Kayıtlar</CardTitle>
-          <CardDescription>Son işlemler</CardDescription>
-        </CardHeader>
         <CardContent className="p-0">
-          {error ? (
-            <Alert variant="destructive" className="mx-6 mb-4">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          ) : null}
-
           {loading ? (
-            <div className="flex items-center justify-center gap-2 p-10 text-muted-foreground">
-              <Loader2 className="h-5 w-5 animate-spin" />
-              <span className="text-sm">Yükleniyor...</span>
-            </div>
-          ) : logs.length === 0 ? (
-            <p className="px-6 py-10 text-center text-sm text-muted-foreground">
+            <AdminTableSkeleton rows={8} columns={5} />
+          ) : error ? null : logs.length === 0 ? (
+            <p className="px-6 py-12 text-center text-sm text-muted-foreground">
               Henüz kayıt yok veya tablo henüz oluşturulmadı.
             </p>
           ) : (
             <>
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Tarih</TableHead>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="whitespace-nowrap">Tarih</TableHead>
                     <TableHead>İşlem</TableHead>
                     <TableHead>Kaynak</TableHead>
                     <TableHead>Kullanıcı</TableHead>
@@ -91,58 +79,42 @@ export function AuditLogsSection() {
                 <TableBody>
                   {logs.map((log) => (
                     <TableRow key={log.id}>
-                      <TableCell className="whitespace-nowrap text-muted-foreground">
+                      <TableCell className="whitespace-nowrap text-muted-foreground tabular-nums">
                         {formatAdminDateTime(log.createdAt)}
                       </TableCell>
-                      <TableCell className="font-mono text-xs">{log.action}</TableCell>
+                      <TableCell>
+                        <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">
+                          {log.action}
+                        </code>
+                      </TableCell>
                       <TableCell
                         className="max-w-xs truncate text-muted-foreground"
                         title={log.resource ?? undefined}
                       >
                         {log.resource ?? '—'}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="max-w-[220px] truncate" title={log.actor.email ?? undefined}>
                         {log.actor.email ?? log.actor.name ?? log.actor.id}
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
+                      <TableCell className="whitespace-nowrap font-mono text-xs text-muted-foreground">
                         {log.ipAddress ?? '—'}
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-
-              {pagination.totalPages > 1 ? (
-                <div className="flex items-center justify-between border-t px-4 py-3">
-                  <p className="text-sm text-muted-foreground">
-                    Toplam {pagination.total} kayıt · Sayfa {page} / {pagination.totalPages}
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      disabled={page <= 1}
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
-                      disabled={page >= pagination.totalPages}
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ) : null}
+              <AdminPagination
+                page={page}
+                totalPages={pagination.totalPages}
+                total={pagination.total}
+                noun="kayıt"
+                onPageChange={setPage}
+                disabled={loading}
+              />
             </>
           )}
         </CardContent>
       </Card>
-    </section>
+    </div>
   );
 }

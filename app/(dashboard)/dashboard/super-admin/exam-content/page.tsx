@@ -4,12 +4,12 @@
  */
 
 import dynamic from 'next/dynamic';
-import { RouteShellSkeleton } from '@/components/ui/RouteShellSkeleton';
+import { AdminPageSkeleton } from '@/components/super-admin/layout/AdminLoading';
 
 const ExamContentManager = dynamic(
   () =>
     import('@/components/super-admin/ExamContentManager').then((m) => m.ExamContentManager),
-  { loading: () => <RouteShellSkeleton /> },
+  { loading: () => <AdminPageSkeleton /> },
 );
 
 export default function ExamContentPage() {

@@ -85,6 +85,7 @@ export function useAdminUsers(pageSize = 10) {
     pagination,
     isLoadingUsers,
     usersLoadError,
+    reloadUsers: () => loadUsers(page),
   };
 }
 

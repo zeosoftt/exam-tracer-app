@@ -12,21 +12,150 @@ import {
   FolderOpen,
   Loader2,
   GripVertical,
+  CalendarDays,
 } from 'lucide-react';
 import { useExamContentManager } from '@/components/super-admin/hooks/useExamContentManager';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
+import { AdminPageHeader } from '@/components/super-admin/layout/AdminPageHeader';
+import { AdminErrorAlert } from '@/components/super-admin/layout/AdminErrorAlert';
+import { ADMIN_NAV_ITEMS } from '@/components/super-admin/layout/adminNav';
+
+const nav = ADMIN_NAV_ITEMS.find((i) => i.href.endsWith('/exam-content'));
+
+const ENTITY_LABEL = {
+  exam: 'sınav',
+  section: 'bölüm',
+  subject: 'ders',
+  topic: 'konu',
+} as const;
+
+const CHILD_LABEL = {
+  exam: 'bölüm',
+  section: 'ders',
+  subject: 'konu',
+} as const;
+
+const STATUS_LABEL: Record<string, string> = {
+  ACTIVE: 'Aktif',
+  INACTIVE: 'Pasif',
+  ARCHIVED: 'Arşiv',
+};
+
+function ExpandToggle({
+  expanded,
+  onClick,
+  label,
+  size = 'md',
+}: {
+  expanded: boolean;
+  onClick: () => void;
+  label: string;
+  size?: 'sm' | 'md';
+}) {
+  const Icon = expanded ? ChevronDown : ChevronRight;
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon"
+      className={size === 'md' ? 'h-7 w-7 shrink-0' : 'h-6 w-6 shrink-0'}
+      onClick={onClick}
+      aria-expanded={expanded}
+      aria-label={`${label}: ${expanded ? 'daralt' : 'genişlet'}`}
+    >
+      <Icon className={size === 'md' ? 'h-4 w-4' : 'h-3.5 w-3.5'} aria-hidden />
+    </Button>
+  );
+}
+
+function RowActions({
+  name,
+  onEdit,
+  onDelete,
+  deleting,
+  onAddChild,
+  childLabel,
+  size = 'md',
+}: {
+  name: string;
+  onEdit: () => void;
+  onDelete: () => void;
+  deleting: boolean;
+  onAddChild?: () => void;
+  childLabel?: string;
+  size?: 'sm' | 'md';
+}) {
+  const btn = size === 'md' ? 'h-8 w-8' : 'h-7 w-7';
+  const icon = size === 'md' ? 'h-3.5 w-3.5' : 'h-3 w-3';
+  return (
+    <div className="ml-auto flex shrink-0 items-center gap-0.5" role="group" aria-label={`${name} işlemleri`}>
+      {onAddChild && childLabel ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className={cn(btn, 'text-primary hover:text-primary')}
+          onClick={onAddChild}
+          title={`${childLabel} ekle`}
+          aria-label={`${name} altına ${childLabel} ekle`}
+        >
+          <Plus className={icon} aria-hidden />
+        </Button>
+      ) : null}
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className={btn}
+        onClick={onEdit}
+        title="Düzenle"
+        aria-label={`${name} düzenle`}
+      >
+        <Pencil className={icon} aria-hidden />
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className={cn(btn, 'text-destructive hover:bg-destructive/10 hover:text-destructive')}
+        onClick={onDelete}
+        disabled={deleting}
+        title="Sil"
+        aria-label={`${name} sil`}
+      >
+        {deleting ? (
+          <Loader2 className={cn(icon, 'animate-spin')} aria-hidden />
+        ) : (
+          <Trash2 className={icon} aria-hidden />
+        )}
+      </Button>
+    </div>
+  );
+}
+
+function Code({ children }: { children: string }) {
+  return (
+    <span className="shrink-0 font-mono text-[11px] text-muted-foreground">{children}</span>
+  );
+}
+
+function EmptyHint({ children }: { children: string }) {
+  return <p className="px-2 py-2 text-xs text-muted-foreground">{children}</p>;
+}
 
 export function ExamContentManager() {
   const {
@@ -45,6 +174,7 @@ export function ExamContentManager() {
     deletingId,
     draggedTopicId,
     reorderingSubjectId,
+    fetchTree,
     toggleExam,
     toggleSection,
     toggleSubject,
@@ -60,430 +190,423 @@ export function ExamContentManager() {
   } = useExamContentManager();
 
   const modalTitle = modal
-    ? modal.edit
-      ? modal.type === 'exam'
-        ? 'Sınav düzenle'
-        : modal.type === 'section'
-          ? 'Bölüm düzenle'
-          : modal.type === 'subject'
-            ? 'Ders düzenle'
-            : 'Konu düzenle'
-      : modal.type === 'exam'
-        ? 'Yeni sınav'
-        : modal.type === 'section'
-          ? 'Yeni bölüm'
-          : modal.type === 'subject'
-            ? 'Yeni ders'
-            : 'Yeni konu'
+    ? `${modal.edit ? '' : 'Yeni '}${ENTITY_LABEL[modal.type]}${modal.edit ? ' düzenle' : ''}`
+        .replace(/^./, (c) => c.toUpperCase())
     : '';
+
+  const modalDescription = modal
+    ? modal.edit
+      ? 'Değişiklikler kaydedildiğinde ağaç yenilenir.'
+      : modal.type === 'exam'
+        ? 'Sınav kodu kullanıcıya görünür; kısa ve büyük harf tercih edin.'
+        : `Yeni ${ENTITY_LABEL[modal.type]} seçili öğenin altına eklenir.`
+    : '';
+
+  const canSave = Boolean(String(form.name ?? '').trim() && String(form.code ?? '').trim());
 
   return (
     <div className="space-y-6">
+      <AdminPageHeader
+        title={nav?.title ?? 'Sınav & İçerik'}
+        description={nav?.description}
+        actions={
+          <Button type="button" onClick={() => openAdd('exam')} disabled={loading}>
+            <Plus className="h-4 w-4" aria-hidden />
+            Yeni sınav
+          </Button>
+        }
+      />
+
       {actionError && !modal ? (
-        <Alert variant="destructive">
-          <AlertDescription className="flex items-center justify-between gap-2">
-            <span>{actionError}</span>
-            <Button type="button" variant="ghost" size="sm" onClick={() => setActionError(null)}>
-              Kapat
-            </Button>
-          </AlertDescription>
-        </Alert>
+        <AdminErrorAlert message={actionError} onDismiss={() => setActionError(null)} />
       ) : null}
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-muted-foreground">
-          Sınav → Bölüm → Ders → Konu ağacını buradan yönetin.
-        </p>
-        <Button type="button" onClick={() => openAdd('exam')}>
-          <Plus className="h-4 w-4" />
-          Yeni sınav
-        </Button>
-      </div>
+      {error ? (
+        <AdminErrorAlert message={error} onRetry={() => void fetchTree()} retrying={loading} />
+      ) : null}
 
       {loading ? (
-        <div className="flex justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      ) : error ? (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      ) : exams.length === 0 ? (
         <Card>
-          <CardContent className="py-10 text-center text-muted-foreground">
-            Henüz sınav yok. &quot;Yeni sınav&quot; ile ekleyin.
+          <CardContent className="space-y-px p-0" role="status" aria-busy="true" aria-label="Yükleniyor">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="flex items-center gap-3 px-4 py-3.5">
+                <Skeleton className="h-6 w-6 rounded-md" />
+                <Skeleton className="h-4 w-4 rounded" />
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-3 w-12" />
+                <Skeleton className="ml-auto h-5 w-14 rounded-md" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      ) : error ? null : exams.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 py-14 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <BookOpen className="h-6 w-6" aria-hidden />
+            </span>
+            <div className="space-y-1">
+              <p className="font-medium">Henüz sınav yok</p>
+              <p className="text-sm text-muted-foreground">
+                İlk sınavı ekleyin; ardından bölüm, ders ve konuları altına yerleştirin.
+              </p>
+            </div>
+            <Button type="button" variant="outline" onClick={() => openAdd('exam')}>
+              <Plus className="h-4 w-4" aria-hidden />
+              Yeni sınav
+            </Button>
           </CardContent>
         </Card>
       ) : (
         <Card>
-          <CardContent className="space-y-1 p-0">
-            {exams.map((exam) => (
-              <div key={exam.id} className="border-b last:border-b-0">
-                <div className="flex items-center gap-2 bg-muted/40 px-4 py-3">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => toggleExam(exam.id)}
-                  >
-                    {expandedExam.has(exam.id) ? (
-                      <ChevronDown className="h-4 w-4" />
-                    ) : (
-                      <ChevronRight className="h-4 w-4" />
-                    )}
-                  </Button>
-                  <BookOpen className="h-4 w-4 text-primary" />
-                  <span className="font-semibold">{exam.name}</span>
-                  <span className="text-xs text-muted-foreground">({exam.code})</span>
-                  {exam.startDate ? (
-                    <span className="text-xs font-medium text-primary">
-                      Sınav: {new Date(exam.startDate).toLocaleDateString('tr-TR')}
-                    </span>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">Tarih yok</span>
-                  )}
-                  <Badge variant={exam.status === 'ACTIVE' ? 'success' : 'secondary'}>
-                    {exam.status}
-                  </Badge>
-                  <div className="ml-auto flex items-center gap-1">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => openEdit('exam', exam)}
-                      title="Düzenle"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive"
-                      onClick={() => remove('exam', exam.id)}
-                      disabled={deletingId === exam.id}
-                      title="Sil"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-primary"
-                      onClick={() => openAdd('section', exam.id)}
-                      title="Bölüm ekle"
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </div>
-                {expandedExam.has(exam.id) ? (
-                  <div className="space-y-2 px-4 py-2 pl-8">
-                    {exam.sections.length === 0 ? (
-                      <p className="py-2 text-xs text-muted-foreground">Bölüm yok. + ile ekleyin.</p>
-                    ) : (
-                      exam.sections.map((section) => (
-                        <div key={section.id} className="rounded-lg border bg-card">
-                          <div className="flex items-center gap-2 px-3 py-2">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6"
-                              onClick={() => toggleSection(section.id)}
-                            >
-                              {expandedSection.has(section.id) ? (
-                                <ChevronDown className="h-3.5 w-3.5" />
-                              ) : (
-                                <ChevronRight className="h-3.5 w-3.5" />
-                              )}
-                            </Button>
-                            <Layers className="h-3.5 w-3.5 text-amber-600" />
-                            <span className="text-sm font-medium">{section.name}</span>
-                            <span className="text-xs text-muted-foreground">({section.code})</span>
-                            <div className="ml-auto flex items-center gap-1">
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7"
-                                onClick={() => openEdit('section', section)}
-                              >
-                                <Pencil className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7 text-destructive"
-                                onClick={() => remove('section', section.id)}
-                                disabled={deletingId === section.id}
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7 text-primary"
-                                onClick={() => openAdd('subject', section.id)}
-                              >
-                                <Plus className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </div>
-                          {expandedSection.has(section.id) ? (
-                            <div className="space-y-1 px-2 pb-2 pl-6">
-                              {section.subjects.length === 0 ? (
-                                <p className="py-1 text-xs text-muted-foreground">
-                                  Ders yok. + ile ekleyin.
-                                </p>
-                              ) : (
-                                section.subjects.map((subject) => (
-                                  <div key={subject.id} className="rounded-md border bg-muted/30">
-                                    <div className="flex items-center gap-2 px-2 py-1.5">
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-6 w-6"
-                                        onClick={() => toggleSubject(subject.id)}
-                                      >
-                                        {expandedSubject.has(subject.id) ? (
-                                          <ChevronDown className="h-3 w-3" />
-                                        ) : (
-                                          <ChevronRight className="h-3 w-3" />
-                                        )}
-                                      </Button>
-                                      <FileText className="h-3 w-3 text-emerald-600" />
-                                      <span className="text-xs font-medium">{subject.name}</span>
-                                      <span className="text-xs text-muted-foreground">
-                                        ({subject.code})
-                                      </span>
-                                      <div className="ml-auto flex items-center gap-0.5">
-                                        <Button
-                                          type="button"
-                                          variant="ghost"
-                                          size="icon"
-                                          className="h-6 w-6"
-                                          onClick={() => openEdit('subject', subject)}
-                                        >
-                                          <Pencil className="h-3 w-3" />
-                                        </Button>
-                                        <Button
-                                          type="button"
-                                          variant="ghost"
-                                          size="icon"
-                                          className="h-6 w-6 text-destructive"
-                                          onClick={() => remove('subject', subject.id)}
-                                          disabled={deletingId === subject.id}
-                                        >
-                                          <Trash2 className="h-3 w-3" />
-                                        </Button>
-                                        <Button
-                                          type="button"
-                                          variant="ghost"
-                                          size="icon"
-                                          className="h-6 w-6 text-primary"
-                                          onClick={() => openAdd('topic', subject.id)}
-                                        >
-                                          <Plus className="h-3 w-3" />
-                                        </Button>
-                                      </div>
-                                    </div>
-                                    {expandedSubject.has(subject.id) ? (
-                                      <div className="space-y-0.5 px-2 pb-1 pl-5">
-                                        {subject.topics.length === 0 ? (
-                                          <p className="py-1 text-xs text-muted-foreground">
-                                            Konu yok. + ile ekleyin.
-                                          </p>
-                                        ) : (
-                                          subject.topics.map((topic) => (
-                                            <div
-                                              key={topic.id}
-                                              data-topic-id={topic.id}
-                                              draggable
-                                              onDragStart={(e) => handleTopicDragStart(e, topic.id)}
-                                              onDragOver={handleTopicDragOver}
-                                              onDrop={(e) => handleTopicDrop(e, subject, topic.id)}
-                                              onDragEnd={handleTopicDragEnd}
-                                              className={`flex cursor-grab items-center gap-2 rounded px-2 py-1 hover:bg-muted active:cursor-grabbing ${
-                                                draggedTopicId === topic.id ? 'opacity-50' : ''
-                                              } ${reorderingSubjectId === subject.id ? 'pointer-events-none' : ''}`}
-                                            >
-                                              <GripVertical
-                                                className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+          <CardContent className="p-0">
+            <ul className="divide-y">
+              {exams.map((exam) => {
+                const examOpen = expandedExam.has(exam.id);
+                return (
+                  <li key={exam.id}>
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 bg-muted/40 px-3 py-2.5 sm:px-4">
+                      <ExpandToggle
+                        expanded={examOpen}
+                        onClick={() => toggleExam(exam.id)}
+                        label={exam.name}
+                      />
+                      <BookOpen className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+                      <span className="min-w-0 flex-1 truncate font-semibold sm:flex-none">
+                        {exam.name}
+                      </span>
+                      <div className="flex min-w-0 flex-1 basis-full items-center gap-2 pl-[3.75rem] sm:basis-0 sm:pl-0">
+                        <Code>{exam.code}</Code>
+                        <Badge variant={exam.status === 'ACTIVE' ? 'success' : 'secondary'}>
+                          {STATUS_LABEL[exam.status] ?? exam.status}
+                        </Badge>
+                        <span className="inline-flex items-center gap-1 whitespace-nowrap text-xs text-muted-foreground">
+                          <CalendarDays className="h-3.5 w-3.5" aria-hidden />
+                          {exam.startDate ? (
+                            <time dateTime={String(exam.startDate).slice(0, 10)} className="tabular-nums">
+                              {new Date(exam.startDate).toLocaleDateString('tr-TR')}
+                            </time>
+                          ) : (
+                            'Tarih yok'
+                          )}
+                        </span>
+                        <RowActions
+                          name={exam.name}
+                          onEdit={() => openEdit('exam', exam)}
+                          onDelete={() => remove('exam', exam.id)}
+                          deleting={deletingId === exam.id}
+                          onAddChild={() => openAdd('section', exam.id)}
+                          childLabel={CHILD_LABEL.exam}
+                        />
+                      </div>
+                    </div>
+
+                    {examOpen ? (
+                      <div className="space-y-2 px-3 py-3 sm:pl-10 sm:pr-4">
+                        {exam.sections.length === 0 ? (
+                          <EmptyHint>Bölüm yok. Satırdaki + ile ekleyin.</EmptyHint>
+                        ) : (
+                          exam.sections.map((section) => {
+                            const sectionOpen = expandedSection.has(section.id);
+                            return (
+                              <div key={section.id} className="rounded-lg border bg-card">
+                                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 px-2 py-1.5 sm:px-3">
+                                  <ExpandToggle
+                                    expanded={sectionOpen}
+                                    onClick={() => toggleSection(section.id)}
+                                    label={section.name}
+                                    size="sm"
+                                  />
+                                  <Layers
+                                    className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400"
+                                    aria-hidden
+                                  />
+                                  <span className="min-w-0 flex-1 truncate text-sm font-medium sm:flex-none">
+                                    {section.name}
+                                  </span>
+                                  <div className="flex min-w-0 flex-1 basis-full items-center gap-2 pl-[3.375rem] sm:basis-0 sm:pl-0">
+                                    <Code>{section.code}</Code>
+                                    <RowActions
+                                      name={section.name}
+                                      size="sm"
+                                      onEdit={() => openEdit('section', section)}
+                                      onDelete={() => remove('section', section.id)}
+                                      deleting={deletingId === section.id}
+                                      onAddChild={() => openAdd('subject', section.id)}
+                                      childLabel={CHILD_LABEL.section}
+                                    />
+                                  </div>
+                                </div>
+
+                                {sectionOpen ? (
+                                  <div className="space-y-1.5 px-2 pb-2 sm:pl-8">
+                                    {section.subjects.length === 0 ? (
+                                      <EmptyHint>Ders yok. Satırdaki + ile ekleyin.</EmptyHint>
+                                    ) : (
+                                      section.subjects.map((subject) => {
+                                        const subjectOpen = expandedSubject.has(subject.id);
+                                        const reordering = reorderingSubjectId === subject.id;
+                                        return (
+                                          <div key={subject.id} className="rounded-md border bg-muted/30">
+                                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 px-2 py-1.5">
+                                              <ExpandToggle
+                                                expanded={subjectOpen}
+                                                onClick={() => toggleSubject(subject.id)}
+                                                label={subject.name}
+                                                size="sm"
+                                              />
+                                              <FileText
+                                                className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400"
                                                 aria-hidden
                                               />
-                                              <FolderOpen className="h-3 w-3 shrink-0 text-muted-foreground" />
-                                              <span className="text-xs">{topic.name}</span>
-                                              <span className="text-xs text-muted-foreground">
-                                                ({topic.code})
+                                              <span className="min-w-0 flex-1 truncate text-sm font-medium sm:flex-none">
+                                                {subject.name}
                                               </span>
-                                              {topic.examQuestionCount != null ? (
-                                                <span className="text-xs text-primary">
-                                                  {topic.examQuestionCount} soru
-                                                </span>
-                                              ) : null}
-                                              <div className="ml-auto flex items-center gap-0.5">
-                                                <Button
-                                                  type="button"
-                                                  variant="ghost"
-                                                  size="icon"
-                                                  className="h-6 w-6"
-                                                  onClick={() => openEdit('topic', topic)}
-                                                >
-                                                  <Pencil className="h-3 w-3" />
-                                                </Button>
-                                                <Button
-                                                  type="button"
-                                                  variant="ghost"
-                                                  size="icon"
-                                                  className="h-6 w-6 text-destructive"
-                                                  onClick={() => remove('topic', topic.id)}
-                                                  disabled={deletingId === topic.id}
-                                                >
-                                                  <Trash2 className="h-3 w-3" />
-                                                </Button>
+                                              <div className="flex min-w-0 flex-1 basis-full items-center gap-2 pl-[3.375rem] sm:basis-0 sm:pl-0">
+                                                <Code>{subject.code}</Code>
+                                                {subject.topics.length > 0 ? (
+                                                  <span className="whitespace-nowrap text-xs text-muted-foreground tabular-nums">
+                                                    {subject.topics.length} konu
+                                                  </span>
+                                                ) : null}
+                                                <RowActions
+                                                  name={subject.name}
+                                                  size="sm"
+                                                  onEdit={() => openEdit('subject', subject)}
+                                                  onDelete={() => remove('subject', subject.id)}
+                                                  deleting={deletingId === subject.id}
+                                                  onAddChild={() => openAdd('topic', subject.id)}
+                                                  childLabel={CHILD_LABEL.subject}
+                                                />
                                               </div>
                                             </div>
-                                          ))
-                                        )}
-                                      </div>
-                                    ) : null}
+
+                                            {subjectOpen ? (
+                                              <div
+                                                className={cn(
+                                                  'space-y-0.5 px-2 pb-1.5 sm:pl-7',
+                                                  reordering && 'pointer-events-none opacity-60',
+                                                )}
+                                                aria-busy={reordering || undefined}
+                                              >
+                                                {subject.topics.length === 0 ? (
+                                                  <EmptyHint>Konu yok. Satırdaki + ile ekleyin.</EmptyHint>
+                                                ) : (
+                                                  <>
+                                                    <p className="sr-only">
+                                                      Konuları sürükleyip bırakarak sıralayabilirsiniz.
+                                                    </p>
+                                                    {subject.topics.map((topic) => (
+                                                      <div
+                                                        key={topic.id}
+                                                        data-topic-id={topic.id}
+                                                        draggable
+                                                        onDragStart={(e) => handleTopicDragStart(e, topic.id)}
+                                                        onDragOver={handleTopicDragOver}
+                                                        onDrop={(e) => handleTopicDrop(e, subject, topic.id)}
+                                                        onDragEnd={handleTopicDragEnd}
+                                                        className={cn(
+                                                          'flex flex-wrap items-center gap-x-2 gap-y-1 rounded px-2 py-1 transition-colors hover:bg-muted',
+                                                          'cursor-grab active:cursor-grabbing',
+                                                          draggedTopicId === topic.id && 'opacity-50',
+                                                        )}
+                                                      >
+                                                        <GripVertical
+                                                          className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70"
+                                                          aria-hidden
+                                                        />
+                                                        <FolderOpen
+                                                          className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+                                                          aria-hidden
+                                                        />
+                                                        <span className="min-w-0 flex-1 truncate text-sm sm:flex-none">
+                                                          {topic.name}
+                                                        </span>
+                                                        <div className="flex min-w-0 flex-1 basis-full items-center gap-2 pl-11 sm:basis-0 sm:pl-0">
+                                                          <Code>{topic.code}</Code>
+                                                          {topic.examQuestionCount != null ? (
+                                                            <Badge
+                                                              variant="outline"
+                                                              className="h-5 whitespace-nowrap px-1.5 text-[11px] font-medium tabular-nums text-primary"
+                                                            >
+                                                              {topic.examQuestionCount} soru
+                                                            </Badge>
+                                                          ) : null}
+                                                          <RowActions
+                                                            name={topic.name}
+                                                            size="sm"
+                                                            onEdit={() => openEdit('topic', topic)}
+                                                            onDelete={() => remove('topic', topic.id)}
+                                                            deleting={deletingId === topic.id}
+                                                          />
+                                                        </div>
+                                                      </div>
+                                                    ))}
+                                                  </>
+                                                )}
+                                              </div>
+                                            ) : null}
+                                          </div>
+                                        );
+                                      })
+                                    )}
                                   </div>
-                                ))
-                              )}
-                            </div>
-                          ) : null}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                ) : null}
-              </div>
-            ))}
+                                ) : null}
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
           </CardContent>
         </Card>
       )}
 
       <Dialog open={Boolean(modal)} onOpenChange={(open) => !open && closeModal()}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{modalTitle}</DialogTitle>
-          </DialogHeader>
-          {actionError ? (
-            <p className="text-sm text-destructive">{actionError}</p>
-          ) : null}
-          <div className="space-y-3">
-            <div className="space-y-2">
-              <Label htmlFor="exam-name">Ad</Label>
-              <Input
-                id="exam-name"
-                type="text"
-                value={String(form.name ?? '')}
-                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="exam-code">Kod</Label>
-              <Input
-                id="exam-code"
-                type="text"
-                value={String(form.code ?? '')}
-                onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
-                placeholder={modal?.type === 'exam' ? 'KPSS' : 'örn: MAT'}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="exam-desc">Açıklama (opsiyonel)</Label>
-              <Input
-                id="exam-desc"
-                type="text"
-                value={String(form.description ?? '')}
-                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-              />
-            </div>
-            {modal?.type === 'exam' ? (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="exam-date">Sınav tarihi</Label>
-                  <Input
-                    id="exam-date"
-                    type="date"
-                    value={String(form.startDate ?? '')}
-                    onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value || '' }))}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Dashboard hedef kartında &quot;Sınava X gün kaldı&quot; gösterilir.
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!saving && canSave) void save();
+            }}
+            className="space-y-4"
+          >
+            <DialogHeader>
+              <DialogTitle>{modalTitle}</DialogTitle>
+              <DialogDescription>{modalDescription}</DialogDescription>
+            </DialogHeader>
+
+            {actionError ? (
+              <p role="alert" className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                {actionError}
+              </p>
+            ) : null}
+
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="exam-name">Ad</Label>
+                <Input
+                  id="exam-name"
+                  type="text"
+                  autoFocus
+                  required
+                  value={String(form.name ?? '')}
+                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="exam-code">Kod</Label>
+                <Input
+                  id="exam-code"
+                  type="text"
+                  required
+                  autoComplete="off"
+                  spellCheck={false}
+                  className="font-mono uppercase"
+                  value={String(form.code ?? '')}
+                  onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
+                  placeholder={modal?.type === 'exam' ? 'KPSS' : 'örn: MAT'}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="exam-desc">
+                  Açıklama <span className="font-normal text-muted-foreground">(opsiyonel)</span>
+                </Label>
+                <Input
+                  id="exam-desc"
+                  type="text"
+                  value={String(form.description ?? '')}
+                  onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                />
+              </div>
+
+              {modal?.type === 'exam' ? (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="exam-date">Sınav tarihi</Label>
+                    <Input
+                      id="exam-date"
+                      type="date"
+                      value={String(form.startDate ?? '')}
+                      onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value || '' }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="exam-status">Durum</Label>
+                    <select
+                      id="exam-status"
+                      value={String(form.status ?? 'ACTIVE')}
+                      onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    >
+                      <option value="ACTIVE">Aktif</option>
+                      <option value="INACTIVE">Pasif</option>
+                      <option value="ARCHIVED">Arşiv</option>
+                    </select>
+                  </div>
+                  <p className="text-xs text-muted-foreground sm:col-span-2">
+                    Tarih girilirse kullanıcı panosunda &quot;Sınava X gün kaldı&quot; gösterilir.
                   </p>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="exam-status">Durum</Label>
-                  <select
-                    id="exam-status"
-                    value={String(form.status ?? 'ACTIVE')}
-                    onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    <option value="ACTIVE">Aktif</option>
-                    <option value="INACTIVE">Pasif</option>
-                    <option value="ARCHIVED">Arşiv</option>
-                  </select>
+              ) : null}
+
+              {modal && modal.type !== 'exam' ? (
+                <div className={cn('grid gap-3', modal.type === 'topic' && 'sm:grid-cols-2')}>
+                  <div className="space-y-2">
+                    <Label htmlFor="exam-order">Sıra</Label>
+                    <Input
+                      id="exam-order"
+                      type="number"
+                      inputMode="numeric"
+                      min={0}
+                      value={Number(form.order ?? 0)}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, order: parseInt(e.target.value, 10) || 0 }))
+                      }
+                    />
+                  </div>
+                  {modal.type === 'topic' ? (
+                    <div className="space-y-2">
+                      <Label htmlFor="exam-qcount">Sınavdaki soru sayısı</Label>
+                      <Input
+                        id="exam-qcount"
+                        type="number"
+                        inputMode="numeric"
+                        min={0}
+                        value={
+                          form.examQuestionCount === '' || form.examQuestionCount == null
+                            ? ''
+                            : form.examQuestionCount
+                        }
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            examQuestionCount:
+                              e.target.value === '' ? '' : parseInt(e.target.value, 10),
+                          }))
+                        }
+                        placeholder="Boş bırakılabilir"
+                      />
+                    </div>
+                  ) : null}
                 </div>
-              </>
-            ) : null}
-            {modal &&
-            (modal.type === 'section' || modal.type === 'subject' || modal.type === 'topic') ? (
-              <div className="space-y-2">
-                <Label htmlFor="exam-order">Sıra</Label>
-                <Input
-                  id="exam-order"
-                  type="number"
-                  min={0}
-                  value={Number(form.order ?? 0)}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, order: parseInt(e.target.value, 10) || 0 }))
-                  }
-                />
-              </div>
-            ) : null}
-            {modal?.type === 'topic' ? (
-              <div className="space-y-2">
-                <Label htmlFor="exam-qcount">Soru dağılımı (sınavda kaç soru)</Label>
-                <Input
-                  id="exam-qcount"
-                  type="number"
-                  min={0}
-                  value={
-                    form.examQuestionCount === '' || form.examQuestionCount == null
-                      ? ''
-                      : form.examQuestionCount
-                  }
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      examQuestionCount:
-                        e.target.value === '' ? '' : parseInt(e.target.value, 10),
-                    }))
-                  }
-                  placeholder="Boş bırakılabilir"
-                />
-              </div>
-            ) : null}
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={closeModal}>
-              İptal
-            </Button>
-            <Button type="button" onClick={save} disabled={saving}>
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              {modal?.edit ? 'Kaydet' : 'Ekle'}
-            </Button>
-          </DialogFooter>
+              ) : null}
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button type="button" variant="outline" onClick={closeModal} disabled={saving}>
+                İptal
+              </Button>
+              <Button type="submit" disabled={saving || !canSave}>
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
+                {modal?.edit ? 'Kaydet' : 'Ekle'}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

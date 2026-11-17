@@ -1,21 +1,11 @@
 'use client';
 
-import {
-  Users,
-  ChevronLeft,
-  ChevronRight,
-  Loader2,
-  Mail,
-  MailCheck,
-  MailX,
-} from 'lucide-react';
+import { Mail, MailCheck, MailX } from 'lucide-react';
 import { useAdminUsers } from '@/components/super-admin/hooks/useSuperAdminPanel';
 import { formatAdminDateTime } from '@/components/super-admin/formatAdminDateTime';
 import { ROLE_LABELS } from '@/components/super-admin/domain/superAdminTypes';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Table,
   TableBody,
@@ -24,6 +14,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { AdminPageHeader } from '@/components/super-admin/layout/AdminPageHeader';
+import { AdminErrorAlert } from '@/components/super-admin/layout/AdminErrorAlert';
+import { AdminPagination } from '@/components/super-admin/layout/AdminPagination';
+import { AdminTableSkeleton } from '@/components/super-admin/layout/AdminLoading';
+import { ADMIN_NAV_ITEMS } from '@/components/super-admin/layout/adminNav';
+
+const nav = ADMIN_NAV_ITEMS.find((i) => i.href.endsWith('/users'));
 
 function roleBadgeVariant(role: string | null | undefined) {
   if (role === 'ADMIN') return 'destructive' as const;
@@ -32,43 +29,31 @@ function roleBadgeVariant(role: string | null | undefined) {
 }
 
 export function AdminUsersPage() {
-  const { users, page, setPage, pagination, isLoadingUsers, usersLoadError } = useAdminUsers();
+  const { users, page, setPage, pagination, isLoadingUsers, usersLoadError, reloadUsers } =
+    useAdminUsers();
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
-          <Users className="h-6 w-6 text-primary" />
-          Kullanıcılar
-        </h2>
-        <p className="text-sm text-muted-foreground">Kayıtlı kullanıcı listesi (sayfalı)</p>
-      </div>
+      <AdminPageHeader title={nav?.title ?? 'Kullanıcılar'} description={nav?.description} />
+
+      {usersLoadError ? (
+        <AdminErrorAlert
+          message={usersLoadError}
+          onRetry={() => void reloadUsers()}
+          retrying={isLoadingUsers}
+        />
+      ) : null}
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Liste</CardTitle>
-          <CardDescription>
-            {pagination.total > 0
-              ? `Toplam ${pagination.total} kullanıcı`
-              : 'Kullanıcı kayıtları'}
-          </CardDescription>
-        </CardHeader>
         <CardContent className="p-0">
-          {usersLoadError ? (
-            <Alert variant="destructive" className="mx-6 mb-4">
-              <AlertDescription>{usersLoadError}</AlertDescription>
-            </Alert>
-          ) : null}
           {isLoadingUsers ? (
-            <div className="flex justify-center p-10">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : (
+            <AdminTableSkeleton rows={8} columns={7} />
+          ) : usersLoadError ? null : (
             <>
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-14 text-center" title="E-posta doğrulama">
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="w-14 text-center">
                       <Mail className="mx-auto h-4 w-4 opacity-70" aria-hidden />
                       <span className="sr-only">E-posta doğrulama</span>
                     </TableHead>
@@ -78,20 +63,14 @@ export function AdminUsersPage() {
                     <TableHead className="min-w-[140px]">Sınavlar</TableHead>
                     <TableHead>Rol</TableHead>
                     <TableHead>Durum</TableHead>
-                    <TableHead>Son Giriş</TableHead>
-                    <TableHead>Kayıt</TableHead>
+                    <TableHead className="whitespace-nowrap">Son giriş</TableHead>
+                    <TableHead className="whitespace-nowrap">Kayıt</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {usersLoadError ? (
-                    <TableRow>
-                      <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
-                        Liste yüklenemedi.
-                      </TableCell>
-                    </TableRow>
-                  ) : users.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
+                  {users.length === 0 ? (
+                    <TableRow className="hover:bg-transparent">
+                      <TableCell colSpan={9} className="h-32 text-center text-muted-foreground">
                         Kullanıcı bulunamadı.
                       </TableCell>
                     </TableRow>
@@ -101,7 +80,7 @@ export function AdminUsersPage() {
                         <TableCell className="text-center">
                           {u.emailVerified ? (
                             <span
-                              className="inline-flex rounded-full bg-emerald-100 p-2 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400"
+                              className="inline-flex rounded-full bg-emerald-100 p-1.5 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400"
                               title="E-posta doğrulandı"
                             >
                               <MailCheck className="h-4 w-4" aria-hidden />
@@ -109,7 +88,7 @@ export function AdminUsersPage() {
                             </span>
                           ) : (
                             <span
-                              className="inline-flex rounded-full bg-amber-100 p-2 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
+                              className="inline-flex rounded-full bg-amber-100 p-1.5 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
                               title="E-posta doğrulanmadı"
                             >
                               <MailX className="h-4 w-4" aria-hidden />
@@ -117,11 +96,11 @@ export function AdminUsersPage() {
                             </span>
                           )}
                         </TableCell>
-                        <TableCell className="font-medium">
+                        <TableCell className="whitespace-nowrap font-medium">
                           {u.firstName} {u.lastName}
                         </TableCell>
                         <TableCell className="text-muted-foreground">{u.email}</TableCell>
-                        <TableCell className="max-w-[200px] text-sm text-muted-foreground">
+                        <TableCell className="max-w-[200px] text-muted-foreground">
                           <span className="line-clamp-2" title={u.hearAboutLabel}>
                             {u.hearAboutLabel ?? '—'}
                           </span>
@@ -136,7 +115,7 @@ export function AdminUsersPage() {
                               ))}
                             </div>
                           ) : (
-                            <span className="text-sm text-muted-foreground">—</span>
+                            <span className="text-muted-foreground">—</span>
                           )}
                         </TableCell>
                         <TableCell>
@@ -151,10 +130,10 @@ export function AdminUsersPage() {
                             <Badge variant="secondary">Pasif</Badge>
                           )}
                         </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
+                        <TableCell className="whitespace-nowrap text-muted-foreground tabular-nums">
                           {formatAdminDateTime(u.lastLoginAt)}
                         </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
+                        <TableCell className="whitespace-nowrap text-muted-foreground tabular-nums">
                           {formatAdminDateTime(u.createdAt)}
                         </TableCell>
                       </TableRow>
@@ -162,33 +141,14 @@ export function AdminUsersPage() {
                   )}
                 </TableBody>
               </Table>
-              {pagination.totalPages > 1 ? (
-                <div className="flex items-center justify-between border-t px-4 py-3">
-                  <p className="text-sm text-muted-foreground">
-                    Toplam {pagination.total} kullanıcı · Sayfa {page} / {pagination.totalPages}
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      disabled={page <= 1}
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
-                      disabled={page >= pagination.totalPages}
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ) : null}
+              <AdminPagination
+                page={page}
+                totalPages={pagination.totalPages}
+                total={pagination.total}
+                noun="kullanıcı"
+                onPageChange={setPage}
+                disabled={isLoadingUsers}
+              />
             </>
           )}
         </CardContent>

@@ -4,11 +4,11 @@
  */
 
 import dynamic from 'next/dynamic';
-import { RouteShellSkeleton } from '@/components/ui/RouteShellSkeleton';
+import { AdminPageSkeleton } from '@/components/super-admin/layout/AdminLoading';
 
 const PlansContent = dynamic(
   () => import('@/components/super-admin/PlansContent').then((m) => m.PlansContent),
-  { loading: () => <RouteShellSkeleton /> },
+  { loading: () => <AdminPageSkeleton /> },
 );
 
 export default function PlansPage() {
