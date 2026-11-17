@@ -5,9 +5,11 @@ import {
   fetchDenemeAttempts,
   fetchDenemeDetailAccess,
   fetchDenemeSiteFlags,
+  fetchDenemeTopicProgress,
   loadDenemeFormBootstrap,
   type DenemeAttemptListItem,
   type DenemeFetchResult,
+  type DenemeTopicProgressResult,
   type ExamTopicProgress,
   type PrimaryTopicProgress,
 } from '@/lib/client-api/denemeClient';
@@ -89,12 +91,13 @@ function applyAttemptsResult(
   };
 }
 
+/** Konu ilerlemesini hafif uçtan alır; deneme listesini yeniden çekmez. */
 function enrichTopicProgressInBackground(
   examIds: string[],
-  apply: (result: DenemeFetchResult) => void,
+  apply: (result: DenemeTopicProgressResult) => void,
 ) {
-  void fetchDenemeAttempts(50, examIds).then((enriched) => {
-    if (enriched.ok) {
+  void fetchDenemeTopicProgress(examIds).then((enriched) => {
+    if (enriched) {
       startTransition(() => apply(enriched));
     }
   });
@@ -172,8 +175,8 @@ export function useDenemePageBootstrap(
             enrichTopicProgressInBackground(examIds, (enriched) => {
               setState((prev) => ({
                 ...prev,
-                topicProgressByExam: enriched.ok ? enriched.topicProgressByExam : prev.topicProgressByExam,
-                primaryTopicProgress: enriched.ok ? enriched.primaryTopicProgress : prev.primaryTopicProgress,
+                topicProgressByExam: enriched.topicProgressByExam,
+                primaryTopicProgress: enriched.primaryTopicProgress,
               }));
             });
           }
@@ -223,8 +226,8 @@ export function useDenemePageBootstrap(
           enrichTopicProgressInBackground(examIds, (enriched) => {
             setState((prev) => ({
               ...prev,
-              topicProgressByExam: enriched.ok ? enriched.topicProgressByExam : prev.topicProgressByExam,
-              primaryTopicProgress: enriched.ok ? enriched.primaryTopicProgress : prev.primaryTopicProgress,
+              topicProgressByExam: enriched.topicProgressByExam,
+              primaryTopicProgress: enriched.primaryTopicProgress,
             }));
           });
         }

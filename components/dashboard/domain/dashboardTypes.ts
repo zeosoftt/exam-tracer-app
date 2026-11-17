@@ -89,6 +89,12 @@ export interface DashboardStats {
 
 export type EvaluationFilter = 'GOOD' | 'IMPROVABLE' | 'REPEAT' | null;
 
+/** Sunucuda (RSC) hesaplanıp ilk render'a gömülen dashboard verisi — istemci fetch şelalesini kaldırır. */
+export type DashboardHomeInitialData = {
+  stats: DashboardStats | null;
+  planCode: string | null;
+};
+
 export type PlanBadge = {
   code: string;
   label: string;

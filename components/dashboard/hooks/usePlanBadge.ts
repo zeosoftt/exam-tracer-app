@@ -2,13 +2,21 @@
 
 import { useState, useEffect } from 'react';
 import type { PlanBadge } from '../domain/dashboardTypes';
-import { fetchBillingPlanBadge } from '@/lib/client-api/dashboardClient';
+import { fetchBillingPlanBadge, planCodeToBadge } from '@/lib/client-api/dashboardClient';
 import { scheduleIdleTask } from '@/lib/runtime/scheduleIdleTask';
 
-export function usePlanBadge() {
-  const [planBadge, setPlanBadge] = useState<PlanBadge | null>(null);
+/**
+ * Plan rozeti. Sunucudan `initialPlanCode` geldiyse ek istek atılmaz;
+ * yalnızca eski akış (prop yok) için boşta /api/billing/plan çağrılır.
+ */
+export function usePlanBadge(initialPlanCode?: string | null) {
+  const [planBadge, setPlanBadge] = useState<PlanBadge | null>(() =>
+    initialPlanCode ? planCodeToBadge(initialPlanCode) : null,
+  );
+  const hasInitial = initialPlanCode !== undefined && initialPlanCode !== null;
 
   useEffect(() => {
+    if (hasInitial) return;
     let cancelled = false;
     scheduleIdleTask(
       () => {
@@ -28,7 +36,7 @@ export function usePlanBadge() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [hasInitial]);
 
   return planBadge;
 }

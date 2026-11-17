@@ -69,10 +69,48 @@ export function mapDenemeAttemptToDto(attempt: DenemeAttemptRecord): DenemeAttem
   };
 }
 
+/** Liste görünümü: ders/konu JSON'ları (breakdown, topicBreakdown) taşınmaz — detay sayfası ayrıca çeker. */
+export type DenemeAttemptListRecord = Omit<DenemeAttemptRecord, 'breakdown' | 'topicBreakdown'>;
+export type DenemeAttemptListDto = Omit<DenemeAttemptDto, 'breakdown' | 'topicBreakdown'>;
+
+export function mapDenemeAttemptToListDto(attempt: DenemeAttemptListRecord): DenemeAttemptListDto {
+  return {
+    id: attempt.id,
+    examId: attempt.examId,
+    exam: attempt.exam,
+    attemptedAt: attempt.attemptedAt.toISOString(),
+    completedAt: attempt.completedAt?.toISOString() ?? null,
+    totalScore: attempt.totalScore != null ? Number(attempt.totalScore) : null,
+    netScore: attempt.netScore != null ? Number(attempt.netScore) : null,
+    rightCount: attempt.rightCount,
+    wrongCount: attempt.wrongCount,
+    emptyCount: attempt.emptyCount,
+    durationMinutes: attempt.durationMinutes,
+    status: attempt.status,
+    notes: attempt.notes,
+  };
+}
+
+const denemeAttemptListSelect = {
+  id: true,
+  examId: true,
+  attemptedAt: true,
+  completedAt: true,
+  totalScore: true,
+  netScore: true,
+  rightCount: true,
+  wrongCount: true,
+  emptyCount: true,
+  durationMinutes: true,
+  status: true,
+  notes: true,
+  exam: { select: { id: true, name: true, code: true } },
+} as const;
+
 export async function listUserDenemeAttempts(
   userId: string,
   options: { examId?: string; limit: number; skip: number },
-): Promise<{ attempts: DenemeAttemptRecord[]; total: number }> {
+): Promise<{ attempts: DenemeAttemptListRecord[]; total: number }> {
   const where = {
     userId,
     deletedAt: null,
@@ -82,7 +120,7 @@ export async function listUserDenemeAttempts(
   const [attempts, total] = await Promise.all([
     prisma.examAttempt.findMany({
       where,
-      include: { exam: { select: { id: true, name: true, code: true } } },
+      select: denemeAttemptListSelect,
       orderBy: { attemptedAt: 'desc' },
       take: options.limit,
       skip: options.skip,

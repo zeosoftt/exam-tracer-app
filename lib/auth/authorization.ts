@@ -41,6 +41,37 @@ export interface PlanLimitCheckResult {
 }
 
 // ============================================================================
+// ROLE LOOKUP CACHE
+// ============================================================================
+
+/**
+ * Sistem rol kodları (SYSTEM_ROLE_*) seed ile oluşur ve değişmez; her yetki kontrolünde
+ * DB'ye gitmek yerine süreç içinde kısa süreli bellekte tutulur (serverless warm instance).
+ */
+const ROLE_ID_TTL_MS = 10 * 60 * 1000;
+const ROLE_ID_MISS_TTL_MS = 60 * 1000;
+const roleIdCache = new Map<string, { id: string | null; expiresAt: number }>();
+
+async function getRoleIdByCode(roleCode: string): Promise<string | null> {
+  const now = Date.now();
+  const cached = roleIdCache.get(roleCode);
+  if (cached && cached.expiresAt > now) {
+    return cached.id;
+  }
+
+  const role = await prisma.role.findUnique({
+    where: { code: roleCode },
+    select: { id: true },
+  });
+  const id = role?.id ?? null;
+  roleIdCache.set(roleCode, {
+    id,
+    expiresAt: now + (id ? ROLE_ID_TTL_MS : ROLE_ID_MISS_TTL_MS),
+  });
+  return id;
+}
+
+// ============================================================================
 // CORE AUTHORIZATION FUNCTIONS
 // ============================================================================
 
@@ -61,30 +92,33 @@ export async function canAccess(
     resourceId?: string;
     resourceOwnerId?: string;
     scope?: 'OWN' | 'ORG' | 'SYSTEM';
+    /** Çağıran zaten isSuperAdmin kontrolü yaptıysa tekrar sorgulamayı atla. */
+    skipSuperAdminCheck?: boolean;
   }
 ): Promise<PermissionCheckResult> {
   try {
     // SUPER_ADMIN bypass (system-wide admin)
-    const superAdminRole = await prisma.role.findUnique({
-      where: { code: 'SYSTEM_ROLE_SUPER_ADMIN' },
-    });
+    if (!context?.skipSuperAdminCheck) {
+      const superAdminRoleId = await getRoleIdByCode('SYSTEM_ROLE_SUPER_ADMIN');
 
-    if (superAdminRole) {
-      const isSuperAdmin = await prisma.membership.findFirst({
-        where: {
-          userId,
-          roleId: superAdminRole.id,
-          isActive: true,
-          deletedAt: null,
-        },
-      });
+      if (superAdminRoleId) {
+        const isSuperAdmin = await prisma.membership.findFirst({
+          where: {
+            userId,
+            roleId: superAdminRoleId,
+            isActive: true,
+            deletedAt: null,
+          },
+          select: { id: true },
+        });
 
-      if (isSuperAdmin) {
-        return {
-          allowed: true,
-          hasPermission: true,
-          planAllows: true,
-        };
+        if (isSuperAdmin) {
+          return {
+            allowed: true,
+            hasPermission: true,
+            planAllows: true,
+          };
+        }
       }
     }
 
@@ -167,11 +201,9 @@ export async function hasRole(
   organizationId: string | null,
   roleCode: string
 ): Promise<boolean> {
-  const role = await prisma.role.findUnique({
-    where: { code: roleCode },
-  });
+  const roleId = await getRoleIdByCode(roleCode);
 
-  if (!role) {
+  if (!roleId) {
     return false;
   }
 
@@ -179,10 +211,11 @@ export async function hasRole(
     where: {
       userId,
       organizationId: organizationId || undefined,
-      roleId: role.id,
+      roleId,
       isActive: true,
       deletedAt: null,
     },
+    select: { id: true },
   });
 
   return !!membership;
@@ -643,10 +676,13 @@ export async function authorize(
   userId: string,
   organizationId: string | null,
   permissionCode: string,
-  resourceType?: 'USERS' | 'EXAMS' | 'STUDENTS' | 'STORAGE'
+  resourceType?: 'USERS' | 'EXAMS' | 'STUDENTS' | 'STORAGE',
+  options?: { skipSuperAdminCheck?: boolean }
 ): Promise<PermissionCheckResult> {
   // Check permission first
-  const permissionCheck = await canAccess(userId, organizationId, permissionCode);
+  const permissionCheck = await canAccess(userId, organizationId, permissionCode, {
+    skipSuperAdminCheck: options?.skipSuperAdminCheck,
+  });
 
   if (!permissionCheck.allowed || !permissionCheck.hasPermission) {
     return permissionCheck;

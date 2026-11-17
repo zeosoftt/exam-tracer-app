@@ -6,15 +6,24 @@ import { fetchDashboardStatsPayload, type FetchStatsOptions } from '@/lib/client
 import { patchTopicProgress } from '@/lib/client-api/progressClient';
 import { scheduleIdleTask } from '@/lib/runtime/scheduleIdleTask';
 
-export function useDashboardStats() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+/**
+ * @param initialStats Sunucuda (RSC) hesaplanmış tam kapsamlı istatistik. Verildiğinde
+ * ilk core/full fetch'ler atlanır; yalnızca odak/görünürlük tazelemesi kalır.
+ */
+export function useDashboardStats(initialStats: DashboardStats | null = null) {
+  const hasInitial = initialStats !== null;
+  const [stats, setStats] = useState<DashboardStats | null>(initialStats);
+  const [isLoading, setIsLoading] = useState(!hasInitial);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [statsUpdatedAt, setStatsUpdatedAt] = useState<Date | null>(null);
+  const [statsUpdatedAt, setStatsUpdatedAt] = useState<Date | null>(() =>
+    hasInitial ? new Date() : null,
+  );
   const [reviewAckTopicId, setReviewAckTopicId] = useState<string | null>(null);
-  const lastLiteStatsFetchAtRef = useRef(0);
-  const lastFullStatsFetchAtRef = useRef(0);
+  const initialFetchAt = hasInitial ? Date.now() : 0;
+  const lastLiteStatsFetchAtRef = useRef(initialFetchAt);
+  const lastFullStatsFetchAtRef = useRef(initialFetchAt);
   const statsFetchInFlightRef = useRef(false);
+  const skipInitialFetchRef = useRef(hasInitial);
 
   const fetchStats = useCallback(async (options?: FetchStatsOptions) => {
     const lite = options?.lite ?? true;
@@ -80,6 +89,11 @@ export function useDashboardStats() {
   );
 
   useEffect(() => {
+    if (skipInitialFetchRef.current) {
+      // Sunucu verisi tam kapsamlı; ilk yüklemede API'ye gitme.
+      skipInitialFetchRef.current = false;
+      return;
+    }
     void fetchStats({ lite: true });
     scheduleIdleTask(
       () => {

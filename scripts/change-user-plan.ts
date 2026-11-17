@@ -11,6 +11,8 @@
  * Plan kodları: plans tablosundaki code (örn. FREE, PRO, ENTERPRISE)
  *
  * Not: lib/db/prisma.ts `server-only` içerdiği için CLI'da doğrudan PrismaClient kullanılır.
+ * Not: Plan özeti (hasFeatureAccess / plan rozeti) Next data cache'inde 5 dk tutulur; script sonrası
+ *      canlıda en geç 5 dk içinde yansır (webhook akışı cache'i anında tazeler).
  */
 
 import { existsSync, readFileSync } from 'fs';

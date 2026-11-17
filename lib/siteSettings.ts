@@ -101,9 +101,11 @@ export async function getSettingBoolean(key: string): Promise<boolean> {
  * Deneme sayfası: liste, import, kayıt formu ve analiz.
  * site_settings üzerinden kapatılabilir; varsayılan açık.
  */
-export async function isDenemeAdvancedEnabled(): Promise<boolean> {
-  return getSettingBoolean(SITE_KEYS.DENEME_SHOW_ADVANCED);
-}
+export const isDenemeAdvancedEnabled = unstable_cache(
+  async (): Promise<boolean> => getSettingBoolean(SITE_KEYS.DENEME_SHOW_ADVANCED),
+  ['deneme-advanced-enabled'],
+  { revalidate: 120, tags: [SITE_SETTINGS_CACHE_TAG] },
+);
 
 export async function setSetting(key: string, value: string): Promise<void> {
   await prisma.siteSetting.upsert({

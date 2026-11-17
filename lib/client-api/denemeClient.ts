@@ -120,6 +120,33 @@ export async function fetchDenemeAttempts(
   }
 }
 
+export type DenemeTopicProgressResult = {
+  topicProgressByExam: Record<string, ExamTopicProgress>;
+  primaryTopicProgress: PrimaryTopicProgress | null;
+};
+
+/** Yalnızca konu ilerlemesi — deneme listesini yeniden çekmez (hafif arka plan isteği). */
+export async function fetchDenemeTopicProgress(
+  examIds: string[],
+): Promise<DenemeTopicProgressResult | null> {
+  try {
+    const params = new URLSearchParams();
+    if (examIds.length) params.set('examIds', examIds.join(','));
+    const { ok, body } = await fetchJsonCached<{
+      success?: boolean;
+      topicProgressByExam?: Record<string, ExamTopicProgress>;
+      primaryTopicProgress?: PrimaryTopicProgress | null;
+    }>(`/api/deneme/topic-progress?${params.toString()}`);
+    if (!ok || !body.success) return null;
+    return {
+      topicProgressByExam: body.topicProgressByExam ?? {},
+      primaryTopicProgress: body.primaryTopicProgress ?? null,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchDenemeSiteFlags(): Promise<boolean> {
   const { ok, body } = await fetchJsonCached<{ success?: boolean; data?: { deneme_show_advanced?: boolean } }>(
     '/api/site/deneme-flags',

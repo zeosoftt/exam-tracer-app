@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { prisma } from '@/lib/db/prisma';
 
 export const MAX_APP_SESSION_DURATION_SECONDS = 4 * 60 * 60;
@@ -10,6 +11,10 @@ export type RecordAppSessionInput = {
   userId?: string | null;
 };
 
+/**
+ * Tek sorguluk upsert: heartbeat başına 2 gidiş-dönüş yerine 1.
+ * durationSeconds monoton artar (GREATEST), userId sonradan bağlanabilir (COALESCE).
+ */
 export async function recordAppSession(input: RecordAppSessionInput): Promise<void> {
   const durationSeconds = Math.min(
     Math.max(0, Math.floor(input.durationSeconds)),
@@ -20,30 +25,18 @@ export async function recordAppSession(input: RecordAppSessionInput): Promise<vo
 
   const endedAt = new Date();
   const lastPath = input.lastPath?.slice(0, 256) ?? null;
+  const userId = input.userId ?? null;
 
-  const existing = await prisma.appSession.findUnique({
-    where: { clientSessionId: input.clientSessionId },
-    select: { durationSeconds: true, userId: true },
-  });
-
-  const mergedDuration = Math.max(existing?.durationSeconds ?? 0, durationSeconds);
-  const mergedUserId = input.userId ?? existing?.userId ?? null;
-
-  await prisma.appSession.upsert({
-    where: { clientSessionId: input.clientSessionId },
-    create: {
-      clientSessionId: input.clientSessionId,
-      userId: mergedUserId,
-      durationSeconds: mergedDuration,
-      startedAt: input.startedAt,
-      endedAt,
-      lastPath,
-    },
-    update: {
-      userId: mergedUserId,
-      durationSeconds: mergedDuration,
-      endedAt,
-      lastPath,
-    },
-  });
+  await prisma.$executeRaw`
+    INSERT INTO "app_sessions"
+      ("id", "clientSessionId", "userId", "durationSeconds", "startedAt", "endedAt", "lastPath", "createdAt", "updatedAt")
+    VALUES
+      (${randomUUID()}, ${input.clientSessionId}, ${userId}, ${durationSeconds}, ${input.startedAt}, ${endedAt}, ${lastPath}, NOW(), NOW())
+    ON CONFLICT ("clientSessionId") DO UPDATE SET
+      "durationSeconds" = GREATEST("app_sessions"."durationSeconds", EXCLUDED."durationSeconds"),
+      "userId" = COALESCE(EXCLUDED."userId", "app_sessions"."userId"),
+      "endedAt" = EXCLUDED."endedAt",
+      "lastPath" = EXCLUDED."lastPath",
+      "updatedAt" = NOW()
+  `;
 }

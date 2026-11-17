@@ -8,6 +8,7 @@
 import dynamic from 'next/dynamic';
 import { useDashboardPage } from '@/components/dashboard/hooks/useDashboardPage';
 import type { DashboardUser } from '@/components/dashboard/home/dashboardHomeTypes';
+import type { DashboardHomeInitialData } from '@/components/dashboard/domain/dashboardTypes';
 import { DashboardHeader } from '@/components/dashboard/home/DashboardHeader';
 import { DashboardHeroSection } from '@/components/dashboard/home/DashboardHeroSection';
 import { FreeUserUpgradeBanner } from '@/components/dashboard/FreeUserUpgradeBanner';
@@ -37,11 +38,13 @@ const ParentChildrenPanel = dynamic(
 export function DashboardContent({
   user,
   showParentChildrenPanel = false,
+  initialData,
 }: {
   user: DashboardUser;
   showParentChildrenPanel?: boolean;
+  initialData?: DashboardHomeInitialData;
 }) {
-  const page = useDashboardPage(user);
+  const page = useDashboardPage(user, initialData);
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100">

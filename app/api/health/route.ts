@@ -7,6 +7,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { logError } from '@/lib/logger';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   if (!process.env.DATABASE_URL?.trim()) {
     return NextResponse.json(

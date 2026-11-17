@@ -57,14 +57,15 @@ export default withAuth(
     const response = NextResponse.next();
 
     const accept = req.headers.get('accept') ?? '';
-    const isHtmlDocument =
+    const isProtectedHtmlDocument =
       req.method === 'GET' &&
       accept.includes('text/html') &&
-      !path.startsWith('/api/');
+      path.startsWith('/dashboard');
 
+    // Yalnızca oturumlu sayfalar: public/statik sayfalarda CDN ve bfcache serbest kalsın.
     // bfcache: no-store / Pragma / Expires geri-ileri önbelleği engeller.
     // Oturum tazeliği ProtectedSessionGuard (pageshow) ile korunur.
-    if (isHtmlDocument) {
+    if (isProtectedHtmlDocument) {
       response.headers.set('Cache-Control', 'private, max-age=0, must-revalidate');
       response.headers.delete('Pragma');
       response.headers.delete('Expires');

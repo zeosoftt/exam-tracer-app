@@ -17,6 +17,7 @@ import {
   findUserActiveExamAssignment,
   listUserDenemeAttempts,
   mapDenemeAttemptToDto,
+  mapDenemeAttemptToListDto,
 } from '@/lib/deneme/denemeRepository';
 import { prisma } from '@/lib/db/prisma';
 import { validate } from '@/lib/validation/validate';
@@ -36,7 +37,7 @@ async function getDenemeHandler(req: NextRequest): Promise<NextResponse> {
   const skip = (page - 1) * limit;
 
   const { attempts, total } = await listUserDenemeAttempts(userId, { examId, limit, skip });
-  const data = attempts.map(mapDenemeAttemptToDto);
+  const data = attempts.map(mapDenemeAttemptToListDto);
 
   const progressExamIdsParam = searchParams.get('progressExamIds');
   const extraProgressExamIds =

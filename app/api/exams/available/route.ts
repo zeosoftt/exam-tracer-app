@@ -9,6 +9,9 @@ import { prisma } from '@/lib/db/prisma';
 import { logApi } from '@/lib/logger';
 import { EXAM_SCORE_RANGES } from '@/lib/constants/examScoreRanges';
 
+/** Sınav kataloğu nadiren değişir; build anında donmasın, 60 sn ISR ile tazelensin. */
+export const revalidate = 60;
+
 async function getAvailableExamsHandler(): Promise<NextResponse> {
   const exams = await prisma.exam.findMany({
     where: {

@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { authorize, getActiveOrganizationId } from '@/lib/auth/authorization';
+import { authorize, getActiveOrganizationId, isSuperAdmin } from '@/lib/auth/authorization';
 import { hasFeatureAccess } from '@/lib/auth/planLimits';
 import {
   requireSession,
@@ -79,15 +79,18 @@ export function withAuthorization<T extends unknown[] = unknown[]>(
     try {
       const { userId, organizationId, session } = await getAuthContext(req);
 
-      if (options.allowSuperAdmin !== false) {
-        const { isSuperAdmin } = await import('@/lib/auth/authorization');
+      const superAdminChecked = options.allowSuperAdmin !== false;
+      if (superAdminChecked) {
         if (await isSuperAdmin(userId)) {
           return handler(req, { userId, organizationId, session }, ...args);
         }
       }
 
       if (options.permission) {
-        const authResult = await authorize(userId, organizationId, options.permission, options.resourceType);
+        // Super admin kontrolü yukarıda yapıldıysa authorize içinde tekrar sorgulanmaz.
+        const authResult = await authorize(userId, organizationId, options.permission, options.resourceType, {
+          skipSuperAdminCheck: superAdminChecked,
+        });
 
         if (!authResult.allowed) {
           throw new ForbiddenError(authResult.reason || `Permission denied: ${options.permission}`);

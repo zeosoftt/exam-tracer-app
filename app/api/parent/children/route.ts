@@ -9,6 +9,8 @@ import { listLinkedStudentsForParent } from '@/lib/parent/listLinkedStudents';
 import { userCanViewParentChildrenPanel } from '@/lib/parent/canViewParentChildrenPanel';
 import { ForbiddenError } from '@/lib/errors/AppError';
 
+export const dynamic = 'force-dynamic';
+
 async function getParentChildrenHandler(): Promise<NextResponse> {
   const session = await requireSession();
   const userId = getSessionUserId(session);

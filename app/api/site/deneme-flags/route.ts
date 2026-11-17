@@ -6,6 +6,8 @@ import { NextResponse } from 'next/server';
 import { isDenemeAdvancedEnabled } from '@/lib/siteSettings';
 import { HTTP_STATUS } from '@/config/constants';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const deneme_show_advanced = await isDenemeAdvancedEnabled();

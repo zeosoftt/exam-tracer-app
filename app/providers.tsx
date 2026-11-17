@@ -1,40 +1,20 @@
 /**
  * App Providers
- * SessionProvider and other context providers
+ * Tema + first-party oturum süresi ölçümü. Oturum sağlayıcısı (next-auth SessionProvider)
+ * yalnızca dashboard layout'unda yüklenir: bkz. components/auth/AppSessionProvider.
  */
 
 'use client';
 
-import { usePathname } from 'next/navigation';
-import { SessionProvider } from 'next-auth/react';
 import { ReactNode } from 'react';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
-import { SentryUserSync } from '@/components/sentry/SentryUserSync';
 import { SessionDurationTracker } from '@/components/analytics/SessionDurationTracker';
-
-function routeNeedsSession(pathname: string | null): boolean {
-  if (!pathname) return false;
-  return (
-    pathname.startsWith('/dashboard') ||
-    pathname.startsWith('/auth') ||
-    pathname.startsWith('/onboarding')
-  );
-}
-
-function OptionalSentryUserSync() {
-  const pathname = usePathname();
-  if (!routeNeedsSession(pathname)) return null;
-  return <SentryUserSync />;
-}
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider>
-      <SessionProvider refetchOnWindowFocus={false}>
-        <SessionDurationTracker />
-        <OptionalSentryUserSync />
-        {children}
-      </SessionProvider>
+      <SessionDurationTracker />
+      {children}
     </ThemeProvider>
   );
 }

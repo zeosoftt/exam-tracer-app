@@ -11,6 +11,8 @@ import { authSuccess } from '@/lib/auth/responses';
 import { wrapAuthGetHandler } from '@/lib/auth/authRouteHelpers';
 import { NotFoundError } from '@/lib/errors/AppError';
 
+export const dynamic = 'force-dynamic';
+
 const limiter = rateLimit(20, RATE_LIMIT.LOGIN_WINDOW_MS);
 
 function isDevVerificationEnabled(): boolean {

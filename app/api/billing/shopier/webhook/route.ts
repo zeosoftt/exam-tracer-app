@@ -11,6 +11,7 @@ import { rateLimit } from '@/lib/middleware/rateLimit';
 import { HTTP_STATUS, RATE_LIMIT, SHOPIER_CHECKOUT_URL } from '@/config/constants';
 import { asyncHandler } from '@/lib/errors/errorHandler';
 import { activatePlanByEmail } from '@/lib/billing/activateOrganizationPlan';
+import { revalidateOrganizationPlanCache } from '@/lib/auth/planLimits';
 import { recordShopierPurchaseActivation } from '@/lib/marketing/marketingMetricsStore';
 import { verifyShopierWebhookSignature } from '@/lib/billing/verifyShopierWebhook';
 import { SHOPIER_WEBHOOK_REASONS } from '@/lib/billing/shopierWebhookReasons';
@@ -144,6 +145,9 @@ async function shopierWebhookHandler(req: NextRequest): Promise<NextResponse> {
   const reason = result.idempotent
     ? SHOPIER_WEBHOOK_REASONS.DUPLICATE_ORDER
     : SHOPIER_WEBHOOK_REASONS.SUCCESS;
+
+  // Plan özeti cache'i (hasFeatureAccess / plan rozeti) anında yeni planı görsün.
+  revalidateOrganizationPlanCache(result.organizationId);
 
   if (!result.idempotent) {
     await recordShopierPurchaseActivation();

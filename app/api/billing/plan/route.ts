@@ -9,6 +9,8 @@ import { toPlanInfoDto } from '@/lib/billing/planInfoDto';
 import { authSuccess } from '@/lib/auth/responses';
 import { withSessionHandler } from '@/lib/api/withSessionHandler';
 
+export const dynamic = 'force-dynamic';
+
 async function getBillingPlanHandler(_req: NextRequest, { userId }: { userId: string }): Promise<NextResponse> {
   const organizationId = await getActiveOrganizationId(userId);
   if (!organizationId) {

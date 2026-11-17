@@ -13,14 +13,27 @@ Sentry.init({
   ...getSentryInitOptions(),
   ...(replayOnError > 0
     ? {
-        integrations: [
-          Sentry.replayIntegration({
-            maskAllText: true,
-            blockAllMedia: true,
-          }),
-        ],
         replaysSessionSampleRate: 0,
         replaysOnErrorSampleRate: replayOnError,
       }
     : {}),
 });
+
+/**
+ * Replay entegrasyonu statik import edilmez: aksi halde ~40 kB (gzip) Replay kodu
+ * her sayfanın paylaşılan bundle'ına girer. Yalnızca örnekleme açıkken CDN'den yüklenir.
+ */
+if (replayOnError > 0 && typeof window !== 'undefined') {
+  void Sentry.lazyLoadIntegration('replayIntegration')
+    .then((replayIntegration) => {
+      Sentry.addIntegration(
+        replayIntegration({
+          maskAllText: true,
+          blockAllMedia: true,
+        }),
+      );
+    })
+    .catch(() => {
+      // Replay opsiyonel; yüklenemezse sessiz geç
+    });
+}

@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useDeferredValue, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { deleteDenemeAttempt } from '@/lib/client-api/denemeClient';
 import { computeDenemeAnalysis } from '@/lib/deneme/computeDenemeAnalysis';
 import type { DenemePageInitialData } from '@/lib/deneme/loadDenemePageData';
@@ -9,7 +8,6 @@ import { useDenemePageBootstrap } from '@/components/deneme/hooks/useDenemePageB
 import type { DenemeAttemptListItem } from '@/lib/client-api/denemeClient';
 
 export function useDenemePage(initialData?: DenemePageInitialData) {
-  const router = useRouter();
   const [formModalOpen, setFormModalOpen] = useState(false);
   const [formMessage, setFormMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [deletingAttemptId, setDeletingAttemptId] = useState<string | null>(null);
@@ -39,16 +37,17 @@ export function useDenemePage(initialData?: DenemePageInitialData) {
     setFormMessage(null);
   }, []);
 
+  // Not: router.refresh() çağrılmaz — RSC yeniden render'ı 50 kaydı sunucudan tekrar çekerdi,
+  // liste zaten istemci state'inden (prependAttempt + fetchAttempts) güncelleniyor.
   const handleFormSubmitSuccess = useCallback(
     (attempt?: DenemeAttemptListItem) => {
       setFormModalOpen(false);
       if (attempt) {
         prependAttempt(attempt);
       }
-      router.refresh();
       void fetchAttempts(true);
     },
-    [fetchAttempts, prependAttempt, router],
+    [fetchAttempts, prependAttempt],
   );
 
   const analysisImmediate = useMemo(() => computeDenemeAnalysis(attempts), [attempts]);
@@ -68,13 +67,12 @@ export function useDenemePage(initialData?: DenemePageInitialData) {
       if (result.ok) {
         setActionMessage({ type: 'success', text: 'Deneme kaydı silindi.' });
         await fetchAttempts(true);
-        router.refresh();
         return;
       }
 
       setActionMessage({ type: 'error', text: result.error });
     },
-    [fetchAttempts, router],
+    [fetchAttempts],
   );
 
   return {

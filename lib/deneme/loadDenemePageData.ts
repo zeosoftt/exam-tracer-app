@@ -7,8 +7,8 @@ import { prisma } from '@/lib/db/prisma';
 import { userCanAccessDenemeDetail } from '@/lib/deneme/denemeAccess';
 import {
   listUserDenemeAttempts,
-  mapDenemeAttemptToDto,
-  type DenemeAttemptDto,
+  mapDenemeAttemptToListDto,
+  type DenemeAttemptListDto,
 } from '@/lib/deneme/denemeRepository';
 import { findUserSettings } from '@/lib/settings/settingsRepository';
 import { isDenemeAdvancedEnabled } from '@/lib/siteSettings';
@@ -16,7 +16,7 @@ import { isDenemeAdvancedEnabled } from '@/lib/siteSettings';
 export type DenemePageInitialData = {
   denemeAdvanced: boolean;
   canViewDenemeDetail: boolean;
-  attempts: DenemeAttemptDto[];
+  attempts: DenemeAttemptListDto[];
   topicProgressByExam: Record<string, { completed: number; total: number; pct: number }>;
   primaryTopicProgress: {
     examId: string;
@@ -59,7 +59,7 @@ export async function loadDenemePageData(userId: string): Promise<DenemePageInit
   return {
     denemeAdvanced: true,
     canViewDenemeDetail,
-    attempts: attemptsBundle.attempts.map(mapDenemeAttemptToDto),
+    attempts: attemptsBundle.attempts.map(mapDenemeAttemptToListDto),
     topicProgressByExam: {},
     primaryTopicProgress: null,
     exams,

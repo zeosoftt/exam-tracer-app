@@ -5,8 +5,9 @@
  * Works together with authorization service for complete access control
  */
 
+import { unstable_cache, revalidateTag } from 'next/cache';
 import { prisma } from '@/lib/db/prisma';
-import { checkPlanLimit, checkPlanLimitsBatch, canUseFeature } from './authorization';
+import { checkPlanLimit, checkPlanLimitsBatch } from './authorization';
 
 // ============================================================================
 // TYPES
@@ -202,9 +203,113 @@ export async function hasActiveSubscription(organizationId: string): Promise<boo
   return !!subscription;
 }
 
+// ============================================================================
+// CACHED PLAN SUMMARY (plan kodu + özellik listesi)
+// ============================================================================
+
+export type OrganizationPlanSummary = {
+  planId: string;
+  planCode: string;
+  planName: string;
+  planType: 'FREE' | 'PRO' | 'ENTERPRISE';
+  features: string[];
+};
+
+const PLAN_SUMMARY_REVALIDATE_SECONDS = 300;
+
+export function organizationPlanCacheTag(organizationId: string): string {
+  return `org-plan:${organizationId}`;
+}
+
+const planWithFeaturesInclude = {
+  planFeatures: {
+    include: { feature: { select: { code: true, deletedAt: true } } },
+  },
+} as const;
+
+type PlanWithFeatures = {
+  id: string;
+  code: string;
+  name: string;
+  type: 'FREE' | 'PRO' | 'ENTERPRISE';
+  planFeatures: Array<{ feature: { code: string; deletedAt: Date | null } }>;
+};
+
+function toPlanSummary(plan: PlanWithFeatures): OrganizationPlanSummary {
+  return {
+    planId: plan.id,
+    planCode: plan.code,
+    planName: plan.name,
+    planType: plan.type,
+    features: plan.planFeatures.filter((pf) => !pf.feature.deletedAt).map((pf) => pf.feature.code),
+  };
+}
+
+/** `canUseFeature` ile aynı öncelik: aktif abonelik → currentPlan → FREE. */
+async function loadOrganizationPlanSummary(
+  organizationId: string,
+): Promise<OrganizationPlanSummary | null> {
+  const organization = await prisma.organization.findUnique({
+    where: { id: organizationId },
+    select: {
+      currentPlanId: true,
+      subscriptions: {
+        where: {
+          status: 'ACTIVE',
+          deletedAt: null,
+          currentPeriodEnd: { gte: new Date() },
+        },
+        orderBy: { currentPeriodEnd: 'desc' },
+        take: 1,
+        select: { plan: { include: planWithFeaturesInclude } },
+      },
+    },
+  });
+
+  if (!organization) return null;
+
+  const subscriptionPlan = organization.subscriptions[0]?.plan;
+  if (subscriptionPlan) return toPlanSummary(subscriptionPlan);
+
+  if (organization.currentPlanId) {
+    const currentPlan = await prisma.plan.findUnique({
+      where: { id: organization.currentPlanId },
+      include: planWithFeaturesInclude,
+    });
+    if (currentPlan) return toPlanSummary(currentPlan);
+  }
+
+  const freePlan = await prisma.plan.findUnique({
+    where: { code: 'FREE' },
+    include: planWithFeaturesInclude,
+  });
+  return freePlan ? toPlanSummary(freePlan) : null;
+}
+
+/**
+ * Organizasyonun plan kodu ve özellikleri — Next data cache'te (instance'lar arası) tutulur.
+ * Plan değişiminde `revalidateOrganizationPlanCache` çağrılır (Shopier webhook).
+ */
+export function getOrganizationPlanSummary(
+  organizationId: string,
+): Promise<OrganizationPlanSummary | null> {
+  return unstable_cache(
+    () => loadOrganizationPlanSummary(organizationId),
+    ['org-plan-summary', organizationId],
+    {
+      revalidate: PLAN_SUMMARY_REVALIDATE_SECONDS,
+      tags: [organizationPlanCacheTag(organizationId)],
+    },
+  )();
+}
+
+export function revalidateOrganizationPlanCache(organizationId: string): void {
+  revalidateTag(organizationPlanCacheTag(organizationId));
+}
+
 /**
  * Check if organization can access premium feature
- * 
+ *
  * @param organizationId - Organization ID
  * @param featureCode - Feature code
  * @returns True if feature is available
@@ -213,7 +318,8 @@ export async function hasFeatureAccess(
   organizationId: string,
   featureCode: string
 ): Promise<boolean> {
-  return canUseFeature(organizationId, featureCode);
+  const summary = await getOrganizationPlanSummary(organizationId);
+  return summary?.features.includes(featureCode) ?? false;
 }
 
 /**

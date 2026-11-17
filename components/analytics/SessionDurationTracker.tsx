@@ -5,7 +5,8 @@ import { usePathname } from 'next/navigation';
 import { postSessionDuration } from '@/lib/client-api/sessionAnalyticsClient';
 
 const STORAGE_KEY = 'app_session_id';
-const HEARTBEAT_MS = 30_000;
+/** Sekme görünürken periyodik kayıt; asıl kayıt gizlenme/kapanışta beacon ile yapılır. */
+const HEARTBEAT_MS = 120_000;
 const MIN_FLUSH_SECONDS = 5;
 
 function getOrCreateClientSessionId(): string {
@@ -61,26 +62,34 @@ export function SessionDurationTracker() {
       }
     };
 
-    const flush = (force = false) => {
+    const lastFlushedSecondsRef = { current: 0 };
+
+    const flush = (force = false, beacon = false) => {
       const clientSessionId = clientSessionIdRef.current;
       const startedAt = startedAtRef.current;
       if (!clientSessionId || !startedAt) return;
 
       const durationSeconds = getTotalSeconds();
-      if (!force && durationSeconds < MIN_FLUSH_SECONDS) return;
+      if (durationSeconds < MIN_FLUSH_SECONDS) return;
+      // Değişmeyen süreyi tekrar gönderme (gereksiz fonksiyon çağrısı + DB yazımı)
+      if (!force && durationSeconds === lastFlushedSecondsRef.current) return;
+      lastFlushedSecondsRef.current = durationSeconds;
 
-      void postSessionDuration({
-        clientSessionId,
-        durationSeconds,
-        startedAt,
-        lastPath: pathnameRef.current ?? undefined,
-      });
+      void postSessionDuration(
+        {
+          clientSessionId,
+          durationSeconds,
+          startedAt,
+          lastPath: pathnameRef.current ?? undefined,
+        },
+        { beacon },
+      );
     };
 
     const onVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         markHidden();
-        flush(true);
+        flush(true, true);
       } else {
         markVisible();
       }
@@ -92,17 +101,20 @@ export function SessionDurationTracker() {
       if (document.visibilityState === 'visible') flush(false);
     }, HEARTBEAT_MS);
 
-    document.addEventListener('visibilitychange', onVisibilityChange);
-    window.addEventListener('pagehide', () => {
+    const onPageHide = () => {
       markHidden();
-      flush(true);
-    });
+      flush(true, true);
+    };
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('pagehide', onPageHide);
 
     return () => {
       window.clearInterval(heartbeat);
       document.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('pagehide', onPageHide);
       markHidden();
-      flush(true);
+      flush(true, true);
     };
   }, []);
 
