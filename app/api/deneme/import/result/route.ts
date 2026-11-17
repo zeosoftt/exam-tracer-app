@@ -18,7 +18,7 @@ const bodySchema = z.object({
 });
 
 async function postInstitutionResultImportHandler(req: NextRequest): Promise<NextResponse> {
-  const limited = importLimiter(req);
+  const limited = await importLimiter(req);
   if (limited) return limited;
 
   await requireSession();

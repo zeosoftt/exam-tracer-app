@@ -11,9 +11,9 @@ import {
 } from '@/lib/auth/responses';
 import { HTTP_STATUS } from '@/config/constants';
 
-export type AuthRateLimiter = (req: NextRequest) => NextResponse | null;
+export type AuthRateLimiter = (req: NextRequest) => Promise<NextResponse | null>;
 
-export function checkAuthRateLimit(req: NextRequest, limiter: AuthRateLimiter): NextResponse | null {
+export function checkAuthRateLimit(req: NextRequest, limiter: AuthRateLimiter): Promise<NextResponse | null> {
   return limiter(req);
 }
 
@@ -42,7 +42,7 @@ export function wrapAuthPostHandler(
 ): (req: NextRequest) => Promise<NextResponse> {
   return async (req) => {
     if (options?.limiter) {
-      const limited = options.limiter(req);
+      const limited = await options.limiter(req);
       if (limited) return limited;
     }
     try {

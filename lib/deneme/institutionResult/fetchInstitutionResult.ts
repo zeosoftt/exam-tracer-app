@@ -5,6 +5,56 @@ import { validateInstitutionResultUrl } from '@/lib/deneme/institutionResult/val
 
 const FETCH_TIMEOUT_MS = 12_000;
 const MAX_HTML_BYTES = 600_000;
+const MAX_REDIRECTS = 3;
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
+
+const REQUEST_HEADERS = {
+  Accept: 'text/html,application/xhtml+xml',
+  'User-Agent': 'ExamTracker/1.0 (+https://thegoallabs.com)',
+} as const;
+
+/**
+ * Yönlendirmeleri elle izler: her hedef yeniden SSRF doğrulamasından geçer.
+ * `redirect: 'follow'` ile doğrulanmış public bir host iç ağa yönlendirebilirdi.
+ */
+async function fetchFollowingValidatedRedirects(
+  initialUrl: URL,
+  signal: AbortSignal,
+): Promise<{ response: Response; finalUrl: string }> {
+  let url = initialUrl;
+
+  for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: REQUEST_HEADERS,
+      signal,
+      cache: 'no-store',
+      redirect: 'manual',
+    });
+
+    if (!REDIRECT_STATUSES.has(response.status)) {
+      return { response, finalUrl: url.toString() };
+    }
+
+    // 3xx gövdesi kullanılmaz; bağlantıyı serbest bırakmak için iptal edilir.
+    await response.body?.cancel().catch(() => undefined);
+
+    const location = response.headers.get('location');
+    if (!location || hop === MAX_REDIRECTS) {
+      throw new Error('Sonuç sayfası yönlendirmesi izlenemedi.');
+    }
+
+    let nextUrl: URL;
+    try {
+      nextUrl = new URL(location, url);
+    } catch {
+      throw new Error('Sonuç sayfası yönlendirmesi geçersiz.');
+    }
+    url = await validateInstitutionResultUrl(nextUrl.toString());
+  }
+
+  throw new Error('Sonuç sayfası yönlendirmesi izlenemedi.');
+}
 
 export async function fetchInstitutionResult(sourceUrl: string): Promise<InstitutionResultImport> {
   const url = await validateInstitutionResultUrl(sourceUrl);
@@ -13,16 +63,7 @@ export async function fetchInstitutionResult(sourceUrl: string): Promise<Institu
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
   try {
-    const response = await fetch(url.toString(), {
-      method: 'GET',
-      headers: {
-        Accept: 'text/html,application/xhtml+xml',
-        'User-Agent': 'ExamTracker/1.0 (+https://thegoallabs.com)',
-      },
-      signal: controller.signal,
-      cache: 'no-store',
-      redirect: 'follow',
-    });
+    const { response, finalUrl } = await fetchFollowingValidatedRedirects(url, controller.signal);
 
     if (!response.ok) {
       throw new Error(`Sonuç sayfası yüklenemedi (HTTP ${response.status}).`);
@@ -46,7 +87,6 @@ export async function fetchInstitutionResult(sourceUrl: string): Promise<Institu
       );
     }
 
-    const finalUrl = response.url || url.toString();
     return parseInstitutionResultHtml(html, finalUrl);
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {

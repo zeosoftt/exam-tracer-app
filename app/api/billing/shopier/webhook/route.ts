@@ -33,7 +33,7 @@ function readShopierEvent(req: NextRequest): string | null {
 }
 
 async function shopierWebhookHandler(req: NextRequest): Promise<NextResponse> {
-  const limited = limiter(req);
+  const limited = await limiter(req);
   if (limited) return limited;
 
   const secret = process.env.SHOPIER_WEBHOOK_SECRET?.trim();
@@ -175,14 +175,12 @@ async function shopierWebhookHandler(req: NextRequest): Promise<NextResponse> {
   });
 }
 
-/** Tarayıcı / Shopier panel ping — sayfa değil, sağlık kontrolü. */
+/** Tarayıcı / Shopier panel ping — sayfa değil, sağlık kontrolü. Yapılandırma durumu dışa sızdırılmaz. */
 async function shopierWebhookHealthGet(): Promise<NextResponse> {
-  const secretConfigured = Boolean(process.env.SHOPIER_WEBHOOK_SECRET?.trim());
   return NextResponse.json({
     success: true,
     service: 'shopier-webhook',
     method: 'POST required for order.created',
-    secretConfigured,
   });
 }
 

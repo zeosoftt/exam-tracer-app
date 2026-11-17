@@ -15,7 +15,7 @@ import { HTTP_STATUS } from '@/config/constants';
 const limiter = rateLimit(20, 60_000);
 
 async function logErrorHandler(req: NextRequest): Promise<NextResponse> {
-  const limited = limiter(req);
+  const limited = await limiter(req);
   if (limited) return limited;
 
   const body = await req.json();

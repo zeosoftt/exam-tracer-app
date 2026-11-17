@@ -30,7 +30,7 @@ async function devVerificationCodeHandler(req: NextRequest) {
     throw new NotFoundError();
   }
 
-  const limited = limiter(req);
+  const limited = await limiter(req);
   if (limited) return limited;
 
   const email = new URL(req.url).searchParams.get('email')?.toLowerCase().trim();

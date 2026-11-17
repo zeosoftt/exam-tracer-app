@@ -17,7 +17,7 @@ import { UnauthorizedError } from '@/lib/errors/AppError';
 const limiter = rateLimit(3, RATE_LIMIT.LOGIN_WINDOW_MS);
 
 async function changeEmailRequestHandler(req: NextRequest): Promise<NextResponse> {
-  const limited = limiter(req);
+  const limited = await limiter(req);
   if (limited) return limited;
 
   const session = await requireSession();

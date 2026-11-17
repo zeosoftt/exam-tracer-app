@@ -38,7 +38,7 @@ export default withAuth(
     }
 
     if (isNextAuthSignIn(req)) {
-      const limited = loginRateLimiter(req);
+      const limited = await loginRateLimiter(req);
       if (limited) return limited;
     }
 

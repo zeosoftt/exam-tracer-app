@@ -5,6 +5,34 @@ const sentryEnabled = Boolean(
   process.env.SENTRY_DSN?.trim() || process.env.NEXT_PUBLIC_SENTRY_DSN?.trim(),
 );
 
+/**
+ * Content-Security-Policy.
+ * - 'unsafe-eval' yalnızca dev (HMR / source map eval); üretim bundle'ı eval kullanmaz.
+ * - 'unsafe-inline' script: GTM bootstrap + JSON-LD + next-themes inline script için gerekli;
+ *   nonce tabanlı CSP'ye geçiş ayrı iş.
+ * - object-src 'none': Flash/plugin gömülerini kapatır.
+ */
+const scriptSrc = [
+  "'self'",
+  "'unsafe-inline'",
+  ...(isProd ? [] : ["'unsafe-eval'"]),
+  'https://www.googletagmanager.com',
+  'https://www.google-analytics.com',
+].join(' ');
+
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  `script-src ${scriptSrc}`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: https: blob:",
+  "font-src 'self' data:",
+  "connect-src 'self' https: https://*.ingest.sentry.io",
+  "frame-ancestors 'self'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "object-src 'none'",
+].join('; ');
+
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
@@ -22,6 +50,12 @@ const nextConfig = {
     },
   }),
   images: {
+    /**
+     * Projede next/image kullanılmıyor. Image Optimization API'si Next 14.x'te yamalanmamış
+     * RCE duyurularına (GHSA-2464-fhr4-w9xw, GHSA-2xp9-vwfh-vxw4) konu; uç nokta tamamen kapatılır.
+     * next/image eklenecekse Next 15.5.24+ sürümüne geçip bu bayrağı kaldırın.
+     */
+    unoptimized: true,
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256],
@@ -60,17 +94,19 @@ const nextConfig = {
             key: 'X-Content-Type-Options',
             value: 'nosniff'
           },
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block'
-          },
+          // X-XSS-Protection kaldırıldı: modern tarayıcılarda kullanım dışı, eski sürümlerde
+          // bilgi sızdırma vektörü olabiliyor; koruma CSP ile sağlanır.
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https: https://*.ingest.sentry.io; frame-ancestors 'self'; base-uri 'self'; form-action 'self'",
+            value: contentSecurityPolicy,
           },
           {
             key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin'
+            value: 'strict-origin-when-cross-origin'
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()'
           }
         ],
       },

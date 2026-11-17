@@ -19,7 +19,7 @@ import { RATE_LIMIT } from '@/config/constants';
 const limiter = rateLimit(5, RATE_LIMIT.LOGIN_WINDOW_MS);
 
 async function changePasswordHandler(req: NextRequest): Promise<NextResponse> {
-  const limited = limiter(req);
+  const limited = await limiter(req);
   if (limited) return limited;
 
   const session = await requireSession();

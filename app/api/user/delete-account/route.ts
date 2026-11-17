@@ -23,7 +23,7 @@ const deleteAccountSchema = z.object({
 });
 
 async function deleteAccountHandler(req: NextRequest): Promise<NextResponse> {
-  const limited = limiter(req);
+  const limited = await limiter(req);
   if (limited) return limited;
 
   const session = await requireSession();

@@ -19,7 +19,7 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const limited = limiter(req);
+  const limited = await limiter(req);
   if (limited) return limited;
 
   try {

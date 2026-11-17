@@ -21,7 +21,7 @@ const bodySchema = z.object({
 const saveLimiter = rateLimit(10, RATE_LIMIT.WINDOW_MS);
 
 async function postInstitutionResultSaveHandler(req: NextRequest): Promise<NextResponse> {
-  const limited = saveLimiter(req);
+  const limited = await saveLimiter(req);
   if (limited) return limited;
 
   const session = await requireSession();

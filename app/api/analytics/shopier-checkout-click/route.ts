@@ -11,7 +11,7 @@ import { incrementShopierCheckoutClick } from '@/lib/siteSettings';
 const limiter = rateLimit(120, RATE_LIMIT.LOGIN_WINDOW_MS);
 
 export async function POST(req: NextRequest) {
-  const limited = limiter(req);
+  const limited = await limiter(req);
   if (limited) return limited;
 
   try {

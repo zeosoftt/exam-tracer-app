@@ -15,7 +15,7 @@ import { SUPPORT_CATEGORY_LABELS } from '@/lib/support/supportContactCategories'
 const limiter = rateLimit(RATE_LIMIT.LOGIN_MAX_REQUESTS, RATE_LIMIT.LOGIN_WINDOW_MS);
 
 export async function POST(req: NextRequest) {
-  const limited = limiter(req);
+  const limited = await limiter(req);
   if (limited) return limited;
 
   try {

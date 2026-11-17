@@ -18,7 +18,7 @@ import { BadRequestError } from '@/lib/errors/AppError';
 const limiter = rateLimit(10, RATE_LIMIT.LOGIN_WINDOW_MS);
 
 async function changeEmailConfirmHandler(req: NextRequest): Promise<NextResponse> {
-  const limited = limiter(req);
+  const limited = await limiter(req);
   if (limited) return limited;
 
   const session = await requireSession();
