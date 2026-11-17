@@ -25,8 +25,8 @@ const getExamsHandler = requirePermission('EXAM_VIEW')(async (req, { userId, ses
 
   const { searchParams } = new URL(req.url);
   const pagination = validate(paginationSchema, {
-    page: searchParams.get('page'),
-    pageSize: searchParams.get('pageSize'),
+    page: searchParams.get('page') ?? undefined,
+    pageSize: searchParams.get('pageSize') ?? undefined,
   });
 
   const { page, pageSize } = getPaginationParams(pagination.page, pagination.pageSize);

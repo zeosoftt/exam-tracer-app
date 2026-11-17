@@ -23,8 +23,8 @@ async function getProgressHandler(req: NextRequest): Promise<NextResponse> {
 
     const { searchParams } = new URL(req.url);
     const pagination = validate(paginationSchema, {
-      page: searchParams.get('page'),
-      pageSize: searchParams.get('pageSize'),
+      page: searchParams.get('page') ?? undefined,
+      pageSize: searchParams.get('pageSize') ?? undefined,
     });
 
     const { page, pageSize } = getPaginationParams(pagination.page, pagination.pageSize);

@@ -88,7 +88,11 @@ export default withAuth(
       authorized: ({ token, req }) => {
         const path = req.nextUrl.pathname;
         if (isPublicPath(path)) return true;
-        return !!token;
+        // API: yetkisiz istekler yukarıdaki middleware gövdesinde 401 JSON alır (login'e yönlendirilmez).
+        if (path.startsWith('/api/')) return true;
+        // Yalnızca uygulama sayfaları oturum ister; eşleşmeyen URL'ler Next 404 sayfasına düşer.
+        if (path.startsWith('/dashboard')) return !!token;
+        return true;
       },
     },
   },
