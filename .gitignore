@@ -53,3 +53,7 @@ next-env.d.ts
 # Logs
 logs
 *.log
+
+# Agent skill installs (local tooling)
+.agents/
+skills-lock.json
