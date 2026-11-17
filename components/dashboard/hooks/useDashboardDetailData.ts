@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo, startTransition } from 'react';
-import type { DetailData } from '../detail/dashboardDetailTypes';
+import type { DetailData, Topic } from '../detail/dashboardDetailTypes';
 import { fetchDashboardDetailData } from '@/lib/client-api/dashboardClient';
 import { selectSection, selectSubject } from '../domain/detailSelectors';
 
@@ -15,10 +15,14 @@ export function useDashboardDetailData() {
   const detailFetchInFlightRef = useRef(false);
   const initialSelectionAppliedRef = useRef(false);
 
-  const fetchDetailData = useCallback(async (options?: { force?: boolean }) => {
+  /**
+   * Detay verisini yükler. Başarıda true döner; istek başarısız olursa false.
+   * Zorlanmamış (throttle'a takılan) çağrılar başarısızlık sayılmaz.
+   */
+  const fetchDetailData = useCallback(async (options?: { force?: boolean }): Promise<boolean> => {
     const now = Date.now();
-    if (!options?.force && now - lastDetailFetchAtRef.current < 10000) return;
-    if (detailFetchInFlightRef.current) return;
+    if (!options?.force && now - lastDetailFetchAtRef.current < 10000) return true;
+    if (detailFetchInFlightRef.current) return false;
 
     detailFetchInFlightRef.current = true;
     try {
@@ -41,17 +45,46 @@ export function useDashboardDetailData() {
             }
           }
         }
-      } else {
-        setFetchError(result.message ?? 'Veriler yüklenemedi.');
-        console.error('Failed to fetch dashboard detail:', result.status, result.message);
+        return true;
       }
+      // Yenileme başarısız: eldeki veri korunur, hata yalnızca ilk yüklemede tam ekran gösterilir.
+      console.error('Failed to fetch dashboard detail:', result.status, result.message);
+      setFetchError((prev) => (detailData ? prev : (result.message ?? 'Veriler yüklenemedi.')));
+      return false;
     } catch (error) {
-      setFetchError('Veriler yüklenemedi.');
       console.error('Failed to fetch data:', error);
+      setFetchError((prev) => (detailData ? prev : 'Veriler yüklenemedi.'));
+      return false;
     } finally {
       detailFetchInFlightRef.current = false;
       setIsLoading(false);
     }
+    // detailData yalnızca "ilk yükleme mi" kararı için okunur; bağımlılığa eklemek
+    // her veri değişiminde callback'i yeniler ve effect'i tekrar tetiklerdi.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /**
+   * Sunucuda başarıyla kaydedilen bir konu değişikliğini yerel veriye iyimser olarak uygular.
+   * Ardından gelen yenileme başarısız olsa bile tablo doğru durumu gösterir.
+   */
+  const applyTopicPatch = useCallback((topicId: string, patch: Partial<Topic>) => {
+    setDetailData((prev) => {
+      if (!prev) return prev;
+      let changed = false;
+      const sections = prev.sections.map((section) => {
+        const subjects = section.subjects.map((subject) => {
+          const idx = subject.topics.findIndex((t) => t.id === topicId);
+          if (idx === -1) return subject;
+          changed = true;
+          const topics = subject.topics.slice();
+          topics[idx] = { ...topics[idx], ...patch };
+          return { ...subject, topics };
+        });
+        return subjects === section.subjects ? section : { ...section, subjects };
+      });
+      return changed ? { ...prev, sections } : prev;
+    });
   }, []);
 
   useEffect(() => {
@@ -81,6 +114,7 @@ export function useDashboardDetailData() {
     fetchError,
     isLoading,
     fetchDetailData,
+    applyTopicPatch,
     selectedSectionId,
     setSelectedSectionId,
     selectedSubjectId,

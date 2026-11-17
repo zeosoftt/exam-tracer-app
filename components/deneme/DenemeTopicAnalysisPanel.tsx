@@ -119,9 +119,9 @@ function MetricTile({
 }) {
   return (
     <div className="rounded-xl border border-white/60 bg-white/60 px-3 py-2.5 dark:border-stone-800 dark:bg-stone-900/40">
-      <p className="text-[10px] font-semibold uppercase tracking-wide opacity-70">
+      <div className="text-[10px] font-semibold uppercase tracking-wide opacity-70">
         <AnalysisTermHint term={term} labelClassName="text-[10px] uppercase tracking-wide opacity-100" />
-      </p>
+      </div>
       <p className="mt-1 text-lg font-bold tabular-nums">{value}</p>
       <p className="mt-0.5 text-[10px] opacity-70">{hint}</p>
     </div>

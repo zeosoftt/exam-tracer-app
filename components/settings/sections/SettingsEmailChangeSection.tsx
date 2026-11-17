@@ -88,6 +88,7 @@ export function SettingsEmailChangeSection() {
             <input
               type="email"
               required
+              autoComplete="off"
               value={newEmail}
               onChange={(e) => setNewEmail(e.target.value)}
               className={settingsFieldClass}

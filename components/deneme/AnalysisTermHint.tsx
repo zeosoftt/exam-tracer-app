@@ -85,15 +85,15 @@ export function AnalysisTermHint({
           className="absolute -top-1.5 left-4 h-3 w-3 rotate-45 border-l border-t border-stone-200 bg-white dark:border-stone-700 dark:bg-stone-900 sm:left-1/2 sm:-translate-x-1/2"
           aria-hidden
         />
-        <p className="text-xs font-bold text-stone-900 dark:text-stone-100">{def.title}</p>
-        <p className="mt-1.5 text-xs leading-relaxed text-stone-600 dark:text-stone-300">{def.description}</p>
+        <span className="block text-xs font-bold text-stone-900 dark:text-stone-100">{def.title}</span>
+        <span className="block mt-1.5 text-xs leading-relaxed text-stone-600 dark:text-stone-300">{def.description}</span>
         {def.formula ? (
-          <p className="mt-2 rounded-lg bg-stone-50 px-2 py-1.5 text-[11px] leading-relaxed text-stone-700 dark:bg-stone-800 dark:text-stone-300">
+          <span className="block mt-2 rounded-lg bg-stone-50 px-2 py-1.5 text-[11px] leading-relaxed text-stone-700 dark:bg-stone-800 dark:text-stone-300">
             {def.formula}
-          </p>
+          </span>
         ) : null}
         {def.example ? (
-          <p className="mt-1.5 text-[11px] text-stone-500 dark:text-stone-400">Örnek: {def.example}</p>
+          <span className="block mt-1.5 text-[11px] text-stone-500 dark:text-stone-400">Örnek: {def.example}</span>
         ) : null}
       </span>
     </span>

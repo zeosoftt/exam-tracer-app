@@ -7,7 +7,10 @@ import { useDashboardDetailTopicActions } from '@/components/dashboard/hooks/use
 
 export function useDashboardDetailPage() {
   const detailData = useDashboardDetailData();
-  const topicActions = useDashboardDetailTopicActions(detailData.fetchDetailData);
+  const topicActions = useDashboardDetailTopicActions(
+    detailData.fetchDetailData,
+    detailData.applyTopicPatch,
+  );
   const [evaluationFilter, setEvaluationFilter] = useState<EvaluationFilter>(null);
 
   useEffect(() => {

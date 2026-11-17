@@ -4,9 +4,16 @@ import { useState, useCallback } from 'react';
 import type { Topic } from '../detail/dashboardDetailTypes';
 import { patchTopicProgress } from '@/lib/client-api/progressClient';
 
-type RefetchDetail = (options?: { force?: boolean }) => Promise<void>;
+type RefetchDetail = (options?: { force?: boolean }) => Promise<boolean>;
+type ApplyTopicPatch = (topicId: string, patch: Partial<Topic>) => void;
 
-export function useDashboardDetailTopicActions(fetchDetailData: RefetchDetail) {
+const REFRESH_FAILED_TEXT =
+  'Değişiklik kaydedildi ancak liste yenilenemedi. Güncel verileri görmek için sayfayı yenileyin.';
+
+export function useDashboardDetailTopicActions(
+  fetchDetailData: RefetchDetail,
+  applyTopicPatch: ApplyTopicPatch,
+) {
   const [updatingTopicId, setUpdatingTopicId] = useState<string | null>(null);
   const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<{
@@ -23,7 +30,9 @@ export function useDashboardDetailTopicActions(fetchDetailData: RefetchDetail) {
       try {
         const { ok, error } = await patchTopicProgress(topicId, { status: newStatus });
         if (ok) {
-          await fetchDetailData({ force: true });
+          applyTopicPatch(topicId, { status: newStatus });
+          const refreshed = await fetchDetailData({ force: true });
+          if (!refreshed) setActionMessage({ type: 'error', text: REFRESH_FAILED_TEXT });
         } else {
           console.error('Failed to update topic status:', error);
           setActionMessage({ type: 'error', text: 'Durum güncellenirken bir hata oluştu' });
@@ -35,7 +44,7 @@ export function useDashboardDetailTopicActions(fetchDetailData: RefetchDetail) {
         setUpdatingTopicId(null);
       }
     },
-    [fetchDetailData],
+    [fetchDetailData, applyTopicPatch],
   );
 
   const updateQuestionStats = useCallback(
@@ -58,9 +67,11 @@ export function useDashboardDetailTopicActions(fetchDetailData: RefetchDetail) {
           wrongAnswers: editValues.wrongAnswers,
         });
         if (ok) {
-          await fetchDetailData({ force: true });
+          applyTopicPatch(topicId, { ...editValues });
           setEditingTopicId(null);
           setEditValues(null);
+          const refreshed = await fetchDetailData({ force: true });
+          if (!refreshed) setActionMessage({ type: 'error', text: REFRESH_FAILED_TEXT });
         } else {
           console.error('Failed to update question stats:', error);
           setActionMessage({ type: 'error', text: 'Soru sayıları güncellenirken bir hata oluştu' });
@@ -72,7 +83,7 @@ export function useDashboardDetailTopicActions(fetchDetailData: RefetchDetail) {
         setUpdatingTopicId(null);
       }
     },
-    [editValues, fetchDetailData],
+    [editValues, fetchDetailData, applyTopicPatch],
   );
 
   const startEdit = useCallback((topic: Topic) => {
