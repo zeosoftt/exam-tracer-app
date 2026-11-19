@@ -1,0 +1,120 @@
+/**
+ * ALES ve DGS — sayısal ve sözel yetenek testleri.
+ */
+
+import { exam, sec, sub } from './dsl';
+
+export const ALES = exam(
+  'ALES',
+  'ALES (Akademik Personel ve Lisansüstü Eğitimi Giriş Sınavı)',
+  'Yüksek lisans, doktora ve akademik kadro başvuruları için sayısal ve sözel testler',
+  [
+    sec('SAYISAL', 'Sayısal', [
+      sub('MATEMATIK', 'Matematik', [
+        'Temel Kavramlar',
+        ['DOGAL_SAYILAR', 'Doğal Sayılar ve Tam Sayılar'],
+        ['FAKTORIYEL', 'Faktöriyel'],
+        ['BOLME', 'Bölme'],
+        ['BOLUNEBILME_KURALLARI', 'Bölünebilme Kuralları'],
+        'EBOB - EKOK',
+        ['RAS_SAYILAR', 'Rasyonel Sayılar ve Ondalık Sayılar'],
+        ['ESITSIZLIK', 'Eşitsizlikler'],
+        ['MUT_DEGER', 'Mutlak Değer'],
+        ['USLU_SAYILAR', 'Üslü Sayılar'],
+        ['KOKLU_SAYILAR', 'Köklü Sayılar'],
+        ['CARP_AYIRMA', 'Çarpanlara Ayırma'],
+        ['ORAN_ORANTI', 'Oran - Orantı'],
+        'Denklem Çözme',
+        ['PROBLEMLER', 'Sayı ve Kesir Problemleri'],
+        'Yaş Problemleri',
+        'İşçi ve Havuz Problemleri',
+        'Hız ve Hareket Problemleri',
+        'Yüzde, Kâr - Zarar ve Faiz Problemleri',
+        'Karışım Problemleri',
+        'Kümeler',
+        'Fonksiyonlar',
+        ['ISLEM_MODULER_ARITMETIK', 'İşlem ve Modüler Aritmetik'],
+        'Permütasyon, Kombinasyon ve Olasılık',
+        'Tablo ve Grafik Yorumlama',
+        ['SAYISAL_MANTIK', 'Sayısal Mantık ve Akıl Yürütme'],
+      ]),
+      sub('GEOMETRI', 'Geometri', [
+        'Doğruda ve Üçgende Açılar',
+        'Üçgenler (Eşlik, Benzerlik, Alan)',
+        'Çokgenler ve Dörtgenler',
+        'Çember ve Daire',
+        'Analitik Geometri',
+        'Katı Cisimler',
+      ]),
+    ]),
+    sec('SOZEL', 'Sözel', [
+      sub('TURKCE', 'Türkçe', [
+        'Sözcükte Anlam',
+        'Cümlede Anlam',
+        'Cümle Tamamlama',
+        'Paragrafta Anlam',
+        'Paragrafta Yapı',
+        'Anlatım Bozuklukları',
+        ['ALES_SOZEL_MANTIK', 'Sözel Mantık ve Akıl Yürütme'],
+      ]),
+    ]),
+  ],
+);
+
+export const DGS = exam(
+  'DGS',
+  'DGS (Dikey Geçiş Sınavı)',
+  'Ön lisans mezunlarının lisans tamamlaması için sayısal ve sözel yetenek testleri',
+  [
+    sec('SAYISAL_YETENEK', 'Sayısal Yetenek', [
+      sub('MATEMATIK', 'Matematik', [
+        ['TEMEL_KAVRAMLAR', 'Temel Kavramlar'],
+        ['SAYI_BASAMAKLARI', 'Sayı Sistemleri ve Basamak Kavramı'],
+        ['BOLME_BOLUNEBILME', 'Bölme ve Bölünebilme Kuralları'],
+        ['ASAL_SAYILAR', 'Asal Sayılar ve Faktöriyel'],
+        ['OBEB_OKEK', 'EBOB - EKOK'],
+        ['RASYONEL_SAYILAR', 'Rasyonel Sayılar ve Ondalık Sayılar'],
+        ['BASIT_ESITSIZLIKLER', 'Basit Eşitsizlikler'],
+        ['MUTLAK_DEGER', 'Mutlak Değer'],
+        ['USLU_SAYILAR', 'Üslü Sayılar'],
+        ['KOKLU_SAYILAR', 'Köklü Sayılar'],
+        ['CARPANLARINA_AYIRMA', 'Çarpanlara Ayırma'],
+        ['ORAN_ORANTI', 'Oran - Orantı'],
+        ['DENKLEM_COZME', 'Denklem Çözme'],
+        ['SAYI_KESIR_PROBLEMLERI', 'Sayı ve Kesir Problemleri'],
+        ['YAS_PROBLEMLERI', 'Yaş Problemleri'],
+        ['ISCI_PROBLEMLERI', 'İşçi Problemleri'],
+        'Yüzde Problemleri',
+        ['KAR_ZARAR_PROBLEMLERI', 'Kâr - Zarar Problemleri'],
+        ['KARISIM_PROBLEMLERI', 'Karışım Problemleri'],
+        ['HIZ_HAREKET_PROBLEMLERI', 'Hız ve Hareket Problemleri'],
+        ['GRAFIK_PROBLEMLERI', 'Grafik Problemleri'],
+        ['KUMELER', 'Kümeler'],
+        ['FONKSIYONLAR', 'Fonksiyonlar'],
+        ['ISLEM_MODULER_ARITMETIK', 'İşlem ve Modüler Aritmetik'],
+        ['PERMUTASYON_KOMBINASYON_OLASILIK', 'Permütasyon, Kombinasyon ve Olasılık'],
+        ['SAYISAL_MANTIK', 'Sayısal Mantık'],
+      ]),
+      sub('DGS_GEOMETRI', 'Geometri', [
+        ['KAVRAMLAR_ACILAR', 'Geometrik Kavramlar ve Açılar'],
+        ['UCGENLER', 'Üçgenler (Eşlik, Benzerlik, Alan)'],
+        ['COKGENLER_DORTGENLER', 'Çokgenler ve Dörtgenler'],
+        ['CEMBER_DAIRE', 'Çember ve Daire'],
+        ['ANALITIK_GEOMETRI', 'Analitik Geometri'],
+        ['KATI_CISIMLER', 'Katı Cisimler'],
+      ]),
+    ]),
+    sec('SOZEL_YETENEK', 'Sözel Yetenek', [
+      sub('TURKCE', 'Türkçe', [
+        ['SOZCUKTE_ANLAM', 'Sözcükte Anlam'],
+        ['CUMLEDE_ANLAM', 'Cümlede Anlam (Anlam İlişkileri ve Kavramlar)'],
+        ['PARAGRAFTA_ANADUSUNCE', 'Paragrafta Ana Düşünce'],
+        ['PARAGRAFDA_YARDIMCI_DUSUNCE', 'Paragrafta Yardımcı Düşünce'],
+        ['PARAGRAFTA_YAPI', 'Paragrafta Yapı (Akışı Bozma, Yer Değiştirme, Tamamlama)'],
+        ['ANLATIM_BICIMLERI', 'Anlatım Biçimleri ve Düşünceyi Geliştirme Yolları'],
+        ['ANLATIM_BOZUKLUKLARI', 'Anlatım Bozuklukları'],
+        ['SOZEL_MANTIK', 'Sözel Mantık'],
+      ]),
+    ]),
+  ],
+);

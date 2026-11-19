@@ -854,8 +854,10 @@ async function main() {
 
   // ALES, DGS, YKS, YDS, YOKDIL, OABT müfredatları
   console.log('📚 Seeding exam curricula...');
-  const { CURRICULUM_EXAMS, upsertExamTrees } = await import('./curriculum');
-  await upsertExamTrees(prisma, CURRICULUM_EXAMS);
+  // Tek kaynak: prisma/curriculum/catalog (kodları mevcut veritabanıyla uyumlu, silme yok).
+  const { CATALOG_EXAMS } = await import('./curriculum/catalog');
+  const { loadCatalog } = await import('./curriculum/loadCatalog');
+  await loadCatalog(prisma, CATALOG_EXAMS, { apply: true, log: (line) => console.log(`  ${line}`) });
 
   console.log('✅ Seed completed successfully!');
 }

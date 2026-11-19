@@ -140,6 +140,8 @@ const EXAM_PROFILES: Record<string, ExamScoringProfile> = {
 export function getExamScoringProfile(examCode: string): ExamScoringProfile {
   if (EXAM_PROFILES[examCode]) return EXAM_PROFILES[examCode];
   if (examCode.startsWith('KPSS')) return KPSS_PROFILE;
+  /** ÖABT branş sınavları: OABT_TURKCE, OABT_FIZIK … */
+  if (examCode.startsWith('OABT')) return EXAM_PROFILES.OABT;
   if (examCode.startsWith('YKS')) {
     if (examCode.includes('TYT')) return YKS_TYT_PROFILE;
     if (examCode.includes('YDT')) return YDS_PROFILE;
