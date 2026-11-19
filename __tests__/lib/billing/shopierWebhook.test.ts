@@ -17,6 +17,12 @@ describe('verifyShopierWebhookSignature', () => {
     expect(verifyShopierWebhookSignature(body, sig, secret)).toBe(true);
   });
 
+  it('accepts base64 and base64url encodings of the same HMAC', () => {
+    const raw = createHmac('sha256', secret).update(body, 'utf8').digest();
+    expect(verifyShopierWebhookSignature(body, raw.toString('base64'), secret)).toBe(true);
+    expect(verifyShopierWebhookSignature(body, raw.toString('base64url'), secret)).toBe(true);
+  });
+
   it('rejects invalid signature', () => {
     expect(verifyShopierWebhookSignature(body, 'deadbeef', secret)).toBe(false);
   });

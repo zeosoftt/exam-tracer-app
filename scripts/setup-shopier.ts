@@ -148,7 +148,16 @@ async function main() {
     return;
   }
 
-  let secret = (process.env[KEY] ?? '').trim();
+  // Öncelik: process.env → .env.local → .env (değer yapıştırmaya gerek kalmasın)
+  let secret = (
+    process.env[KEY] ??
+    loadEnvFile('.env.local')[KEY] ??
+    loadEnvFile('.env')[KEY] ??
+    ''
+  ).trim();
+  if (secret) {
+    console.log(`\n[OK] ${KEY} mevcut yapılandırmadan okundu (len=${secret.length}); yapıştırma gerekmiyor.`);
+  }
   if (!secret) {
     secret = await askSecret(`${KEY} değerini yapıştır (ekranda görünür; commit etme): `);
   }
@@ -165,8 +174,8 @@ async function main() {
   if (setVercel) {
     console.log('\nVercel Production env ekleniyor...');
     const result = spawnSync(
-      'vercel',
-      ['env', 'add', KEY, 'production'],
+      'npx',
+      ['vercel', 'env', 'add', KEY, 'production'],
       {
         input: `${secret}\n`,
         encoding: 'utf8',
